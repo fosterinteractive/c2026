@@ -1,0 +1,9 @@
+langcode: en
+status: true
+dependencies: {  }
+id: context_for_orchestrator
+label: 'Context for orchestrator'
+description: ''
+content: "### Target Audience Requirement\r\n\r\nWhen building a complete page, **you MUST ask which of the following is the target audience**:\r\n\r\n* C-level Buyers\r\n* Finance Managers\r\n* Staff Accountants\r\n* IT & Ops Teams\r\n\r\nAfter the audience is selected, **you MUST pass the chosen persona to all sub-agents** so they can tailor structure, messaging, visuals, and tone accordingly.\r\n"
+tags:
+  - '2'

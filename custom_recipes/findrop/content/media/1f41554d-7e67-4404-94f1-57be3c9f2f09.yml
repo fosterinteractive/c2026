@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 1f41554d-7e67-4404-94f1-57be3c9f2f09
+  bundle: image
+  default_langcode: en
+  depends:
+    ab27fd5d-14b5-4a84-8822-326fe5ddfa91: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: card-3.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a digital graphic, not a photo, featuring a futuristic and abstract design. The background is a deep black, while the main visual elements are rows of glowing white dots arranged in sweeping, wavy patterns. There are no people present in the image. The dots vary in size and create a sense of depth and perspective, appearing almost three-dimensional. The overall mood is sleek, modern, and dynamic, giving a sense of movement or digital flow. The high contrast between the glowing dots and the dark background enhances its high-tech, innovative feel. This image is well suited for technology, science, or digital themes.'
+  field_media_image:
+    -
+      alt: 'A graphic showing light green dots of different sizes in a pattern'
+      title: ''
+      width: 786
+      height: 600
+      entity: ab27fd5d-14b5-4a84-8822-326fe5ddfa91

@@ -1,0 +1,21 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: a78d6550-b81c-4adc-ac9f-7321e1e11940
+  default_langcode: en
+default:
+  filename:
+    -
+      value: christina-wocintechchat-com-m-SJvDxw0azqw-unsplash.jpg
+  uri:
+    -
+      value: 'public://styles/scale_for_ai_vision/public/2026-01/christina-wocintechchat-com-m-SJvDxw0azqw-unsplash.jpg'
+  filemime:
+    -
+      value: image/jpeg
+  filesize:
+    -
+      value: 22616
+  status:
+    -
+      value: false

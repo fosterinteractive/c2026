@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: ccb5a8c1-b0e3-432d-b25a-dd89bdcd9fba
+  bundle: image
+  default_langcode: en
+  depends:
+    4a8af336-e8a7-4e4d-b2b0-cd3d66821ea1: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: card-2.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a dramatic, artistic photo featuring the dark silhouette of a person in profile. The individual appears to be a young woman with her hair pulled back in a ponytail, and no facial features are visible. The background consists of smooth gradients of blue, teal, and soft purple, creating a calming and contemplative mood. The lighting is focused behind the subject, enhancing the silhouette effect and giving the scene a modern, minimalist aesthetic. There are no other objects present in the image. The atmosphere is serene and introspective. This visual would work well for themes of reflection, mystery, or identity.'
+  field_media_image:
+    -
+      alt: 'A dark silhouette of a woman from the side with a ponytail against a light blue-green gradient'
+      title: ''
+      width: 786
+      height: 591
+      entity: 4a8af336-e8a7-4e4d-b2b0-cd3d66821ea1

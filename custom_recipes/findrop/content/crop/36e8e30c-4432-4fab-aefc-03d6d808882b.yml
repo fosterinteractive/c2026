@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: crop
+  uuid: 36e8e30c-4432-4fab-aefc-03d6d808882b
+  bundle: focal_point
+  default_langcode: en
+default:
+  entity_id:
+    -
+      value: 156
+  entity_type:
+    -
+      value: file
+  uri:
+    -
+      value: 'public://2025-09/findrop_supported_apps.png'
+  x:
+    -
+      value: 512
+  'y':
+    -
+      value: 512
+  revision_uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

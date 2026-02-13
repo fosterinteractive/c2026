@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: crop
+  uuid: 7678fe92-5b92-4881-82ed-9fe420d6d4b7
+  bundle: focal_point
+  default_langcode: en
+default:
+  entity_id:
+    -
+      value: 64
+  entity_type:
+    -
+      value: file
+  uri:
+    -
+      value: 'public://2025-09/FIDrop_product_mockup.png'
+  x:
+    -
+      value: 512
+  'y':
+    -
+      value: 512
+  revision_uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

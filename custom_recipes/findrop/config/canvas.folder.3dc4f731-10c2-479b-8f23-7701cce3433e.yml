@@ -1,0 +1,16 @@
+uuid: 3dc4f731-10c2-479b-8f23-7701cce3433e
+langcode: en
+status: true
+dependencies: {  }
+name: Base
+configEntityTypeId: component
+weight: 0
+items:
+  - sdc.byte_theme.anchor
+  - sdc.byte_theme.badge
+  - sdc.byte_theme.blockquote
+  - sdc.byte_theme.button
+  - sdc.byte_theme.heading
+  - sdc.byte_theme.icon
+  - sdc.byte_theme.image
+  - sdc.byte_theme.text

@@ -1,0 +1,37 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: c5b0a0f8-b958-49ad-b2ca-81930195f7b8
+  default_langcode: en
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  owner:
+    -
+      target_id: 1
+  title:
+    -
+      value: 'Page not found'
+  components:
+    -
+      uuid: 7f55c0d0-7f40-4bba-85cc-abfa617336ec
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: "<p>The page you're trying to find doesn't exist.</p>"
+        text_size: normal
+        text_color: default
+  path:
+    -
+      alias: /404
+      langcode: en
+  revision_translation_affected:
+    -
+      value: true
+  metatags:
+    -
+      value: '{"canonical_url":"[canvas_page:url]","description":"[canvas_page:description]","image_src":"[canvas_page:image:entity:field_media_image:entity:url]","title":"[canvas_page:title] | [site:name]"}'

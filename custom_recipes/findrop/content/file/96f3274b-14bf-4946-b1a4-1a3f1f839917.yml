@@ -1,0 +1,21 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 96f3274b-14bf-4946-b1a4-1a3f1f839917
+  default_langcode: en
+default:
+  filename:
+    -
+      value: card-2.png
+  uri:
+    -
+      value: 'public://styles/scale_for_ai_vision/public/2026-01/card-2.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 101601
+  status:
+    -
+      value: false

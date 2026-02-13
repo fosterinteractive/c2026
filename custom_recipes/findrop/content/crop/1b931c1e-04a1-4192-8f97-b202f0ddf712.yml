@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: crop
+  uuid: 1b931c1e-04a1-4192-8f97-b202f0ddf712
+  bundle: focal_point
+  default_langcode: en
+default:
+  entity_id:
+    -
+      value: 162
+  entity_type:
+    -
+      value: file
+  uri:
+    -
+      value: 'public://2025-09/pexels-photo-1035677.jpeg'
+  x:
+    -
+      value: 1000
+  'y':
+    -
+      value: 1500
+  revision_uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

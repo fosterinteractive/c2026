@@ -1,0 +1,41 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 1e2d803f-d28c-415c-8cc7-4c4e90632c76
+  bundle: image
+  default_langcode: en
+  depends:
+    881306db-f10d-4a85-bdea-e86c618e288b: file
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: sarah-michel.jpg
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image features a image of Sarah Mitchell, CFO of the fintech company Techflow. She is dressed in a black jacket, a white blouse a delicate gold chain and earrings and has a very approachable stance. The image features a headshot of Sarah, with the focus being on her face, but also showing a third of her upper body. The background is neutral with a blurred window and a wall. Sarah is a black women, with greyish shorter hair and black eyes. The image has a very neutral emotion with Sarah smiling to the camera.'
+  field_media_image:
+    -
+      alt: 'headshot of Sarah Mitchell, CFO, Techflow'
+      title: ''
+      width: 1024
+      height: 1024
+      entity: 881306db-f10d-4a85-bdea-e86c618e288b

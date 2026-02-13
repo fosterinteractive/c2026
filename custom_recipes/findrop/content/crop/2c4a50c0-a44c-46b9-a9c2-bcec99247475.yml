@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: crop
+  uuid: 2c4a50c0-a44c-46b9-a9c2-bcec99247475
+  bundle: focal_point
+  default_langcode: en
+default:
+  entity_id:
+    -
+      value: 3
+  entity_type:
+    -
+      value: file
+  uri:
+    -
+      value: 'public://2026-01/hero-image.jpg'
+  x:
+    -
+      value: 710
+  'y':
+    -
+      value: 366
+  revision_uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

@@ -1,0 +1,41 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 25710933-f157-4ee6-a95c-28a4c256ea96
+  bundle: image
+  default_langcode: en
+  depends:
+    3324d784-51b7-48f2-a8bf-7fa8dd1c2804: file
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: willian-souza-p5BoBF0XJUA-unsplash.jpg
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a professional photo featuring a man with medium-dark skin, a full beard, and short curly black hair. The man appears to be in his thirties, and he is smiling warmly, creating a friendly and approachable mood. He is wearing a navy blue zip-up sweater over a white collared shirt. The background is a smooth, gradient light gray, giving the image a clean and modern feel. The composition is simple, with the subject centered and standing against the neutral background. There are no additional objects in the image, focusing all attention on the individual. This image is ideal for professional or corporate contexts.'
+  field_media_image:
+    -
+      alt: 'Headshot of a professional-looking man with a beard wearing business casual clothing.'
+      title: ''
+      width: 556
+      height: 542
+      entity: 3324d784-51b7-48f2-a8bf-7fa8dd1c2804

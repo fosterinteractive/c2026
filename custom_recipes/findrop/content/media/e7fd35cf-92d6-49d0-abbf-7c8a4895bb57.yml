@@ -1,0 +1,41 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: e7fd35cf-92d6-49d0-abbf-7c8a4895bb57
+  bundle: image
+  default_langcode: en
+  depends:
+    80d12e96-9d37-4751-bfdb-5a8082acd428: file
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: card-1.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a graphic artwork featuring a silhouetted figure standing against a dynamic, abstract background of light blue, wavy, grid-like lines on a black background. The main colors in the scene are black and glowing light blue. The silhouette appears to be of an adult, possibly male, though no specific details on age, ethnicity, or facial expression can be determined due to the lack of visible features. The figure is positioned centrally, gazing toward the abstract light pattern. The overall mood is contemplative and modern, with a high-tech or futuristic aesthetic. No other objects are present in the image. The composition suggests themes of technology, data, or digital environments.'
+  field_media_image:
+    -
+      alt: 'A dark silhouette of a person from the back against a light blue linear graphic'
+      title: ''
+      width: 786
+      height: 600
+      entity: 80d12e96-9d37-4751-bfdb-5a8082acd428

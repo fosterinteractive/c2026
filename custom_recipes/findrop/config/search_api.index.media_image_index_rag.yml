@@ -1,0 +1,90 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.media.field_image_description
+    - field.storage.media.field_media_image
+    - search_api.server.media_image_search
+  module:
+    - file
+    - media
+id: media_image_index_rag
+name: 'Media Image Index RAG'
+description: ''
+read_only: false
+field_settings:
+  field_image_description:
+    label: 'Image Description'
+    datasource_id: 'entity:media'
+    property_path: field_image_description
+    type: text
+    dependencies:
+      config:
+        - field.storage.media.field_image_description
+  height:
+    label: 'Image » Height'
+    datasource_id: 'entity:media'
+    property_path: 'field_media_image:height'
+    type: integer
+    dependencies:
+      config:
+        - field.storage.media.field_media_image
+  mid:
+    label: ID
+    datasource_id: 'entity:media'
+    property_path: mid
+    type: integer
+    dependencies:
+      module:
+        - media
+  name:
+    label: Name
+    datasource_id: 'entity:media'
+    property_path: name
+    type: string
+    dependencies:
+      module:
+        - media
+  url:
+    label: 'Image » File » URI » Root-relative file URL'
+    datasource_id: 'entity:media'
+    property_path: 'field_media_image:entity:uri:url'
+    type: string
+    dependencies:
+      config:
+        - field.storage.media.field_media_image
+      module:
+        - file
+  width:
+    label: 'Image » Width'
+    datasource_id: 'entity:media'
+    property_path: 'field_media_image:width'
+    type: integer
+    dependencies:
+      config:
+        - field.storage.media.field_media_image
+datasource_settings:
+  'entity:media':
+    bundles:
+      default: false
+      selected:
+        - image
+    languages:
+      default: true
+      selected: {  }
+processor_settings:
+  add_url: {  }
+  aggregated_field: {  }
+  custom_value: {  }
+  entity_type: {  }
+  language_with_fallback: {  }
+  rendered_item: {  }
+tracker_settings:
+  default:
+    indexing_order: fifo
+options:
+  cron_limit: 5
+  delete_on_fail: true
+  index_directly: true
+  track_changes_in_references: true
+server: media_image_search

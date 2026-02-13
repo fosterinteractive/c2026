@@ -1,0 +1,12 @@
+uuid: bbfb6712-0761-433c-a641-6361051cb7af
+langcode: en
+status: true
+dependencies: {  }
+name: 'Lists (Views)'
+configEntityTypeId: component
+weight: 0
+items:
+  - block.views_block.blog-all
+  - block.views_block.blog-latest
+  - block.views_block.blog-related
+  - block.views_block.recent_pages-block_recent_pages

@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: crop
+  uuid: d90df658-0716-49fe-a209-b790378b7650
+  bundle: focal_point
+  default_langcode: en
+default:
+  entity_id:
+    -
+      value: 22
+  entity_type:
+    -
+      value: file
+  uri:
+    -
+      value: 'public://2025-09/document-agreement-documents-sign-48195.jpeg'
+  x:
+    -
+      value: 1504
+  'y':
+    -
+      value: 1000
+  revision_uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

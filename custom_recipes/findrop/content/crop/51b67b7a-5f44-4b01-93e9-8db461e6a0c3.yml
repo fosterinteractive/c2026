@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: crop
+  uuid: 51b67b7a-5f44-4b01-93e9-8db461e6a0c3
+  bundle: focal_point
+  default_langcode: en
+default:
+  entity_id:
+    -
+      value: 160
+  entity_type:
+    -
+      value: file
+  uri:
+    -
+      value: 'public://2025-09/Findrop_illustration_hero-2.jpg'
+  x:
+    -
+      value: 1500
+  'y':
+    -
+      value: 917
+  revision_uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

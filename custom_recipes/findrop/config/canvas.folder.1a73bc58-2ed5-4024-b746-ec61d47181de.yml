@@ -1,0 +1,13 @@
+uuid: 1a73bc58-2ed5-4024-b746-ec61d47181de
+langcode: en
+status: true
+dependencies: {  }
+name: Card
+configEntityTypeId: component
+weight: 0
+items:
+  - sdc.byte_theme.card
+  - sdc.byte_theme.card-icon
+  - sdc.byte_theme.card-logo
+  - sdc.byte_theme.card-pricing
+  - sdc.byte_theme.card-testimonial

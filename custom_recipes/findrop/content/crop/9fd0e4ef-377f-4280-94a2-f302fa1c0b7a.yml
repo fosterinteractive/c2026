@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: crop
+  uuid: 9fd0e4ef-377f-4280-94a2-f302fa1c0b7a
+  bundle: focal_point
+  default_langcode: en
+default:
+  entity_id:
+    -
+      value: 172
+  entity_type:
+    -
+      value: file
+  uri:
+    -
+      value: 'public://2025-09/woman-using-app-coffee.png'
+  x:
+    -
+      value: 512
+  'y':
+    -
+      value: 512
+  revision_uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

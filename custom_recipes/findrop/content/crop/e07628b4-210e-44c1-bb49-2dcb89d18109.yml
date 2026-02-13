@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: crop
+  uuid: e07628b4-210e-44c1-bb49-2dcb89d18109
+  bundle: focal_point
+  default_langcode: en
+default:
+  entity_id:
+    -
+      value: 4
+  entity_type:
+    -
+      value: file
+  uri:
+    -
+      value: 'public://2025-07/person_3.png'
+  x:
+    -
+      value: 50
+  'y':
+    -
+      value: 50
+  revision_uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

@@ -1,0 +1,21 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: a6a2171a-c1b3-47fc-8895-948b8cfd9cb9
+  default_langcode: en
+default:
+  filename:
+    -
+      value: blog-1.png
+  uri:
+    -
+      value: 'public://styles/scale_for_ai_vision/public/2026-01/blog-1.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 139657
+  status:
+    -
+      value: false

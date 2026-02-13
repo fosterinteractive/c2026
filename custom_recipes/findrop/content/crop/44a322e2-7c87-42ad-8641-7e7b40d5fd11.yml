@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: crop
+  uuid: 44a322e2-7c87-42ad-8641-7e7b40d5fd11
+  bundle: focal_point
+  default_langcode: en
+default:
+  entity_id:
+    -
+      value: 203
+  entity_type:
+    -
+      value: file
+  uri:
+    -
+      value: 'public://2025-09/woman-using-london.png'
+  x:
+    -
+      value: 512
+  'y':
+    -
+      value: 512
+  revision_uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

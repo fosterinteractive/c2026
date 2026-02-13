@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+## Description: Recreate the DDEV project, install dependencies, remove canvas module, and print a login URL.
+## Usage: demo-setup
+
+set -euo pipefail
+
+ddev delete -O -y
+ddev start
+ddev composer install
+
+rm -rf web/modules/contrib/canvas
+
+ddev drush uli

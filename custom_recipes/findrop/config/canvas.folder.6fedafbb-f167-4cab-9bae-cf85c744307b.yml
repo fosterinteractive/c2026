@@ -1,0 +1,12 @@
+uuid: 6fedafbb-f167-4cab-9bae-cf85c744307b
+langcode: en
+status: true
+dependencies: {  }
+name: Hero
+configEntityTypeId: component
+weight: 0
+items:
+  - sdc.byte_theme.cta
+  - sdc.byte_theme.hero-billboard
+  - sdc.byte_theme.hero-blog
+  - sdc.byte_theme.hero-side-by-side

@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: crop
+  uuid: 9b3ef593-0c38-488a-87bc-c372356df28e
+  bundle: focal_point
+  default_langcode: en
+default:
+  entity_id:
+    -
+      value: 190
+  entity_type:
+    -
+      value: file
+  uri:
+    -
+      value: 'public://2025-09/office-sitting-room-executive-sitting.jpg'
+  x:
+    -
+      value: 2835
+  'y':
+    -
+      value: 1893
+  revision_uid:
+    -
+      target_id: 1
+  revision_translation_affected:
+    -
+      value: true

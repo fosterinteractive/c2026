@@ -1,0 +1,17 @@
+agents:
+  -
+    id: canvas_page_builder_agent
+    contexts: {  }
+    always_include:
+      - media_library_search
+  -
+    id: canvas_template_builder_agent
+    contexts: {  }
+    always_include:
+      - findrop_key_facts_value_propositions
+      - media_library_search
+  -
+    id: canvas_ai_orchestrator
+    contexts: {  }
+    always_include:
+      - context_for_orchestrator

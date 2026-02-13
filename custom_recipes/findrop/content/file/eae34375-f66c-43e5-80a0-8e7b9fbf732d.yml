@@ -1,0 +1,21 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: eae34375-f66c-43e5-80a0-8e7b9fbf732d
+  default_langcode: en
+default:
+  filename:
+    -
+      value: willian-souza-p5BoBF0XJUA-unsplash.jpg
+  uri:
+    -
+      value: 'public://styles/scale_for_ai_vision/public/2026-01/willian-souza-p5BoBF0XJUA-unsplash.jpg'
+  filemime:
+    -
+      value: image/jpeg
+  filesize:
+    -
+      value: 13278
+  status:
+    -
+      value: false

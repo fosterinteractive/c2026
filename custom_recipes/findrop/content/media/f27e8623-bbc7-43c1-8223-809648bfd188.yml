@@ -1,0 +1,41 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: f27e8623-bbc7-43c1-8223-809648bfd188
+  bundle: image
+  default_langcode: en
+  depends:
+    34d807cc-dffb-4db2-918d-e88ce9760297: file
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: person_1.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: "This is a professional photo portrait set against a solid grey background with a circular crop. The main colors are neutral, highlighted by the grey backdrop and the subject's black clothing. The person appears to be a young adult woman with fair skin and long, wavy blonde hair. She is posed thoughtfully, resting her chin on her hand and giving a slight, confident smile. Her mood appears calm, approachable, and composed. Lighting is soft, evenly illuminating her face and creating a gentle atmosphere. There are no additional objects or distracting elements in the image. The focus stays entirely on the person, making it suitable for professional or personal profile use."
+  field_media_image:
+    -
+      alt: 'Person 1'
+      title: ''
+      width: 100
+      height: 100
+      entity: 34d807cc-dffb-4db2-918d-e88ce9760297

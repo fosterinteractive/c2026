@@ -1,0 +1,21 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: c7565eb0-35fb-4a9a-af44-4b401e63a927
+  default_langcode: en
+default:
+  filename:
+    -
+      value: person_3.png
+  uri:
+    -
+      value: 'public://styles/scale_for_ai_vision/public/2025-07/person_3.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 22123
+  status:
+    -
+      value: false

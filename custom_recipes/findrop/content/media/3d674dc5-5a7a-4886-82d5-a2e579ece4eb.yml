@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 3d674dc5-5a7a-4886-82d5-a2e579ece4eb
+  bundle: image
+  default_langcode: en
+  depends:
+    bca14119-609d-4148-98fb-cf5bb15349e5: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: vitaly-gariev-n2ZAk3UkIwg-unsplash.jpg
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This is a photo featuring six adults standing closely together in a modern office or coworking space. The background is mostly light with a mix of whites, grays, and muted blue tones, complemented by greenery from potted plants. The group appears diverse in terms of ethnicity and includes both men and women, all dressed in business casual attire. Their expressions are cheerful and engaged as they pose for a selfie, with smiles and relaxed body language creating a positive, friendly atmosphere. One person (a man with glasses and a beard) is prominently holding a smartphone, capturing the group photo. Overhead ceiling lights and contemporary furniture enhance the modern, professional vibe. A takeaway coffee cup is visible on a table in the foreground, adding to the casual office setting. The image exudes a mood of teamwork, camaraderie, and workplace satisfaction.'
+  field_media_image:
+    -
+      alt: 'Photo of a team of six co-workers taking a selfie in an office.'
+      title: ''
+      width: 1200
+      height: 675
+      entity: bca14119-609d-4148-98fb-cf5bb15349e5
