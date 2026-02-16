@@ -1,0 +1,63 @@
+<?php
+
+namespace Drupal\canvas_ai_seo\Plugin\AiFunctionCall;
+
+use Drupal\Core\Plugin\Context\ContextDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+use Drupal\ai\Attribute\FunctionCall;
+use Drupal\ai\Base\FunctionCallBase;
+use Drupal\ai\Service\FunctionCalling\ExecutableFunctionCallInterface;
+use Drupal\ai_agents\PluginInterfaces\AiAgentContextInterface;
+use Drupal\canvas_ai\Plugin\AiFunctionCall\BuilderResponseFunctionCallInterface;
+
+/**
+ * Plugin implementation of the add Schema.org JSON-LD function.
+ */
+#[FunctionCall(
+  id: 'ai_agent:add_schema_org_json',
+  function_name: 'ai_agent_add_schema_org_json',
+  name: 'Add Schema.org JSON-LD',
+  description: 'This method allows you to add Schema.org JSON-LD structured data.',
+  group: 'modification_tools',
+  module_dependencies: ['canvas_ai_seo'],
+  context_definitions: [
+    'schema_org_data' => new ContextDefinition(
+      data_type: 'string',
+      label: new TranslatableMarkup("Schema.org JSON-LD data"),
+      description: new TranslatableMarkup("The Schema.org JSON-LD structured data to add."),
+      required: TRUE
+    ),
+  ],
+)]
+final class AddSchemaOrgJson extends FunctionCallBase implements ExecutableFunctionCallInterface, AiAgentContextInterface, BuilderResponseFunctionCallInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function execute(): void {
+    try {
+      $schema_org_data = $this->getContextValue('schema_org_data');
+      $decoded = json_decode($schema_org_data, TRUE);
+      if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new \Exception(\sprintf('Invalid JSON: %s', json_last_error_msg()));
+      }
+      if (empty($decoded['@context'])) {
+        throw new \Exception('The @context key is missing in the Schema.org JSON-LD data.');
+      }
+      if (!str_contains((string) $decoded['@context'], 'schema.org')) {
+        throw new \Exception('The @context must reference schema.org.');
+      }
+      if (empty($decoded['@type'])) {
+        throw new \Exception('The @type key is missing in the Schema.org JSON-LD data.');
+      }
+      $this->setStructuredOutput([
+        'schema_org_data' => $schema_org_data,
+      ]);
+      $this->setOutput('Schema.org JSON-LD data added successfully.');
+    }
+    catch (\Exception $e) {
+      $this->setOutput(\sprintf('Failed to process Schema.org JSON-LD data: %s', $e->getMessage()));
+    }
+  }
+
+}

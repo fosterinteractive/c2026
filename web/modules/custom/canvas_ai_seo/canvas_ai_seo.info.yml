@@ -1,0 +1,8 @@
+name: Canvas AI SEO
+type: module
+description: 'AI-generated Schema.org JSON-LD for Canvas pages.'
+package: Drupal Canvas
+core_version_requirement: ^10 | ^11
+dependencies:
+  - canvas:canvas_ai
+  - metatag:metatag

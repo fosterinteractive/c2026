@@ -8,6 +8,16 @@ ddev delete -O -y
 ddev start
 ddev composer install
 
-rm -rf web/modules/contrib/canvas
+# Remove the canvas module from contrib. Use the one under custom modules.
+if [ -d "web/modules/contrib/canvas" ]; then
+  echo "Deleting canvas module from contrib: web/modules/contrib/canvas"
+  rm -rf web/modules/contrib/canvas
+else
+  echo "Can't find canvas module at web/modules/contrib/canvas"
+fi
+
+ddev drush si ../custom_recipes/findrop -y
+
+ddev drush sapi-i
 
 ddev drush uli

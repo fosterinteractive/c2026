@@ -1,4 +1,4 @@
-name: 'Drush Site-Install'
+name: 'FinDrop'
 type: Site
 install:
   - announcements_feed
@@ -137,6 +137,9 @@ install:
   - easy_email_theme
   - byte_theme
   - gin
+# This recipe is needed. Otherwise installation fails with error 'Field user_picture is unknown'.
+recipes:
+  - core/recipes/user_picture
 config:
   actions:
     core.date_format.fallback:
@@ -338,7 +341,7 @@ config:
     system.site:
       simpleConfigUpdate:
         langcode: en
-        name: 'Drush Site-Install'
+        name: 'FinDrop'
         mail: admin@example.com
         slogan: ''
         page:

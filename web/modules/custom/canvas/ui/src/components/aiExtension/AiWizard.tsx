@@ -199,6 +199,20 @@ const metadataHandler = {
   },
 };
 
+const seoHandler = {
+  canHandle: (msg: any) => 'schema_org_data' in msg && msg.schema_org_data,
+  handle: async ({ message, dispatch }: { message: any; dispatch: any }) => {
+    const value = message.schema_org_data;
+    dispatch(setUpdatePreview(true));
+    dispatch(
+      updatePageDataExternally({
+        'schema_jsonld[0][value]': value,
+      }),
+    );
+    await delay(1000);
+  },
+};
+
 
 // Helper to delay the placement of components.
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -305,6 +319,7 @@ const messageHandlers = [
   propsMetadataHandler,
   requiredPropsHandler,
   metadataHandler,
+  seoHandler,
   operationsHandler,
 ];
 
