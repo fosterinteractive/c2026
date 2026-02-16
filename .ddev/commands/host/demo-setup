@@ -18,6 +18,26 @@ fi
 
 ddev drush si ../custom_recipes/findrop -y
 
+if [ -d "web/modules/custom/canvas" ]; then
+  pushd web/modules/custom/canvas > /dev/null
+  npm install
+
+  if [ -d "ui" ]; then
+    pushd ui > /dev/null
+    npm run build
+    popd > /dev/null
+  else
+    echo "Can't find UI directory at web/modules/custom/canvas/ui"
+    exit 1
+  fi
+
+  popd > /dev/null
+else
+  echo "Can't find custom canvas module at web/modules/custom/canvas"
+  exit 1
+fi
+
 ddev drush sapi-i
+ddev drush cr
 
 ddev drush uli
