@@ -23,6 +23,12 @@ default:
     -
       langcode: en
       alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a close-up photograph of a computer screen displaying colorful code, likely HTML or SVG, against a dark background. Vibrant shades of blue, purple, red, and white dominate the text, creating a dynamic and technologically advanced atmosphere. There are no people visible in the image, and the focus is entirely on the code and its syntax highlighting. The overall mood is professional, modern, and tech-oriented, suggesting themes of programming, development, or web design. No other objects besides the computer screen and code are present. The image strongly conveys a sense of focus and digital innovation.'
   field_media_image:
     -
       alt: 'A photo of a computer screen showing HTML code with a variety of color formatting.'

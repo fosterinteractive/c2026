@@ -1,0 +1,11 @@
+uuid: c8cd1175-27ae-4b70-b895-8d879e8386a3
+langcode: en
+status: true
+dependencies: {  }
+name: 'AI Dashboard'
+configEntityTypeId: component
+weight: 0
+items:
+  - block.admin_menu_links
+  - block.ai_operations_status
+  - block.ai_setup_ai_provider

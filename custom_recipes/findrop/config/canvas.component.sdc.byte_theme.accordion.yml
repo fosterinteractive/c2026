@@ -5,6 +5,11 @@ dependencies:
     - options
   theme:
     - byte_theme
+label: Accordion
+id: sdc.byte_theme.accordion
+source: sdc
+source_local_id: 'byte_theme:accordion'
+provider: byte_theme
 active_version: f7c9de71b7d861bb
 versioned_properties:
   active:
@@ -85,8 +90,3 @@ versioned_properties:
         accordion_content:
           title: 'Accordion content'
           description: 'Content in this slot will be hidden when the accordion is collapsed.'
-label: Accordion
-id: sdc.byte_theme.accordion
-provider: byte_theme
-source: sdc
-source_local_id: 'byte_theme:accordion'

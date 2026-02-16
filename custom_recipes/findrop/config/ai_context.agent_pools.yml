@@ -3,15 +3,20 @@ agents:
     id: canvas_page_builder_agent
     contexts: {  }
     always_include:
-      - media_library_search
+      - feature_page_guidelines
+      - findrop_key_facts_value_propositions
   -
     id: canvas_template_builder_agent
     contexts: {  }
     always_include:
       - findrop_key_facts_value_propositions
-      - media_library_search
+      - media_usage_guidelines
+      - report_page_guidelines
   -
     id: canvas_ai_orchestrator
     contexts: {  }
-    always_include:
-      - context_for_orchestrator
+    always_include: {  }
+  -
+    id: drupal_canvas_seo_agent
+    contexts: {  }
+    always_include: {  }

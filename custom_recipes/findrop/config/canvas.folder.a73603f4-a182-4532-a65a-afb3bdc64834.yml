@@ -1,0 +1,10 @@
+uuid: a73603f4-a182-4532-a65a-afb3bdc64834
+langcode: en
+status: true
+dependencies: {  }
+name: Layout
+configEntityTypeId: component
+weight: 0
+items:
+  - sdc.byte_theme.accordion-container
+  - sdc.byte_theme.footer

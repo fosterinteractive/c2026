@@ -5,6 +5,11 @@ dependencies:
     - options
   theme:
     - byte_theme
+label: Heading
+id: sdc.byte_theme.heading
+source: sdc
+source_local_id: 'byte_theme:heading'
+provider: byte_theme
 active_version: d7c6acbc91a60ac1
 versioned_properties:
   active:
@@ -141,8 +146,3 @@ versioned_properties:
           expression: ℹ︎string␟value
     fallback_metadata:
       slot_definitions: {  }
-label: Heading
-id: sdc.byte_theme.heading
-provider: byte_theme
-source: sdc
-source_local_id: 'byte_theme:heading'

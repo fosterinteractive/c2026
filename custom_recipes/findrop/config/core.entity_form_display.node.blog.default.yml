@@ -13,6 +13,7 @@ dependencies:
     - field.field.node.blog.field_seo_title
     - field.field.node.blog.field_tags
     - node.type.blog
+    - workflows.workflow.basic_editorial
   module:
     - content_moderation
     - field_group

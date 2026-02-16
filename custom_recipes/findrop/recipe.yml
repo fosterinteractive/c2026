@@ -1,4 +1,4 @@
-name: 'FinDrop'
+name: FinDrop
 type: Site
 install:
   - announcements_feed
@@ -137,7 +137,7 @@ install:
   - easy_email_theme
   - byte_theme
   - gin
-# This recipe is needed. Otherwise installation fails with error 'Field user_picture is unknown'.
+  - canvas_ai_seo
 recipes:
   - core/recipes/user_picture
 config:
@@ -503,11 +503,28 @@ config:
           - 'access content'
           - 'use klaro'
           - 'view media'
+          - 'access content'
+          - 'use klaro'
+          - 'view media'
     user.role.authenticated:
       setProperties:
         status: true
         is_admin: false
         permissions:
+          - 'access administration pages'
+          - 'access coffee'
+          - 'access content'
+          - 'access contextual links'
+          - 'access navigation'
+          - 'bypass honeypot protection'
+          - 'delete own files'
+          - 'skip CAPTCHA'
+          - 'use klaro'
+          - 'use text format webform_default'
+          - 'view media'
+          - 'view own unpublished content'
+          - 'view the administration theme'
+          - 'view welcome dashboard'
           - 'access administration pages'
           - 'access coffee'
           - 'access content'

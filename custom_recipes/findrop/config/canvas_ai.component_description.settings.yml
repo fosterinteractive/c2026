@@ -1,6 +1,6 @@
 component_context:
   block:
-    enabled: false
+    enabled: true
     data: |
       block.admin_menu_links:
         id: block.admin_menu_links

@@ -17,8 +17,8 @@ dependencies:
   theme:
     - byte_theme
 id: byte_theme.footer
-region: footer
 theme: byte_theme
+region: footer
 component_tree:
   0:
     uuid: b4ea9fb2-d3fc-428a-9114-bce92069cbab

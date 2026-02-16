@@ -8,6 +8,11 @@ dependencies:
     - text
   theme:
     - byte_theme
+label: 'Icon card'
+id: sdc.byte_theme.card-icon
+source: sdc
+source_local_id: 'byte_theme:card-icon'
+provider: byte_theme
 active_version: 002e9ffe10816cfb
 versioned_properties:
   active:
@@ -230,8 +235,3 @@ versioned_properties:
           expression: ℹ︎list_string␟value
     fallback_metadata:
       slot_definitions: {  }
-label: 'Icon card'
-id: sdc.byte_theme.card-icon
-provider: byte_theme
-source: sdc
-source_local_id: 'byte_theme:card-icon'

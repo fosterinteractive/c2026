@@ -67,8 +67,8 @@
         "drupal/views_infinite_scroll": "^2.0.3",
         "drupal/webform": "^6.3.0-beta7",
         "drupal/yoast_seo": "^2.2.0",
-        "drupal/easy_email_theme": "^1.1.0",
         "drupal/byte_theme": "^1.0.0",
+        "drupal/easy_email_theme": "^1.1.0",
         "drupal/gin": "^5.0.12"
     },
     "type": "drupal-recipe"

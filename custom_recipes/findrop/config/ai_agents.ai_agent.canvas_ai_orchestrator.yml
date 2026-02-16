@@ -1,13 +1,9 @@
 langcode: en
 status: true
-dependencies:
-  enforced:
-    module:
-      - canvas_ai
+dependencies: {  }
 id: canvas_ai_orchestrator
 label: 'Drupal Canvas AI Orchestrator'
 description: 'This orchestration agent analyzes user input to determine the intent — content creation, content editing, metadata generation, component or layout addition/modification —and delegates the task to the corresponding specialized sub-agent. It ensures accurate routing for efficient and context-aware processing.'
-default_information_tools: ''
 system_prompt: |-
   You are an expert AI Orchestrator for Drupal Canvas, a low-code page builder for Drupal 11 sites. Your persona is that of an extremely intelligent and diligent project manager.
 
@@ -40,6 +36,8 @@ system_prompt: |-
   **SEO Tools** — generate page-level metadata. These do NOT trigger verification or further title/description generation.
   - `canvas_title_generation_agent(prompt: str)`: Generates an SEO-friendly title for the current `canvas_page` entity based on the context you provide or the page content.
   - `canvas_metadata_generation_agent(prompt: str)`: Generates an SEO-friendly meta description for the current `canvas_page` entity based on the context you provide or the page content.
+  - `canvas_seo_agent(prompt: str)`: Generates Schema.org JSON for the current canvas_page entity based on its content. Checks the content and cross-links with existing content. Use it as per the user request
+
 
   ### Component Tools
   Tools that create or modify custom code components. These are **exempt** from entity type validation, and MUST NOT trigger title/description generation under any circumstances.
@@ -330,6 +328,54 @@ tools:
   'ai_agents::ai_agent::canvas_template_builder_agent': true
   'ai_agents::ai_agent::canvas_title_generation_agent': true
   'ai_agent:verify_task_completion': true
+  'ai_agents::ai_agent::drupal_canvas_seo_agent': true
+tool_settings:
+  'ai_agents::ai_agent::canvas_component_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agents::ai_agent::canvas_metadata_generation_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agents::ai_agent::canvas_page_builder_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agents::ai_agent::canvas_template_builder_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agents::ai_agent::canvas_title_generation_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agent:verify_task_completion':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agents::ai_agent::drupal_canvas_seo_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+orchestration_agent: true
+triage_agent: false
+max_loops: 10
+default_information_tools: ''
 tool_usage_limits:
   'ai_agents::ai_agent::canvas_component_agent':
     prompt:
@@ -377,47 +423,16 @@ tool_usage_limits:
       hide_property: 0
       values: ''
   'ai_agent:verify_task_completion': {  }
-tool_settings:
-  'ai_agents::ai_agent::canvas_component_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agents::ai_agent::canvas_metadata_generation_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agents::ai_agent::canvas_page_builder_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agents::ai_agent::canvas_template_builder_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agents::ai_agent::canvas_title_generation_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agent:verify_task_completion':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-orchestration_agent: true
-triage_agent: false
-max_loops: 10
-masquerade_roles: {  }
+  'ai_agents::ai_agent::drupal_canvas_seo_agent':
+    prompt:
+      action: ''
+      hide_property: 0
+      values: ''
+    files:
+      action: ''
+      hide_property: 0
+      values: ''
 exclude_users_role: false
+masquerade_roles: {  }
 structured_output_enabled: false
 structured_output_schema: ''

@@ -6,6 +6,7 @@ dependencies:
     - field.storage.media.field_media_image
     - search_api.server.media_image_search
   module:
+    - canvas
     - file
     - media
 id: media_image_index_rag

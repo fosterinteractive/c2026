@@ -304,6 +304,14 @@ default_information_tools: |
     description: 'These are the Components available to use'
     tool: 'canvas_ai:get_component_context'
     parameters: {  }
+  webforms:
+    label: 'Available Webforms'
+    description: 'These are the available webforms, if the end user wants to use webforms, you should use one of these ids.'
+    tool: 'ai_agent:list_config_entities'
+    parameters:
+      entity_type: webform
+      fields:
+        - title
 tool_usage_limits:
   'canvas_ai:set_component_structure':
     component_structure:

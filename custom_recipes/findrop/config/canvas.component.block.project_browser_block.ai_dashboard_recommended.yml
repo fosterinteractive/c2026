@@ -3,6 +3,11 @@ status: true
 dependencies:
   module:
     - project_browser
+label: 'Recommended AI Recipes'
+id: block.project_browser_block.ai_dashboard_recommended
+source: block
+source_local_id: 'project_browser_block:ai_dashboard_recommended'
+provider: project_browser
 active_version: 016f5e9e845b293d
 versioned_properties:
   active:
@@ -19,8 +24,3 @@ versioned_properties:
         filters: null
     fallback_metadata:
       slot_definitions: null
-label: 'Recommended AI Recipes'
-id: block.project_browser_block.ai_dashboard_recommended
-provider: project_browser
-source: block
-source_local_id: 'project_browser_block:ai_dashboard_recommended'

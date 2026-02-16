@@ -11,8 +11,8 @@ dependencies:
   theme:
     - byte_theme
 id: byte_theme.header
-region: header
 theme: byte_theme
+region: header
 component_tree:
   0:
     uuid: f63929cf-c0a3-4ad1-9167-49c5f4261be5

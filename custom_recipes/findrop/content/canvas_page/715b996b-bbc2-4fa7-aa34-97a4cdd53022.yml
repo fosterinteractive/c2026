@@ -432,3 +432,50 @@ default:
   metatags:
     -
       value: '{"description":"[canvas_page:description]","title":"[canvas_page:title] | [site:name]"}'
+  schema_jsonld:
+    -
+      value: |-
+        {
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          "name": "Features",
+          "description": "Enterprise-grade finance software features: real-time expense tracking, effortless approval workflows, smart card controls, GDPR compliance, cyber security, ISO standards, encryption, and automation. Close your books in half the time.",
+          "image": {
+            "@type": "ImageObject",
+            "url": "/sites/default/files/2026-01/hero-image.jpg?alternateWidths=/sites/default/files/styles/canvas_parametrized_width--%7Bwidth%7D/public/2026-01/hero-image.jpg.avif%3Fitok%3DsGzt68j6",
+            "width": 1420,
+            "height": 731,
+            "caption": "Blue-green gradient graphic with glass effect"
+          },
+          "mainEntity": [
+            {
+              "@type": "Product",
+              "name": "Enterprise-grade finance software",
+              "description": "Track every dollar in real time. Real-time expense tracking, smart card controls, effortless approval workflows, GDPR compliance, cyber security, ISO standards, encryption, now with automation.",
+              "review": {
+                "@type": "Review",
+                "reviewBody": "Our team was always wondering where the money went! Until we found this product and it boosted our productivity by 1000%.",
+                "author": {
+                  "@type": "Person",
+                  "name": "Isiah Julio"
+                },
+                "reviewRating": {
+                  "@type": "Rating",
+                  "bestRating": "5",
+                  "ratingValue": "5",
+                  "worstRating": "1"
+                }
+              },
+              "featureList": [
+                "Real-time expense tracking",
+                "Effortless approval workflows",
+                "Smart card controls",
+                "GDPR compliance",
+                "Cyber security",
+                "ISO standards",
+                "Encryption",
+                "Automation"
+              ]
+            }
+          ]
+        }

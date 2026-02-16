@@ -14,6 +14,11 @@ dependencies:
     - options
   theme:
     - byte_theme
+label: 'Hero CTA'
+id: sdc.byte_theme.cta
+source: sdc
+source_local_id: 'byte_theme:cta'
+provider: byte_theme
 active_version: 3e24fb49e950d1db
 versioned_properties:
   active:
@@ -232,8 +237,3 @@ versioned_properties:
       slot_definitions:
         actions:
           title: Buttons
-label: 'Hero CTA'
-id: sdc.byte_theme.cta
-provider: byte_theme
-source: sdc
-source_local_id: 'byte_theme:cta'

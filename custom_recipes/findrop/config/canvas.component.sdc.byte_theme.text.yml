@@ -8,6 +8,11 @@ dependencies:
     - text
   theme:
     - byte_theme
+label: Text
+id: sdc.byte_theme.text
+source: sdc
+source_local_id: 'byte_theme:text'
+provider: byte_theme
 active_version: 16c79c28a4108f9b
 versioned_properties:
   active:
@@ -90,8 +95,3 @@ versioned_properties:
           expression: ℹ︎list_string␟value
     fallback_metadata:
       slot_definitions: {  }
-label: Text
-id: sdc.byte_theme.text
-provider: byte_theme
-source: sdc
-source_local_id: 'byte_theme:text'

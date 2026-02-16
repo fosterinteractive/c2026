@@ -1,0 +1,73 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - search_api.server.canvas_page_search
+  module:
+    - canvas
+    - node
+id: canvas_page_search_index
+name: 'Canvas Page Search Index'
+description: ''
+read_only: false
+field_settings:
+  rendered_item:
+    label: 'Rendered HTML output'
+    property_path: rendered_item
+    type: text
+    configuration:
+      roles:
+        - anonymous
+      view_mode:
+        'entity:canvas_page':
+          ':default': default
+          canvas_page: ':default'
+  title:
+    label: Title
+    datasource_id: 'entity:canvas_page'
+    property_path: title
+    type: string
+    dependencies:
+      module:
+        - canvas
+  url:
+    label: URI
+    property_path: search_api_url
+    type: string
+    configuration:
+      absolute: false
+datasource_settings:
+  'entity:canvas_page':
+    languages:
+      default: true
+      selected: {  }
+  'entity:node':
+    bundles:
+      default: true
+      selected: {  }
+    languages:
+      default: true
+      selected: {  }
+processor_settings:
+  add_url: {  }
+  aggregated_field: {  }
+  canvas_component_tree_inputs:
+    ignored_prop_names:
+      - class
+      - cssClasses
+      - extraClasses
+      - id
+  custom_value: {  }
+  entity_status: {  }
+  entity_type: {  }
+  language_with_fallback: {  }
+  rendered_item: {  }
+tracker_settings:
+  default:
+    indexing_order: fifo
+options:
+  cron_limit: 50
+  delete_on_fail: true
+  index_directly: true
+  track_changes_in_references: true
+server: canvas_page_search

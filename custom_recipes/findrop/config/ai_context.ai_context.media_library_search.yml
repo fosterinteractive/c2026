@@ -1,9 +1,0 @@
-langcode: en
-status: true
-dependencies: {  }
-id: media_library_search
-label: 'Media library search'
-description: ''
-content: "### Media Search Tool Guidelines\r\n\r\n* Search the media library using concise semantic keywords.\r\n* If the user did not specify images, infer suitable search terms based on the component and its content.\r\n* Choose images appropriate to the component type and context\r\n\r\n  * illustrations or icons for cards and feature blocks\r\n  * person photos for testimonials or team sections\r\n  * product or interface visuals for feature highlights\r\n  * contextual or lifestyle images for hero and banner sections\r\n* Perform enough searches to gather images for all components.\r\n* If results are poor, RETRY with semantically similar queries.\r\n* Select the most relevant results and use the returned media ID in props.\r\n* If results are insufficient, reuse appropriate image IDs.\r\n* Use default component images only if no suitable media items are found.\r\n"
-tags:
-  - '2'

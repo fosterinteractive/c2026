@@ -14,6 +14,11 @@ dependencies:
     - options
   theme:
     - byte_theme
+label: 'Image card'
+id: sdc.byte_theme.card
+source: sdc
+source_local_id: 'byte_theme:card'
+provider: byte_theme
 active_version: a8c96c629f8e368e
 versioned_properties:
   active:
@@ -319,8 +324,3 @@ versioned_properties:
           expression: ℹ︎boolean␟value
     fallback_metadata:
       slot_definitions: {  }
-label: 'Image card'
-id: sdc.byte_theme.card
-provider: byte_theme
-source: sdc
-source_local_id: 'byte_theme:card'

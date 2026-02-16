@@ -30,8 +30,8 @@ settings:
   height: 100%
   placement: toolbar
   show_structured_results: false
-  show_copy_icon: true
   collapse_minimal: false
   style_file: toolbar.yml
+  show_copy_icon: true
   verbose_mode: true
 visibility: {  }
