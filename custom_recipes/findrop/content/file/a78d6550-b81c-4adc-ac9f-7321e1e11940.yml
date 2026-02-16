@@ -4,6 +4,9 @@ _meta:
   uuid: a78d6550-b81c-4adc-ac9f-7321e1e11940
   default_langcode: en
 default:
+  uid:
+    -
+      target_id: 1
   filename:
     -
       value: christina-wocintechchat-com-m-SJvDxw0azqw-unsplash.jpg
@@ -15,7 +18,7 @@ default:
       value: image/jpeg
   filesize:
     -
-      value: 22616
+      value: 109468
   status:
     -
       value: false

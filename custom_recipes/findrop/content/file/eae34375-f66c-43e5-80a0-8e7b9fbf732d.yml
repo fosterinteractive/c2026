@@ -4,6 +4,9 @@ _meta:
   uuid: eae34375-f66c-43e5-80a0-8e7b9fbf732d
   default_langcode: en
 default:
+  uid:
+    -
+      target_id: 1
   filename:
     -
       value: willian-souza-p5BoBF0XJUA-unsplash.jpg
@@ -15,7 +18,7 @@ default:
       value: image/jpeg
   filesize:
     -
-      value: 13278
+      value: 60818
   status:
     -
       value: false

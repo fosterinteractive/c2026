@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ab9fb92f7a6d4ec77bf6f19a82902719",
+    "content-hash": "c4034a3435ea53bc685e78b26b621144",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -61,6 +61,67 @@
                 "source": "https://github.com/asm89/stack-cors/tree/v2.3.0"
             },
             "time": "2025-03-13T08:50:04+00:00"
+        },
+        {
+            "name": "caxy/php-htmldiff",
+            "version": "v0.1.17",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/caxy/php-htmldiff.git",
+                "reference": "194feb154e32f585dd2ca8ae6929a53abfcebf9e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/caxy/php-htmldiff/zipball/194feb154e32f585dd2ca8ae6929a53abfcebf9e",
+                "reference": "194feb154e32f585dd2ca8ae6929a53abfcebf9e",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "ext-mbstring": "*",
+                "ezyang/htmlpurifier": "^4.7",
+                "php": ">=7.3"
+            },
+            "require-dev": {
+                "doctrine/cache": "~1.0",
+                "phpunit/phpunit": "~9.0"
+            },
+            "suggest": {
+                "doctrine/cache": "Used for caching the calculated diffs using a Doctrine Cache Provider"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Caxy\\HtmlDiff": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Josh Schroeder",
+                    "email": "jschroeder@caxy.com",
+                    "homepage": "http://www.caxy.com"
+                }
+            ],
+            "description": "A library for comparing two HTML files/snippets and highlighting the differences using simple HTML.",
+            "homepage": "https://github.com/caxy/php-htmldiff",
+            "keywords": [
+                "diff",
+                "html"
+            ],
+            "support": {
+                "issues": "https://github.com/caxy/php-htmldiff/issues",
+                "source": "https://github.com/caxy/php-htmldiff/tree/v0.1.17"
+            },
+            "time": "2025-05-16T17:04:33+00:00"
         },
         {
             "name": "chi-teck/drupal-code-generator",
@@ -2004,60 +2065,6 @@
             }
         },
         {
-            "name": "drupal/ai_context",
-            "version": "0.1.0-alpha1",
-            "source": {
-                "type": "git",
-                "url": "https://git.drupalcode.org/project/ai_context.git",
-                "reference": "0.1.0-alpha1"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/ai_context-0.1.0-alpha1.zip",
-                "reference": "0.1.0-alpha1",
-                "shasum": "11c274d692e07ccb6805ffca4774029153ef9b04"
-            },
-            "require": {
-                "drupal/ai": "*",
-                "drupal/ai_agents": "*",
-                "drupal/core": "^10.3 || ^11"
-            },
-            "type": "drupal-module",
-            "extra": {
-                "drupal": {
-                    "version": "0.1.0-alpha1",
-                    "datestamp": "1765643106",
-                    "security-coverage": {
-                        "status": "not-covered",
-                        "message": "Alpha releases are not covered by Drupal security advisories."
-                    }
-                }
-            },
-            "notification-url": "https://packages.drupal.org/8/downloads",
-            "license": [
-                "GPL-2.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "ahmedjabar",
-                    "homepage": "https://www.drupal.org/user/3150677"
-                },
-                {
-                    "name": "kristen pol",
-                    "homepage": "https://www.drupal.org/user/8389"
-                },
-                {
-                    "name": "kurtfoster",
-                    "homepage": "https://www.drupal.org/user/403040"
-                }
-            ],
-            "description": "Provides site-specific AI context entities and dynamic routing for sub-agents.",
-            "homepage": "https://www.drupal.org/project/ai_context",
-            "support": {
-                "source": "https://git.drupalcode.org/project/ai_context"
-            }
-        },
-        {
             "name": "drupal/ai_dashboard",
             "version": "1.0.1",
             "source": {
@@ -3982,6 +3989,113 @@
             }
         },
         {
+            "name": "drupal/diff",
+            "version": "1.10.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/diff.git",
+                "reference": "8.x-1.10"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/diff-8.x-1.10.zip",
+                "reference": "8.x-1.10",
+                "shasum": "21398888a97071bfeb57bdc7128fcf6681da5358"
+            },
+            "require": {
+                "drupal/core": "^10 || ^11",
+                "mkalkbrenner/php-htmldiff-advanced": "~0.0.8",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "jangregor/phpstan-prophecy": "^1.0",
+                "mglaman/phpstan-drupal": "^1.2.10",
+                "phpstan/extension-installer": "^1.2",
+                "phpstan/phpstan": "^1.11",
+                "phpstan/phpstan-deprecation-rules": "*",
+                "phpstan/phpstan-phpunit": "1.4.x-dev",
+                "phpstan/phpstan-strict-rules": "^1@stable",
+                "previousnext/coding-standard": "1.0.1"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "8.x-1.10",
+                    "datestamp": "1768951091",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Miro Dietiker (miro_dietiker)",
+                    "homepage": "https://www.drupal.org/u/miro_dietiker",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Juampy NR (juampynr)",
+                    "homepage": "https://www.drupal.org/u/juampynr",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Lucian Hangea (lhangea)",
+                    "homepage": "https://www.drupal.org/u/lhangea",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Alan D.",
+                    "homepage": "https://www.drupal.org/u/alan-d.",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Brian Gilbert (realityloop).",
+                    "homepage": "https://www.drupal.org/u/realityloop",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Adam Bramley (acbramley)",
+                    "homepage": "https://www.drupal.org/u/acbramley",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "lhangea",
+                    "homepage": "https://www.drupal.org/user/2743803"
+                },
+                {
+                    "name": "miro_dietiker",
+                    "homepage": "https://www.drupal.org/user/227761"
+                },
+                {
+                    "name": "phenaproxima",
+                    "homepage": "https://www.drupal.org/user/205645"
+                },
+                {
+                    "name": "realityloop",
+                    "homepage": "https://www.drupal.org/user/139189"
+                },
+                {
+                    "name": "rötzi",
+                    "homepage": "https://www.drupal.org/user/73064"
+                },
+                {
+                    "name": "yhahn",
+                    "homepage": "https://www.drupal.org/user/264833"
+                }
+            ],
+            "description": "Compares two entity revisions",
+            "homepage": "https://www.drupal.org/project/diff",
+            "support": {
+                "source": "https://git.drupalcode.org/project/diff",
+                "issues": "https://www.drupal.org/project/issues/diff"
+            }
+        },
+        {
             "name": "drupal/drupal_cms_accessibility_tools",
             "version": "2.0.0",
             "source": {
@@ -4594,6 +4708,69 @@
             "homepage": "https://www.drupal.org/project/drupical",
             "support": {
                 "source": "https://git.drupalcode.org/project/drupical"
+            }
+        },
+        {
+            "name": "drupal/dynamic_entity_reference",
+            "version": "3.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/dynamic_entity_reference.git",
+                "reference": "3.2.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/dynamic_entity_reference-3.2.1.zip",
+                "reference": "3.2.1",
+                "shasum": "051c565f6580f512cbc7ddc3f49fdd6ba8d406af"
+            },
+            "require": {
+                "drupal/core": "^10 || ^11",
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "drupal/diff": "*",
+                "mglaman/phpstan-drupal": "^1.1",
+                "phpstan/phpstan": "^1.1",
+                "phpstan/phpstan-deprecation-rules": "^1.0"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "3.2.1",
+                    "datestamp": "1740521060",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Lee Rowlands",
+                    "homepage": "https://www.drupal.org/u/larowlan",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Jibran Ijaz",
+                    "homepage": "https://www.drupal.org/u/jibran",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "larowlan",
+                    "homepage": "https://www.drupal.org/user/395439"
+                }
+            ],
+            "description": "Provides a field that allows an entity-reference field to reference more than one entity type.",
+            "homepage": "http://drupal.org/project/dynamic_entity_reference",
+            "support": {
+                "source": "http://cgit.drupalcode.org/dynamic_entity_reference",
+                "issues": "http://drupal.org/project/dynamic_entity_reference",
+                "irc": "irc://irc.freenode.org/drupal-contribute"
             }
         },
         {
@@ -8366,6 +8543,67 @@
             "time": "2025-08-12T10:13:48+00:00"
         },
         {
+            "name": "ezyang/htmlpurifier",
+            "version": "v4.19.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ezyang/htmlpurifier.git",
+                "reference": "b287d2a16aceffbf6e0295559b39662612b77fcf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ezyang/htmlpurifier/zipball/b287d2a16aceffbf6e0295559b39662612b77fcf",
+                "reference": "b287d2a16aceffbf6e0295559b39662612b77fcf",
+                "shasum": ""
+            },
+            "require": {
+                "php": "~5.6.0 || ~7.0.0 || ~7.1.0 || ~7.2.0 || ~7.3.0 || ~7.4.0 || ~8.0.0 || ~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0 || ~8.5.0"
+            },
+            "require-dev": {
+                "cerdic/css-tidy": "^1.7 || ^2.0",
+                "simpletest/simpletest": "dev-master"
+            },
+            "suggest": {
+                "cerdic/css-tidy": "If you want to use the filter 'Filter.ExtractStyleBlocks'.",
+                "ext-bcmath": "Used for unit conversion and imagecrash protection",
+                "ext-iconv": "Converts text to and from non-UTF-8 encodings",
+                "ext-tidy": "Used for pretty-printing HTML"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "library/HTMLPurifier.composer.php"
+                ],
+                "psr-0": {
+                    "HTMLPurifier": "library/"
+                },
+                "exclude-from-classmap": [
+                    "/library/HTMLPurifier/Language/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "LGPL-2.1-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Edward Z. Yang",
+                    "email": "admin@htmlpurifier.org",
+                    "homepage": "http://ezyang.com"
+                }
+            ],
+            "description": "Standards compliant HTML filter written in PHP",
+            "homepage": "http://htmlpurifier.org/",
+            "keywords": [
+                "html"
+            ],
+            "support": {
+                "issues": "https://github.com/ezyang/htmlpurifier/issues",
+                "source": "https://github.com/ezyang/htmlpurifier/tree/v4.19.0"
+            },
+            "time": "2025-10-17T16:34:55+00:00"
+        },
+        {
             "name": "goalgorilla/rtseo.js",
             "version": "2.1.0",
             "source": {
@@ -9558,6 +9796,47 @@
                 "source": "https://github.com/mck89/peast/tree/v1.17.4"
             },
             "time": "2025-10-10T12:53:17+00:00"
+        },
+        {
+            "name": "mkalkbrenner/php-htmldiff-advanced",
+            "version": "0.0.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mkalkbrenner/php-htmldiff.git",
+                "reference": "3a714b48c9c3d3730baaf6d3949691e654cd37c9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mkalkbrenner/php-htmldiff/zipball/3a714b48c9c3d3730baaf6d3949691e654cd37c9",
+                "reference": "3a714b48c9c3d3730baaf6d3949691e654cd37c9",
+                "shasum": ""
+            },
+            "require": {
+                "caxy/php-htmldiff": ">=0.0.6",
+                "php": ">=5.5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/HtmlDiffAdvancedInterface.php",
+                    "src/HtmlDiffAdvanced.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GNU General Public License V2"
+            ],
+            "description": "An add-on for the php-htmldiff library for comparing two HTML files/snippets and highlighting the differences using simple HTML.",
+            "homepage": "https://github.com/mkalkbrenner/php-htmldiff",
+            "keywords": [
+                "diff",
+                "html"
+            ],
+            "support": {
+                "issues": "https://github.com/mkalkbrenner/php-htmldiff/issues",
+                "source": "https://github.com/mkalkbrenner/php-htmldiff/tree/master"
+            },
+            "time": "2016-07-25T17:07:32+00:00"
         },
         {
             "name": "mtownsend/xml-to-array",
@@ -14599,7 +14878,6 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "drupal/ai_context": 15,
         "drupal/ai_vdb_provider_milvus": 10,
         "drupal/webform": 10
     },

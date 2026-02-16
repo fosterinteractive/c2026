@@ -4,6 +4,9 @@ _meta:
   uuid: e9150010-d383-4b8d-bbcb-fa41eefeb695
   default_langcode: en
 default:
+  uid:
+    -
+      target_id: 1
   filename:
     -
       value: card-3.png
@@ -15,7 +18,7 @@ default:
       value: image/png
   filesize:
     -
-      value: 189331
+      value: 708350
   status:
     -
       value: false

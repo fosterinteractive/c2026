@@ -4,6 +4,9 @@ _meta:
   uuid: d56096be-e2db-479a-a110-2a320bfe3d45
   default_langcode: en
 default:
+  uid:
+    -
+      target_id: 1
   filename:
     -
       value: blog-2.jpg
@@ -15,7 +18,7 @@ default:
       value: image/jpeg
   filesize:
     -
-      value: 16962
+      value: 366398
   status:
     -
       value: false

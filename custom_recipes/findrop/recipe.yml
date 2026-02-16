@@ -50,7 +50,6 @@ install:
   - ai_chatbot
   - ai_search
   - ai_agents
-  - ai_context
   - ai_dashboard
   - ai_image_alt_text
   - ai_provider_amazeeio
@@ -61,8 +60,6 @@ install:
   - autosave_form
   - better_exposed_filters
   - bpmn_io
-  - canvas
-  - canvas_ai
   - captcha
   - checklistapi
   - coffee
@@ -132,12 +129,14 @@ install:
   - webform_ui
   - webform
   - yoast_seo
+  - canvas
+  - canvas_ai
+  - canvas_ai_seo
   - claro
   - canvas_stark
-  - easy_email_theme
   - byte_theme
+  - easy_email_theme
   - gin
-  - canvas_ai_seo
 recipes:
   - core/recipes/user_picture
 config:
@@ -501,13 +500,13 @@ config:
         is_admin: false
         permissions:
           - 'access content'
-          - 'use klaro'
-          - 'view media'
+          - 'access content'
           - 'access content'
           - 'use klaro'
-          - 'view media'
-          - 'access content'
           - 'use klaro'
+          - 'use klaro'
+          - 'view media'
+          - 'view media'
           - 'view media'
     user.role.authenticated:
       setProperties:
@@ -515,46 +514,46 @@ config:
         is_admin: false
         permissions:
           - 'access administration pages'
-          - 'access coffee'
-          - 'access content'
-          - 'access contextual links'
-          - 'access navigation'
-          - 'bypass honeypot protection'
-          - 'delete own files'
-          - 'skip CAPTCHA'
-          - 'use klaro'
-          - 'use text format webform_default'
-          - 'view media'
-          - 'view own unpublished content'
-          - 'view the administration theme'
-          - 'view welcome dashboard'
+          - 'access administration pages'
           - 'access administration pages'
           - 'access coffee'
-          - 'access content'
-          - 'access contextual links'
-          - 'access navigation'
-          - 'bypass honeypot protection'
-          - 'delete own files'
-          - 'skip CAPTCHA'
-          - 'use klaro'
-          - 'use text format webform_default'
-          - 'view media'
-          - 'view own unpublished content'
-          - 'view the administration theme'
-          - 'view welcome dashboard'
-          - 'access administration pages'
+          - 'access coffee'
           - 'access coffee'
           - 'access content'
+          - 'access content'
+          - 'access content'
+          - 'access contextual links'
+          - 'access contextual links'
           - 'access contextual links'
           - 'access navigation'
+          - 'access navigation'
+          - 'access navigation'
+          - 'bypass honeypot protection'
+          - 'bypass honeypot protection'
           - 'bypass honeypot protection'
           - 'delete own files'
+          - 'delete own files'
+          - 'delete own files'
+          - 'skip CAPTCHA'
+          - 'skip CAPTCHA'
           - 'skip CAPTCHA'
           - 'use klaro'
+          - 'use klaro'
+          - 'use klaro'
+          - 'use text format webform_default'
+          - 'use text format webform_default'
           - 'use text format webform_default'
           - 'view media'
+          - 'view media'
+          - 'view media'
+          - 'view own unpublished content'
+          - 'view own unpublished content'
           - 'view own unpublished content'
           - 'view the administration theme'
+          - 'view the administration theme'
+          - 'view the administration theme'
+          - 'view welcome dashboard'
+          - 'view welcome dashboard'
           - 'view welcome dashboard'
     user.settings:
       simpleConfigUpdate:

@@ -1,0 +1,10 @@
+uuid: 70ed3bd8-467f-4525-bc1c-031e8418b9c0
+langcode: en
+status: true
+dependencies: {  }
+name: Base
+configEntityTypeId: component
+weight: 0
+items:
+  - sdc.byte_theme.anchor
+  - sdc.byte_theme.blockquote

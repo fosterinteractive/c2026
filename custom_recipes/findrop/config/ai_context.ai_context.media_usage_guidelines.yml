@@ -1,9 +1,0 @@
-langcode: en
-status: true
-dependencies: {  }
-id: media_usage_guidelines
-label: 'Media usage guidelines'
-description: ''
-content: "### Media Usage Rules\r\n\r\n1. Identify the components planned for the page and check which require images.\r\n2. When a component supports media, use images from the media library by searching with the RAG tool.\r\n3. Run up to 3 semantically similar, context-relevant searches to find suitable images.\r\n4. If enough good images are found, assemble the components; if not, repeat searches once more, then reuse the best matches as needed.\r\n5. Always choose contextually appropriate images (eg: people for testimonials, illustrations for cards, product/UI for features) and never use default images."
-tags:
-  - '2'

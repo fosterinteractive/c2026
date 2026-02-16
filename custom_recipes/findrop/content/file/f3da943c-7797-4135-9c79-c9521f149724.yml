@@ -4,6 +4,9 @@ _meta:
   uuid: f3da943c-7797-4135-9c79-c9521f149724
   default_langcode: en
 default:
+  uid:
+    -
+      target_id: 1
   filename:
     -
       value: hero-image.jpg
@@ -15,7 +18,7 @@ default:
       value: image/jpeg
   filesize:
     -
-      value: 5701
+      value: 149554
   status:
     -
       value: false

@@ -4,6 +4,25 @@ dependencies: {  }
 id: canvas_page_builder_agent
 label: 'Drupal Canvas Page Builder Agent'
 description: 'This agent can insert one or many existing components or sections into a specific location on a page. Use this to place a previously created component or section on a layout or page. It is also capable of updating existing components present in the page like changing texts, appearances, position etc'
+default_information_tools: |
+  current_layout:
+    label: 'Current layout'
+    description: 'The current layout of the page is:'
+    tool: 'canvas_ai:get_current_layout'
+    parameters: {  }
+  available_components:
+    label: 'Available components'
+    description: 'These are the Components available to use'
+    tool: 'canvas_ai:get_component_context'
+    parameters: {  }
+  webforms:
+    label: 'Available Webforms'
+    description: 'These are the available webforms, if the end user wants to use webforms, you should use one of these ids.'
+    tool: 'ai_agent:list_config_entities'
+    parameters:
+      entity_type: webform
+      fields:
+        - title
 system_prompt: |-
   ### **1. Persona and Core Mission**
 
@@ -253,65 +272,6 @@ tools:
   'canvas_ai:get_metadata_of_components': true
   'canvas_ai:move_component_in_page': true
   'ai_search:rag_search': true
-tool_settings:
-  'canvas_ai:set_component_structure':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'canvas_ai:update_component_data':
-    return_directly: 0
-    require_usage: 0
-    description_override: "Updates the prop (field) values of an existing component that is already placed on the page. Use this ONLY for components that already exist on the page (i.e., components that have a UUID in the current layout). Do NOT use this tool to add new components — use `set_component_structure` instead. Accepts a `component_uuid` and a `prop_values` YAML string. Call this tool ONCE per component — include ALL props that need to change in a single YAML string. Do not include props that don't need change. For image prop updates, set the prop value to the media ID of the desired image (e.g., `featured_image: 42`)."
-    progress_message: ''
-    use_artifacts: 0
-  'canvas_ai:get_component_content':
-    return_directly: 0
-    require_usage: 0
-    description_override: "- Retrieves the current prop (field) values of a component and its child components already placed on the page.\r\n- Returns the data as YAML, including all existing prop values (for example: heading_text, background_color, text, level, etc.).\r\n- If no UUID is provided, it returns the entire page content.\r\n- You MUST call this tool before using update_component_data to inspect the current state and make precise changes without overwriting unrelated props.\r\n- Accepts a component_uuid."
-    progress_message: ''
-    use_artifacts: 0
-  'canvas_ai:get_metadata_of_components':
-    return_directly: 0
-    require_usage: 0
-    description_override: 'Retrieves the full metadata (props, slots, default values, enums, descriptions) for specific components. Accepts an array of `component_ids`. The Available Components Catalog only provides name, id, and description — you MUST use this tool to get the complete prop and slot definitions before adding any component. Always request metadata for all components you plan to use (including child components for slots) in a single call to minimize round-trips.'
-    progress_message: ''
-    use_artifacts: 0
-  'canvas_ai:move_component_in_page':
-    return_directly: 0
-    require_usage: 0
-    description_override: 'Moves an existing component to a new location on the page. Accepts `component_uuid` (required) and either: (a) `region` — to move the component into an empty region that has no child components (do not provide `reference_uuid` or `placement` in this case), or (b) `reference_uuid` + `placement` (`above` or `below`) — to position the component relative to another existing component (do not provide `region` in this case). Call this tool once per component movement.'
-    progress_message: ''
-    use_artifacts: 0
-  'ai_search:rag_search':
-    return_directly: 0
-    require_usage: 0
-    description_override: "Use this tool to semantically search the site’s media library. It queries a vector index built from vision-generated image descriptions.\r\nProvide concise, relevant keywords describing the desired image. Review the returned results and select the most appropriate media item, then use its media ID in the component.\r\nIf no suitable result is found, refine and retry with a semantically similar query."
-    progress_message: ''
-    use_artifacts: 0
-orchestration_agent: false
-triage_agent: false
-max_loops: 30
-default_information_tools: |
-  current_layout:
-    label: 'Current layout'
-    description: 'The current layout of the page is:'
-    tool: 'canvas_ai:get_current_layout'
-    parameters: {  }
-  available_components:
-    label: 'Available components'
-    description: 'These are the Components available to use'
-    tool: 'canvas_ai:get_component_context'
-    parameters: {  }
-  webforms:
-    label: 'Available Webforms'
-    description: 'These are the available webforms, if the end user wants to use webforms, you should use one of these ids.'
-    tool: 'ai_agent:list_config_entities'
-    parameters:
-      entity_type: webform
-      fields:
-        - title
 tool_usage_limits:
   'canvas_ai:set_component_structure':
     component_structure:
@@ -374,7 +334,47 @@ tool_usage_limits:
       hide_property: 1
       values:
         - '0.2'
-exclude_users_role: false
+tool_settings:
+  'canvas_ai:set_component_structure':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'canvas_ai:update_component_data':
+    return_directly: 0
+    require_usage: 0
+    description_override: "Updates the prop (field) values of an existing component that is already placed on the page. Use this ONLY for components that already exist on the page (i.e., components that have a UUID in the current layout). Do NOT use this tool to add new components — use `set_component_structure` instead. Accepts a `component_uuid` and a `prop_values` YAML string. Call this tool ONCE per component — include ALL props that need to change in a single YAML string. Do not include props that don't need change. For image prop updates, set the prop value to the media ID of the desired image (e.g., `featured_image: 42`)."
+    progress_message: ''
+    use_artifacts: 0
+  'canvas_ai:get_component_content':
+    return_directly: 0
+    require_usage: 0
+    description_override: "- Retrieves the current prop (field) values of a component and its child components already placed on the page.\r\n- Returns the data as YAML, including all existing prop values (for example: heading_text, background_color, text, level, etc.).\r\n- If no UUID is provided, it returns the entire page content.\r\n- You MUST call this tool before using update_component_data to inspect the current state and make precise changes without overwriting unrelated props.\r\n- Accepts a component_uuid."
+    progress_message: ''
+    use_artifacts: 0
+  'canvas_ai:get_metadata_of_components':
+    return_directly: 0
+    require_usage: 0
+    description_override: 'Retrieves the full metadata (props, slots, default values, enums, descriptions) for specific components. Accepts an array of `component_ids`. The Available Components Catalog only provides name, id, and description — you MUST use this tool to get the complete prop and slot definitions before adding any component. Always request metadata for all components you plan to use (including child components for slots) in a single call to minimize round-trips.'
+    progress_message: ''
+    use_artifacts: 0
+  'canvas_ai:move_component_in_page':
+    return_directly: 0
+    require_usage: 0
+    description_override: 'Moves an existing component to a new location on the page. Accepts `component_uuid` (required) and either: (a) `region` — to move the component into an empty region that has no child components (do not provide `reference_uuid` or `placement` in this case), or (b) `reference_uuid` + `placement` (`above` or `below`) — to position the component relative to another existing component (do not provide `region` in this case). Call this tool once per component movement.'
+    progress_message: ''
+    use_artifacts: 0
+  'ai_search:rag_search':
+    return_directly: 0
+    require_usage: 0
+    description_override: "Use this tool to semantically search the site’s media library. It queries a vector index built from vision-generated image descriptions.\r\nProvide concise, relevant keywords describing the desired image. Review the returned results and select the most appropriate media item, then use its media ID in the component.\r\nIf no suitable result is found, refine and retry with a semantically similar query."
+    progress_message: ''
+    use_artifacts: 0
+orchestration_agent: false
+triage_agent: false
+max_loops: 30
 masquerade_roles: {  }
+exclude_users_role: false
 structured_output_enabled: false
 structured_output_schema: ''

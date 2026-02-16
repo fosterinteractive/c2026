@@ -4,6 +4,12 @@ dependencies: {  }
 id: drupal_canvas_seo_agent
 label: 'Drupal Canvas SEO Agent'
 description: 'Analyzes page content to create valid Schema.org structured data and, when requested, adds relevant internal links to improve SEO and content discoverability.'
+default_information_tools: |
+  page_contents:
+    label: 'Contents of the page'
+    description: 'Contents of the page'
+    tool: 'canvas_ai:get_component_content'
+    parameters: {  }
 system_prompt: |-
   You are an AI agent that analyzes provided page content and responds based on the user's request.
 
@@ -124,34 +130,6 @@ tools:
   'ai_agent:add_schema_org_json': true
   'ai_agents::ai_agent::canvas_page_builder_agent': true
   'ai_search:rag_search': true
-tool_settings:
-  'ai_agent:add_schema_org_json':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agents::ai_agent::canvas_page_builder_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_search:rag_search':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-orchestration_agent: false
-triage_agent: false
-max_loops: 10
-default_information_tools: |
-  page_contents:
-    label: 'Contents of the page'
-    description: 'Contents of the page'
-    tool: 'canvas_ai:get_component_content'
-    parameters: {  }
 tool_usage_limits:
   'ai_agent:add_schema_org_json':
     schema_org_data:
@@ -186,7 +164,29 @@ tool_usage_limits:
       hide_property: 1
       values:
         - '0.3'
-exclude_users_role: false
+tool_settings:
+  'ai_agent:add_schema_org_json':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agents::ai_agent::canvas_page_builder_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_search:rag_search':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+orchestration_agent: false
+triage_agent: false
+max_loops: 10
 masquerade_roles: {  }
+exclude_users_role: false
 structured_output_enabled: false
 structured_output_schema: ''

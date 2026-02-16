@@ -4,6 +4,9 @@ _meta:
   uuid: c7565eb0-35fb-4a9a-af44-4b401e63a927
   default_langcode: en
 default:
+  uid:
+    -
+      target_id: 1
   filename:
     -
       value: person_3.png
@@ -15,7 +18,7 @@ default:
       value: image/png
   filesize:
     -
-      value: 22123
+      value: 22623
   status:
     -
       value: false

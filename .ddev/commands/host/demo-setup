@@ -16,6 +16,14 @@ else
   echo "Can't find canvas module at web/modules/contrib/canvas"
 fi
 
+# Replace ai_context in contrib with the latest from Drupal git.
+if [ -d "web/modules/contrib/ai_context" ]; then
+  echo "Deleting existing ai_context module from contrib: web/modules/contrib/ai_context"
+  rm -rf web/modules/contrib/ai_context
+fi
+echo "Cloning the latest version of ai_context module into web/modules/contrib/ai_context"
+git clone git@git.drupal.org:project/ai_context.git web/modules/contrib/ai_context
+
 ddev drush si ../custom_recipes/findrop -y
 
 if [ -d "web/modules/custom/canvas" ]; then

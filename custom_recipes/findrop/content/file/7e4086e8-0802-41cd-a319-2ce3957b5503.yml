@@ -4,6 +4,9 @@ _meta:
   uuid: 7e4086e8-0802-41cd-a319-2ce3957b5503
   default_langcode: en
 default:
+  uid:
+    -
+      target_id: 1
   filename:
     -
       value: vitaly-gariev-n2ZAk3UkIwg-unsplash.jpg
@@ -15,7 +18,7 @@ default:
       value: image/jpeg
   filesize:
     -
-      value: 18991
+      value: 236989
   status:
     -
       value: false

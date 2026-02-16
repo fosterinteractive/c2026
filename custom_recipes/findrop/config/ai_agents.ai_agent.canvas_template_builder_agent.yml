@@ -4,6 +4,25 @@ dependencies: {  }
 id: canvas_template_builder_agent
 label: 'Drupal Canvas Template Builder Agent'
 description: 'This tool specializes in building complete web pages by assembling available components into a cohesive layout. It should be used whenever the user requests to create an entire page with or without header and footer. For example, “Create a landing page for a university website” or “Build a landing page template for a cookie shop. Add a header and footer” etc.'
+default_information_tools: |
+  current_layout:
+    label: 'Current layout'
+    description: 'The current layout of the page is:'
+    tool: 'canvas_ai:get_current_layout'
+    parameters: {  }
+  available_components:
+    label: 'Available components'
+    description: 'These are the Components available to use'
+    tool: 'canvas_ai:get_component_context'
+    parameters: {  }
+  webforms:
+    label: 'Available Webforms'
+    description: 'These are the available webforms, if the end user wants to use webforms, you should use one of these ids.'
+    tool: 'ai_agent:list_config_entities'
+    parameters:
+      entity_type: webform
+      fields:
+        - title
 system_prompt: |-
   You are an AI assistant specialized in Drupal Canvas. Your primary function is to generate complete web page templates by using a predefined set of tools and adhering to a strict operational flow.
 
@@ -139,47 +158,6 @@ tools:
   'canvas_ai:set_template_data': true
   'canvas_ai:get_metadata_of_components': true
   'ai_search:rag_search': true
-tool_settings:
-  'canvas_ai:set_template_data':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'canvas_ai:get_metadata_of_components':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_search:rag_search':
-    return_directly: 0
-    require_usage: 0
-    description_override: "Use this tool to semantically search the site’s media library. It queries a vector index built from vision-generated image descriptions.\r\nProvide concise, relevant keywords describing the desired image. Review the returned results and select the most appropriate media item, then use its media ID in the component.\r\nIf no suitable result is found, refine and retry with a semantically similar query."
-    progress_message: ''
-    use_artifacts: 0
-orchestration_agent: false
-triage_agent: false
-max_loops: 10
-default_information_tools: |
-  current_layout:
-    label: 'Current layout'
-    description: 'The current layout of the page is:'
-    tool: 'canvas_ai:get_current_layout'
-    parameters: {  }
-  available_components:
-    label: 'Available components'
-    description: 'These are the Components available to use'
-    tool: 'canvas_ai:get_component_context'
-    parameters: {  }
-  webforms:
-    label: 'Available Webforms'
-    description: 'These are the available webforms, if the end user wants to use webforms, you should use one of these ids.'
-    tool: 'ai_agent:list_config_entities'
-    parameters:
-      entity_type: webform
-      fields:
-        - title
 tool_usage_limits:
   'canvas_ai:set_template_data':
     component_structure:
@@ -211,7 +189,29 @@ tool_usage_limits:
       hide_property: 1
       values:
         - '0.2'
-exclude_users_role: false
+tool_settings:
+  'canvas_ai:set_template_data':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'canvas_ai:get_metadata_of_components':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_search:rag_search':
+    return_directly: 0
+    require_usage: 0
+    description_override: "Use this tool to semantically search the site’s media library. It queries a vector index built from vision-generated image descriptions.\r\nProvide concise, relevant keywords describing the desired image. Review the returned results and select the most appropriate media item, then use its media ID in the component.\r\nIf no suitable result is found, refine and retry with a semantically similar query."
+    progress_message: ''
+    use_artifacts: 0
+orchestration_agent: false
+triage_agent: false
+max_loops: 10
 masquerade_roles: {  }
+exclude_users_role: false
 structured_output_enabled: false
 structured_output_schema: ''
