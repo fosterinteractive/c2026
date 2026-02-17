@@ -9,6 +9,7 @@ ddev start
 ddev composer install
 
 # Remove the canvas module from contrib. Use the one under custom modules.
+# @todo: Replace with a patch.
 if [ -d "web/modules/contrib/canvas" ]; then
   echo "Deleting canvas module from contrib: web/modules/contrib/canvas"
   rm -rf web/modules/contrib/canvas
@@ -16,15 +17,18 @@ else
   echo "Can't find canvas module at web/modules/contrib/canvas"
 fi
 
-# Replace ai_context in contrib with the latest from Drupal git.
+ddev drush si ../custom_recipes/findrop -y
+
+# AI context module has a dependncy on ECA ^2.0. BUt Drupal CMS 2 requires ECA ^3.
+# So clone AI Context module from its repo and setup separately.
 if [ -d "web/modules/contrib/ai_context" ]; then
   echo "Deleting existing ai_context module from contrib: web/modules/contrib/ai_context"
   rm -rf web/modules/contrib/ai_context
 fi
 echo "Cloning the latest version of ai_context module into web/modules/contrib/ai_context"
 git clone git@git.drupal.org:project/ai_context.git web/modules/contrib/ai_context
-
-ddev drush si ../custom_recipes/findrop -y
+ddev drush en ai_context -y
+ddev drush recipe ../custom_recipes/ai_context_setup
 
 if [ -d "web/modules/custom/canvas" ]; then
   pushd web/modules/custom/canvas > /dev/null

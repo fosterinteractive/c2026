@@ -1,0 +1,40 @@
+_meta:
+  version: '1.0'
+  entity_type: ai_context_item
+  uuid: 7e13a0db-e8a0-43ca-8754-61dbb0b3d5a4
+  bundle: default
+  default_langcode: en
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  label:
+    -
+      value: 'FinDrop Target Personas Context'
+  description:
+    -
+      value: 'Defines the four primary target user personas for page generation.'
+      format: plain_text
+  purpose:
+    -
+      value: 'Defines the four primary target user personas for page generation.'
+      format: plain_text
+  content:
+    -
+      value: "### Primary Personas (Confirmation Required)\r\n\r\nFor page generation requests, before executing any sub agents:\r\n\r\n1. List the available personas (Only name).\r\n2. Ask the user to choose the target persona.\r\n3. **Do not generate the page until confirmed.**\r\n4. Pass the selected persona as context to the sub-agent.\r\n5. If none is chosen, prompt again.\r\n\r\n**Personas**\r\n\r\n* **Controllers & Finance Managers** - need spend visibility; struggle with manual tracking.\r\n* **Staff Accountants & AP Teams** - need to remove manual processing; face reconciliation bottlenecks.\r\n* **Project Managers** - need real-time expense tracking; risk budget overruns.\r\n* **IT & Ops Teams** - need subscription/vendor control; face unauthorized spend."
+      format: plain_text
+  is_global:
+    -
+      value: false
+  revision_translation_affected:
+    -
+      value: true
+  moderation_state:
+    -
+      value: published

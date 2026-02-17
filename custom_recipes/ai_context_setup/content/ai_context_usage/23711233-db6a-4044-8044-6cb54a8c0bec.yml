@@ -1,0 +1,25 @@
+_meta:
+  version: '1.0'
+  entity_type: ai_context_usage
+  uuid: 23711233-db6a-4044-8044-6cb54a8c0bec
+  depends:
+    7e13a0db-e8a0-43ca-8754-61dbb0b3d5a4: ai_context_item
+default:
+  context_item_id:
+    -
+      entity: 7e13a0db-e8a0-43ca-8754-61dbb0b3d5a4
+  agent_id:
+    -
+      value: canvas_ai_orchestrator
+  target_entity_type:
+    -
+      value: canvas_page
+  target_entity_id:
+    -
+      value: 9
+  runner_id:
+    -
+      value: e2c424f7-6d31-4918-a2b9-5a9b4471634b
+  routes:
+    -
+      value: '["\/admin\/api\/canvas\/ai"]'

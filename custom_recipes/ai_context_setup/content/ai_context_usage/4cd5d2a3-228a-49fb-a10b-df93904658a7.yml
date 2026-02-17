@@ -1,0 +1,28 @@
+_meta:
+  version: '1.0'
+  entity_type: ai_context_usage
+  uuid: 4cd5d2a3-228a-49fb-a10b-df93904658a7
+  depends:
+    76d82c2c-5fa4-449d-8145-ce44562cbd21: ai_context_item
+default:
+  context_item_id:
+    -
+      entity: 76d82c2c-5fa4-449d-8145-ce44562cbd21
+  agent_id:
+    -
+      value: canvas_template_builder_agent
+  target_entity_type:
+    -
+      value: canvas_page
+  target_entity_id:
+    -
+      value: 9
+  runner_id:
+    -
+      value: 58ec606f-80bb-472b-a5c6-b98146b0c482
+  tools_used:
+    -
+      value: '["canvas_ai:set_template_data"]'
+  routes:
+    -
+      value: '["\/admin\/api\/canvas\/ai"]'
