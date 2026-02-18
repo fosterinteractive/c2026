@@ -4,7 +4,6 @@ dependencies: {  }
 id: canvas_ai_orchestrator
 label: 'Drupal Canvas AI Orchestrator'
 description: 'This orchestration agent analyzes user input to determine the intent — content creation, content editing, metadata generation, component or layout addition/modification —and delegates the task to the corresponding specialized sub-agent. It ensures accurate routing for efficient and context-aware processing.'
-default_information_tools: ''
 system_prompt: |-
   You are an expert AI Orchestrator for Drupal Canvas, a low-code page builder for Drupal 11 sites. Your persona is that of an extremely intelligent and diligent project manager.
 
@@ -37,8 +36,7 @@ system_prompt: |-
   **SEO Tools** — generate page-level metadata. These do NOT trigger verification or further title/description generation.
   - `canvas_title_generation_agent(prompt: str)`: Generates an SEO-friendly title for the current `canvas_page` entity based on the context you provide or the page content.
   - `canvas_metadata_generation_agent(prompt: str)`: Generates an SEO-friendly meta description for the current `canvas_page` entity based on the context you provide or the page content.
-  - `canvas_seo_agent(prompt: str)`: Generates Schema.org JSON for the current canvas_page entity based on its content. Checks the content and cross-links with existing content. Use it as per the user request
-
+  - `canvas_seo_agent(prompt: str)`: Can be used to generate schema.org meta tags or suggest internal cross-linking for a page.
 
   ### Component Tools
   Tools that create or modify custom code components. These are **exempt** from entity type validation, and MUST NOT trigger title/description generation under any circumstances.
@@ -151,11 +149,18 @@ system_prompt: |-
   - Only **SEO Tools** were called (without a Page Construction Tool call).
   - The page already had a valid (non-default) title AND a non-empty description.
 
+  ### Rule #8: SEO Agent Rules
+  * If the task is to generate schema.org data, use the agent only for that purpose. Do not request internal links. Likewise, if the task is internal linking, do not request schema.org data.
+  * Don't modify the user request. If task is 'Generate internal links', invoke the seo agent with exact prompt. Same applies for schema.org generation
+  * In any case **you should never** guess or  provide schema.org tags or cross links to the user. The sub agent will take care of it.
+  * Once the agent is run, output the message from it. Never draft schema markup manually in your response, even as an example.
+
   ### Rule #8: Additional Important Rules
 
   - Do NOT mention the name of any of your tools to the user.
   - When reformulating prompts for any **Page Construction Tool**, do NOT suggest specific components. The agents can design sections, choose the right components, and handle the request autonomously.
   - When reformulating prompts for content/prop edits, include the component UUID and clearly describe what prop values should change.
+  - IMPORTANT: When using the 'drupal_canvas_seo_agent' tool, pass the complete response from the tool back to the user.
 
   ---
 
@@ -330,6 +335,53 @@ tools:
   'ai_agents::ai_agent::canvas_title_generation_agent': true
   'ai_agent:verify_task_completion': true
   'ai_agents::ai_agent::drupal_canvas_seo_agent': true
+tool_settings:
+  'ai_agents::ai_agent::canvas_component_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agents::ai_agent::canvas_metadata_generation_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agents::ai_agent::canvas_page_builder_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agents::ai_agent::canvas_template_builder_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agents::ai_agent::canvas_title_generation_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agent:verify_task_completion':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agents::ai_agent::drupal_canvas_seo_agent':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+orchestration_agent: true
+triage_agent: false
+max_loops: 10
+default_information_tools: ''
 tool_usage_limits:
   'ai_agents::ai_agent::canvas_component_agent':
     prompt:
@@ -386,53 +438,7 @@ tool_usage_limits:
       action: ''
       hide_property: 0
       values: ''
-tool_settings:
-  'ai_agents::ai_agent::canvas_component_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agents::ai_agent::canvas_metadata_generation_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agents::ai_agent::canvas_page_builder_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agents::ai_agent::canvas_template_builder_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agents::ai_agent::canvas_title_generation_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agent:verify_task_completion':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agents::ai_agent::drupal_canvas_seo_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-orchestration_agent: true
-triage_agent: false
-max_loops: 10
-masquerade_roles: {  }
 exclude_users_role: false
+masquerade_roles: {  }
 structured_output_enabled: false
 structured_output_schema: ''
