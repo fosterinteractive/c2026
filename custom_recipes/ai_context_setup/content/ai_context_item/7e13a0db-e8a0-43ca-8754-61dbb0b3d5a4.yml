@@ -27,7 +27,7 @@ default:
       format: plain_text
   content:
     -
-      value: "### Primary Personas (Confirmation Required)\r\n\r\nFor page generation requests, before executing any sub agents:\r\n\r\n1. List the available personas (Only name).\r\n2. Ask the user to choose the target persona.\r\n3. **Do not generate the page until confirmed.**\r\n4. Pass the selected persona as context to the sub-agent.\r\n5. If none is chosen, prompt again.\r\n\r\n**Personas**\r\n\r\n* **Controllers & Finance Managers** - need spend visibility; struggle with manual tracking.\r\n* **Staff Accountants & AP Teams** - need to remove manual processing; face reconciliation bottlenecks.\r\n* **Project Managers** - need real-time expense tracking; risk budget overruns.\r\n* **IT & Ops Teams** - need subscription/vendor control; face unauthorized spend."
+      value: "### Primary Personas (Confirmation Required)\r\n\r\nFor tasks to generate a complete page, before executing any sub agents:\r\n\r\n1. List the available personas (Only name).\r\n2. Ask the user to choose the target persona.\r\n3. **Do not generate the page until confirmed.**\r\n4. Pass the selected persona as context to the sub-agent.\r\n5. If none is chosen, prompt again.\r\n\r\n**Personas**\r\n\r\n* **Controllers & Finance Managers** - need spend visibility; struggle with manual tracking.\r\n* **Staff Accountants & AP Teams** - need to remove manual processing; face reconciliation bottlenecks.\r\n* **Project Managers** - need real-time expense tracking; risk budget overruns.\r\n* **IT & Ops Teams** - need subscription/vendor control; face unauthorized spend."
       format: plain_text
   is_global:
     -

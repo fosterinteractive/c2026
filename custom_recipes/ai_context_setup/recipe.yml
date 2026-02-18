@@ -10,19 +10,20 @@ config:
             id: canvas_template_builder_agent
             context_items: {  }
             always_include:
-              - '1'
               - '2'
               - '3'
+              - '4'
           -
             id: canvas_page_builder_agent
             context_items: {  }
             always_include:
               - '2'
+              - '3'
           -
             id: canvas_ai_orchestrator
             context_items: {  }
             always_include:
-              - '4'
+              - '1'
     ai_context.settings:
       simpleConfigUpdate:
         max_tokens: 10000

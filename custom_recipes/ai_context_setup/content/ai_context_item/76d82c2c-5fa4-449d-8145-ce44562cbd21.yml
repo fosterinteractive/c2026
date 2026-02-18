@@ -27,7 +27,7 @@ default:
       format: plain_text
   content:
     -
-      value: "# Media Usage Rules\r\n\r\n1. Identify the components planned for the page and check which require images.\r\n2. When a component supports media, use images from the media library by searching with the RAG tool.\r\n3. Run up to 3 semantically similar, context-relevant searches to find suitable images.\r\n4. If enough good images are found, assemble the components; if not, repeat searches once more, then reuse the best matches as needed.\r\n5. Always choose contextually appropriate images (eg: people for testimonials, illustrations for cards, product/UI for features) and never use default images."
+      value: "# Media Usage Rules\r\n\r\n1. Identify the components planned for the page and check which require images.\r\n2. When a component supports media, use images from the media library by searching with the RAG tool.\r\n3. **Repeat**: If the previous search yielded insufficient results, try once more with a different keyword. You can repeat this upto 3 times.\r\n4. If enough good images are found, assemble the components; if not, repeat searches once more in the next loop, then reuse the best matches as needed.\r\n5. Always choose contextually appropriate images (eg: people for testimonials, illustrations for cards, product/UI for features) and never use default images.\r\n6. In final response, briefly mention the nature of images used (Eg: Illustrations for cards). Ask if any update is needed to the generated template"
       format: plain_text
   is_global:
     -
