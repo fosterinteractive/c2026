@@ -3,6 +3,7 @@
 namespace Drupal\canvas_ai;
 
 use Drupal\canvas\Component\Schema\PropMetadataNormalizer;
+use Drupal\canvas\Plugin\Canvas\ComponentSource\BlockComponent;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\NestedArray;
@@ -301,13 +302,8 @@ class CanvasAiPageBuilderHelper {
       elseif ($source === JsComponent::SOURCE_PLUGIN_ID) {
         $this->processCodeComponents($component, $output, $available_components[$component_id]);
       }
-      else {
-        // Other sources: id, name, description (description = name)
-        $output[$source]['components'][$component_id] = [
-          'id' => $component_id,
-          'name' => $component->label(),
-          'description' => $component->label(),
-        ];
+      elseif ($source === BlockComponent::SOURCE_PLUGIN_ID) {
+        $this->processBlock($component, $output);
       }
     }
     $response_cacheability = $available_components_response->getCacheableMetadata();
@@ -630,6 +626,38 @@ class CanvasAiPageBuilderHelper {
           'description' => $slot_name,
         ];
       }
+    }
+  }
+
+  /**
+   * Create the context data for Block components.
+   *
+   * @param \Drupal\canvas\Entity\Component $component
+   *   The component entity.
+   * @param array &$output
+   *   The output array to store the Block component data.
+   */
+  public function processBlock(Component $component, array &$output): void {
+    $component_source = $component->getComponentSource();
+    assert($component_source instanceof BlockComponent);
+    // Get block default props. This returns an array keyed with prop names and
+    // their default values.
+    $block_props = $component_source->getDefaultExplicitInput();
+    $component_id = $component->id();
+    $component_name = $component->label();
+    $output[BlockComponent::SOURCE_PLUGIN_ID]['components'][$component_id] = [
+      'id' => $component_id,
+      'name' => $component_name,
+      'description' => $component_name,
+    ];
+
+    foreach ($block_props as $prop_name => $default_value) {
+      $output[BlockComponent::SOURCE_PLUGIN_ID]['components'][$component_id]['props'][$prop_name] = [
+        'name' => $prop_name,
+        'description' => $prop_name,
+        'type' => gettype($default_value),
+        'default' => $default_value,
+      ];
     }
   }
 
@@ -1370,7 +1398,7 @@ class CanvasAiPageBuilderHelper {
 
       // Add page title.
       if (empty($prompt['page_title']) || $prompt['page_title'] === 'Untitled page') {
-        $base_message .= 'Page title is empty. GENERATE THE TITLE FOR THE PAGE using canvas_title_generation_agent. This is a **CRITICAL** step to ensure that request is successful. ';
+        $base_message .= 'Page title is empty.';
       }
       else {
         $base_message .= 'Page title: ' . $prompt['page_title'] . '. ';
@@ -1381,7 +1409,7 @@ class CanvasAiPageBuilderHelper {
         $base_message .= 'Page description: ' . $prompt['page_description'];
       }
       else {
-        $base_message .= 'Page description is empty. GENERATE THE DESCRIPTION FOR THE PAGE using canvas_metadata_generation_agent. This is a **CRITICAL** step to ensure that request is successful.';
+        $base_message .= 'Page description is empty.';
       }
 
       return $base_message;
