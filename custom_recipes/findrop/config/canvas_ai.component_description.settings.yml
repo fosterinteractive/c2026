@@ -21,16 +21,74 @@ component_context:
         id: block.events_block
         name: 'Events Feed'
         description: 'Events Feed'
+        props:
+          label:
+            name: label
+            description: label
+            type: string
+            default: 'Drupal Events and User Groups'
+          label_display:
+            name: label_display
+            description: label_display
+            type: string
+            default: visible
         detailed_description: 'Events Feed'
       block.project_browser_block.ai_dashboard_recommended:
         id: block.project_browser_block.ai_dashboard_recommended
         name: 'Recommended AI Recipes'
         description: 'Recommended AI Recipes'
+        props:
+          paginate:
+            name: paginate
+            description: paginate
+            type: boolean
+            default: true
+          page_sizes:
+            name: page_sizes
+            description: page_sizes
+            type: string
+            default: '12, 24, 36, 48'
+          sort_options:
+            name: sort_options
+            description: sort_options
+            type: 'NULL'
+            default: null
+          default_sort:
+            name: default_sort
+            description: default_sort
+            type: 'NULL'
+            default: null
+          filters:
+            name: filters
+            description: filters
+            type: 'NULL'
+            default: null
         detailed_description: 'Recommended AI Recipes'
       block.system_branding_block:
         id: block.system_branding_block
         name: 'Site branding'
         description: 'Site branding'
+        props:
+          use_site_logo:
+            name: use_site_logo
+            description: use_site_logo
+            type: boolean
+            default: true
+          use_site_name:
+            name: use_site_name
+            description: use_site_name
+            type: boolean
+            default: true
+          use_site_slogan:
+            name: use_site_slogan
+            description: use_site_slogan
+            type: boolean
+            default: true
+          label_display:
+            name: label_display
+            description: label_display
+            type: string
+            default: '0'
         detailed_description: 'Site branding'
       block.system_breadcrumb_block:
         id: block.system_breadcrumb_block
@@ -41,51 +99,181 @@ component_context:
         id: block.system_menu_block.footer
         name: Footer
         description: Footer
+        props:
+          level:
+            name: level
+            description: level
+            type: integer
+            default: 1
+          depth:
+            name: depth
+            description: depth
+            type: 'NULL'
+            default: null
+          expand_all_items:
+            name: expand_all_items
+            description: expand_all_items
+            type: boolean
+            default: false
         detailed_description: Footer
       block.system_menu_block.main:
         id: block.system_menu_block.main
         name: 'Main navigation'
         description: 'Main navigation'
+        props:
+          level:
+            name: level
+            description: level
+            type: integer
+            default: 1
+          depth:
+            name: depth
+            description: depth
+            type: 'NULL'
+            default: null
+          expand_all_items:
+            name: expand_all_items
+            description: expand_all_items
+            type: boolean
+            default: false
         detailed_description: 'Main navigation'
       block.system_menu_block.secondary:
         id: block.system_menu_block.secondary
         name: 'Secondary navigation'
         description: 'Secondary navigation'
+        props:
+          level:
+            name: level
+            description: level
+            type: integer
+            default: 1
+          depth:
+            name: depth
+            description: depth
+            type: 'NULL'
+            default: null
+          expand_all_items:
+            name: expand_all_items
+            description: expand_all_items
+            type: boolean
+            default: false
         detailed_description: 'Secondary navigation'
       block.system_menu_block.social:
         id: block.system_menu_block.social
         name: Social
         description: Social
+        props:
+          level:
+            name: level
+            description: level
+            type: integer
+            default: 1
+          depth:
+            name: depth
+            description: depth
+            type: 'NULL'
+            default: null
+          expand_all_items:
+            name: expand_all_items
+            description: expand_all_items
+            type: boolean
+            default: false
         detailed_description: Social
       block.system_powered_by_block:
         id: block.system_powered_by_block
         name: 'Powered by Drupal'
         description: 'Powered by Drupal'
+        props:
+          label_display:
+            name: label_display
+            description: label_display
+            type: string
+            default: '0'
         detailed_description: 'Powered by Drupal'
       block.views_block.blog-all:
         id: block.views_block.blog-all
         name: 'Blog: All blog posts'
         description: 'Blog: All blog posts'
+        props:
+          views_label:
+            name: views_label
+            description: views_label
+            type: string
+            default: ''
+          items_per_page:
+            name: items_per_page
+            description: items_per_page
+            type: 'NULL'
+            default: null
         detailed_description: 'Blog: All blog posts'
       block.views_block.blog-latest:
         id: block.views_block.blog-latest
         name: 'Blog: Latest blog posts'
         description: 'Blog: Latest blog posts'
+        props:
+          views_label:
+            name: views_label
+            description: views_label
+            type: string
+            default: ''
+          items_per_page:
+            name: items_per_page
+            description: items_per_page
+            type: 'NULL'
+            default: null
         detailed_description: 'Blog: Latest blog posts'
       block.views_block.blog-related:
         id: block.views_block.blog-related
         name: 'Blog: Related blog posts'
         description: 'Blog: Related blog posts'
+        props:
+          views_label:
+            name: views_label
+            description: views_label
+            type: string
+            default: ''
+          items_per_page:
+            name: items_per_page
+            description: items_per_page
+            type: 'NULL'
+            default: null
         detailed_description: 'Blog: Related blog posts'
       block.views_exposed_filter_block.search-page:
         id: block.views_exposed_filter_block.search-page
         name: 'Exposed form: search-page'
         description: 'Exposed form: search-page'
+        props:
+          views_label:
+            name: views_label
+            description: views_label
+            type: string
+            default: ''
         detailed_description: 'Exposed form: search-page'
       block.webform_block:
         id: block.webform_block
         name: Webform
         description: Webform
+        props:
+          webform_id:
+            name: webform_id
+            description: webform_id
+            type: string
+            default: ''
+          default_data:
+            name: default_data
+            description: default_data
+            type: string
+            default: ''
+          redirect:
+            name: redirect
+            description: redirect
+            type: boolean
+            default: false
+          lazy:
+            name: lazy
+            description: lazy
+            type: boolean
+            default: false
         detailed_description: Webform
     label: Blocks
   sdc:
@@ -1593,7 +1781,7 @@ component_context:
         slots:
           hero_slot:
             name: Content
-            description: 'No description available'
+            description: 'When a heading or subheading is added, Max character count must be less than 40'
         detailed_description: 'Hero with side-by-side slots for media and content.'
       sdc.byte_theme.icon:
         id: sdc.byte_theme.icon
@@ -2112,5 +2300,5 @@ component_context:
                 label: Primary
                 value: primary
         slots: 'No slots'
-        detailed_description: Text
+        detailed_description: "Wrap contents in a &lt;p&gt; tag. Other supported tags include &lt;ul&gt;, &lt;ol&gt;, &lt;strong&gt;, &lt;em&gt; Use anchor tags to add links.\r\n"
     label: 'Single-Directory Components'
