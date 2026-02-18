@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c4034a3435ea53bc685e78b26b621144",
+    "content-hash": "89e29890faf1749bb98e42af36c796c4",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2877,17 +2877,11 @@
         },
         {
             "name": "drupal/canvas",
-            "version": "1.1.0",
+            "version": "dev-1.x",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/canvas.git",
-                "reference": "1.1.0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/canvas-1.1.0.zip",
-                "reference": "1.1.0",
-                "shasum": "f34038e9dc5b9d05e3746e96d539e434250a2592"
+                "reference": "0bff26f756d7091de3c8f8d11ef01506eac1f027"
             },
             "require": {
                 "drupal/core": "^11.2",
@@ -2910,12 +2904,15 @@
             },
             "type": "drupal-module",
             "extra": {
+                "branch-alias": {
+                    "dev-1.x": "1.x-dev"
+                },
                 "drupal": {
-                    "version": "1.1.0",
-                    "datestamp": "1770310441",
+                    "version": "1.1.0+57-dev",
+                    "datestamp": "1771406657",
                     "security-coverage": {
-                        "status": "covered",
-                        "message": "Covered by Drupal's security advisory policy"
+                        "status": "not-covered",
+                        "message": "Dev releases are not covered by Drupal security advisories."
                     }
                 }
             },
@@ -14879,6 +14876,7 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "drupal/ai_vdb_provider_milvus": 10,
+        "drupal/canvas": 20,
         "drupal/webform": 10
     },
     "prefer-stable": true,

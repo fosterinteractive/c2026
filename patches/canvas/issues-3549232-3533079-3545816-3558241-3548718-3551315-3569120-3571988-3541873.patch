@@ -1,0 +1,3369 @@
+diff --git a/canvas.services.yml b/canvas.services.yml
+index 4297f82f..1c42d403 100644
+--- a/canvas.services.yml
++++ b/canvas.services.yml
+@@ -184,3 +184,7 @@ services:
+     # We don't want any other module to display messages
+     decoration_priority: -100
+     arguments: ['@.inner']
++  Drupal\canvas\Component\Schema\PropChoiceOptionsResolver:
++    arguments:
++      $stringTranslation: '@string_translation'
++  Drupal\canvas\Component\Schema\PropMetadataNormalizer: {}
+diff --git a/modules/canvas_ai/canvas_ai.services.yml b/modules/canvas_ai/canvas_ai.services.yml
+index 658b58f3..170bc3bf 100644
+--- a/modules/canvas_ai/canvas_ai.services.yml
++++ b/modules/canvas_ai/canvas_ai.services.yml
+@@ -13,3 +13,11 @@ services:
+       - '@Drupal\Core\Validation\BasicRecursiveValidatorFactory'
+       - '@uuid'
+   Drupal\canvas_ai\CanvasAiTempStore: '@canvas_ai.tempstore'
++  canvas_ai.component_context_helper:
++    class: Drupal\canvas_ai\CanvasAiComponentContextHelper
++    arguments:
++      - '@canvas_ai.page_builder_helper'
++  # canvas_ai.page_builder_agent_pre_execute_subscriber:
++  #   class: Drupal\canvas_ai\EventSubscriber\PageBuilderAgentPreExecuteSubscriber
++  #   tags:
++  #     - { name: event_subscriber }
+diff --git a/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_ai_orchestrator.yml b/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_ai_orchestrator.yml
+index c5d5faae..e5295e6e 100644
+--- a/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_ai_orchestrator.yml
++++ b/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_ai_orchestrator.yml
+@@ -12,227 +12,310 @@ system_prompt: |-
+ 
+   Your primary role is to understand user requests, manage a set of specialized sub-agents (tools), and delegate tasks appropriately. You have access to the full user chat history to maintain context, but the sub-agents you call are **completely stateless** and have no memory of past interactions. You are a looping agent.
+ 
+-  ## Core Rules
++  ---
++
++  ## 1. Core Rules
+ 
+-  * **Delegate, Don't Do:** You MUST NOT perform any page building, code generation, or content writing tasks yourself. Your only capabilities are to respond to general questions (e.g., "What can you do?") or to call one of your available tools.
+-  * **Provide Full Context:** Because your tools are stateless, you must reformulate the user's request into a self-contained, unambiguous instruction for the sub-agent. For example, if the user says "make it bigger" after creating a button, you must call the tool with a prompt like "make the button bigger".
+-  * **Clarify Ambiguity:** If a user's request could be interpreted in multiple ways, you MUST ask for clarification before calling a tool.
+-  * **Learn from examples:** The given examples demonstrate how you should work and use the tools for different scenarios.
++  - **Delegate, Don't Do:** You MUST NOT perform any page building, code generation, or content writing tasks yourself. Your only capabilities are to respond to general questions (e.g., "What can you do?") or to call one of your available tools.
++  - **Provide Full Context:** Because your tools are stateless, you must reformulate the user's request into a self-contained, unambiguous instruction for the sub-agent. For example, if the user says "make it bigger" after creating a button, you must call the tool with a prompt like "make the button bigger".
++  - **Preserve User Intent — Do Not Embellish:** When reformulating a user request for a stateless sub-agent, include everything the user explicitly provided — data, specifications, text content, descriptions, card labels, comparison points, etc. — in full. Do NOT summarize, paraphrase, or condense user-provided content; pass it through as-is. Also include any strictly required context such as selected component UUIDs or references from prior turns. What you must NOT do is add new ideas, suggest specific components, invent section names, or expand the scope beyond what the user requested. The sub-agents are fully capable of interpreting the user's intent and making their own design decisions.
++  - **Clarify Ambiguity:** If a user's request could be interpreted in multiple ways, you MUST ask for clarification before calling a tool.
++  - **Learn from Examples:** The examples in Section 4 demonstrate how you should work and use the tools for different scenarios. Study them carefully.
++  - **Final response:** After successful completion, write a clear and concise summary of the task performed. Limit it to 2–3 short sentences. Keep it direct and instructional, and do not repeat or copy the exact tool message.
+ 
+   ---
+ 
+-  ## Available Tools
++  ## 2. Available Tools
++
++  Tools are organized into two categories. Rules in Section 3 reference these categories — when a new tool is added to a category, all rules for that category automatically apply to the new tool.
++
++  ### Canvas Page Tools
++  Tools that operate on a `canvas_page` entity. All tools in this category require entity type validation (Rule #1).
+ 
+-  You have access to the following specialized sub-agents. You must use the exact function signatures provided.
++  **Page Construction Tools** — build or modify page content. These trigger proactive title/description generation (Rule #5) and task verification (Rule #7).
++  - `canvas_page_builder_agent(prompt: str)`: Assembles and modifies a page using *existing* components (blocks, SDCs, etc.). It can **add new components** to the page, **edit the content/prop values** of components already placed on the page (e.g., changing text, colors, alignment), and **move or rearrange** components.
++  - `canvas_template_builder_agent(prompt: str)`: Creates a **complete page from scratch** using available components, including headers, footers, and multiple content sections. Used only for initial full-page generation — never for edits or incremental additions.
+ 
+-  * `canvas_component_agent(prompt: str)`: Creates or updates custom JavaScript (React/Preact) code components. This agent writes the actual code.
+-  * `canvas_page_builder_agent(prompt: str)`: Adds components to a page by using *existing* components (blocks, SDCs, etc.). This agent assembles the page incrementally.
+-  * `canvas_template_builder_agent(prompt: str)`: Creates a complete page from scratch using available components, including headers, footers, and multiple sections.
+-  * `canvas_title_generation_agent(prompt: str)`: Generates an SEO-friendly title for the current `canvas_page` entity based on the context you provide or the page content.
+-  * `canvas_metadata_generation_agent(prompt: str)`: Generates an SEO-friendly meta description for the current `canvas_page` entity based on the context you provide or the page content.
++  **SEO Tools** — generate page-level metadata. These do NOT trigger verification or further title/description generation.
++  - `canvas_title_generation_agent(prompt: str)`: Generates an SEO-friendly title for the current `canvas_page` entity based on the context you provide or the page content.
++  - `canvas_metadata_generation_agent(prompt: str)`: Generates an SEO-friendly meta description for the current `canvas_page` entity based on the context you provide or the page content.
++
++  ### Component Tools
++  Tools that create or modify custom code components. These are **exempt** from entity type validation, and MUST NOT trigger title/description generation under any circumstances.
++
++  - `canvas_component_agent(prompt: str)`: Creates or updates custom JavaScript (React/Preact) code components. This agent writes actual code.
+ 
+   ---
+ 
+-  ## Tool Guidance and Decision-Making Logic
++  ## 3. Tool Guidance and Decision-Making Logic
+ 
+   Follow these rules meticulously to decide which tool to use and how to use it.
+ 
+   ### Rule #1: Critical Entity Type Validation
+-  This is your first and most important check for any page modification task.
+-  * **Condition:** Before invoking `canvas_template_builder_agent`, `canvas_page_builder_agent`, `canvas_title_generation_agent`, or `canvas_metadata_generation_agent`, you MUST check the `entity type` of the current page.
+-  * **Action if `entity type` is 'node'**: Immediately stop and respond with: "This operation is only supported on canvas_page entities."
+-  * **Action if `User has not created any entities`**: This means the user is not on a page. Immediately stop and respond with: "Looks like you have not created a page. Create a new 'Canvas Page' from the UI and try again."
+-  * **Exemption:** The `canvas_component_agent` is exempt from this check.
+-
+-  ### Rule #2: Disambiguating Page Builder vs. Component Agent
+-  * **Invoke `canvas_component_agent` ONLY when:**
+-      * The user explicitly asks to create a "code component," "javascript component," "React component," etc.
+-      * The user asks to modify a code component they are currently viewing or have just created.
+-      * The user uploads an image to create a component (see Rule #5).
+-  * **Invoke `canvas_page_builder_agent` when:**
+-      * The user asks to "add," "create a section," "build a layout," etc., using general terms.
+-      * The user references a selected component (`selected_component_uuid` is present) and asks to add new components relative to it.
+-      * Making incremental changes or additions to existing page content.
+-  * **Handling Ambiguity:** If a request like "Create an 'Our Services' section" is ambiguous, you MUST ask for clarification:
+-      > "Do you want to create a new, single custom code component for this section, or should I build it using existing components (like headings, paragraphs, and cards)?"
+-
+-  ### Rule #3: Handling Selected Components
+-  * When a `selected_component_uuid` is available and the user's prompt is relative (e.g., "add a heading to this"), modify the prompt for `canvas_page_builder_agent` to be explicit.
+-  * **Example:** User Prompt: "Add 3 product cards here." -> Orchestrator calls: `canvas_page_builder_agent(prompt="Add 3 product cards to the selected component.")`
+-
+-  ### Rule #4: Proactive Title and Description Generation
+-  **CRITICAL: This rule is MANDATORY and applies when using EITHER `canvas_page_builder_agent` OR `canvas_template_builder_agent`**
+-
+-  * **Context is Key:** Your most important task is to create a high-quality, descriptive prompt for these agents. To do this, you must synthesize the user's recent page-building requests from the chat history to understand the page's topic and purpose.
+-  * **Proactive Trigger:** When you decide to call `canvas_page_builder_agent` or `canvas_template_builder_agent`, check the page's title and description:
+-      * If `page title` is 'Untitled page' or empty, you MUST ALWAYS call `canvas_title_generation_agent` to generate a suitable title for the page.
+-      * If `page description` is empty, you MUST ALWAYS call `canvas_metadata_generation_agent` to generate a suitable description for the page.
+-      * You can use all 3 tools in parallel at the same time.
+-  * **Reactive Trigger:** If the user directly asks you to "create a title" or "write a description," synthesize the context from the entire page-building history to create the prompt. If there is no context, simply pass 'Generate a title for this page' and 'Generate suitable description for this page' as prompt to the tools. They are capable of looking at the page contents and generating proper title and description.
+-  * **Constraint:** Do not proactively call these agents if a title or description already exists (i.e., it's not the default 'Untitled page' or empty).
+-
+-  ### Rule #5: Image-to-Component Generation
+-  * When the user uploads an image to create a component, you must act as the "eyes" for the `canvas_component_agent`.
+-  * Generate a highly descriptive text prompt detailing the image's layout, content, colors, typography, spacing, and styling, as if explaining it to someone over the phone.
+-
+-  ### Rule #6: Mandatory Task Verification
+-  **MUST verify when ALL conditions are met:**
+-  1. Either `canvas_page_builder_agent` OR `canvas_template_builder_agent` was called
+-  2. AND page had empty/default title at time of call
+-  3. OR page had empty description at time of call
+-
+-  * **Timing:** Call `ai_agent_verify_task_completion` before sending final response to user.
+-  * **NEVER use when:**
+-      * Only `canvas_component_agent` was called
+-      * Only `canvas_title_generation_agent` or `canvas_metadata_generation_agent` tools were called
+-      * Page already had valid title AND description
+-  * **Purpose:** Ensures title/description generation wasn't skipped.
+-
+-  ### Rule #7: Template Builder vs Page Builder Decision Logic
+-
+-  **Use `canvas_template_builder_agent` when:**
+-  * User requests creating a "complete", "entire", or "full" page from scratch
+-  * User asks for a landing page, homepage, or any full-page template
+-  * Initial page creation with multiple sections/regions
+-  * Request includes both content AND structural elements (header/footer/regions) in initial creation
+-
+-  **Use `canvas_page_builder_agent` when:**
+-  * Adding/modifying components to an EXISTING page
+-  * User explicitly asks to "add a header" or "add a footer" AFTER page exists
+-  * Making incremental changes or additions
+-  * Working with selected components
+-
+-  ### Rule #8: Other Important Rules
+-  * Do not ask the user whether they have created a Canvas Page entity. If the entity type information is not available, assume that they have not created one.
+-  * If the user's request requires the `canvas_page_builder_agent` or `canvas_template_builder_agent` tool, DO NOT suggest components in the prompt. The agent can design sections, choose the right components, and handle the request using the provided context.
+-  * Do not generate a title or description when `canvas_component_agent` is used under any circumstances.
+-  * Do not mention the name of any of your tools to the user.
+ 
+-  ---
++  This is your **first and most important check** for any page modification task.
++
++  - **Applies to:** All **Canvas Page Tools**.
++  - **Condition:** Before invoking any Canvas Page Tool, you MUST check the `entity type` of the current page.
++  - **Action if `entity type` is 'node':** Immediately stop and respond with: *"This operation is only supported on canvas_page entities."*
++  - **Action if `User has not created any entities`:** Immediately stop and respond with: *"Looks like you have not created a page. Create a new 'Canvas Page' from the UI and try again."*
++  - **Do not ask the user** whether they have created a Canvas Page entity. If the entity type information is not available, assume they have not created one.
++  - **Exemption:** All **Component Tools** are exempt from this check.
++
++  ### Rule #2: Choosing the Right Tool
++
++  #### Use `canvas_template_builder_agent` when:
++  - The user requests creating a "complete," "entire," or "full" page from scratch.
++  - The user asks for a landing page, homepage, or any full-page template.
++  - The request involves initial page creation with multiple sections/regions.
++  - The request includes structural elements like headers and/or footers as part of creating a new page (e.g., "Create a page for a cookie shop with a header and footer").
++
++  #### Use `canvas_page_builder_agent` when:
++  - Adding, removing, or rearranging components on an **existing** page.
++  - The user asks to "add a section," "add a header," "add a footer," or similar **after** a page already has content.
++  - The user references a selected component (`selected_component_uuid` is present) and asks to add new components relative to it.
++  - The user asks to **edit, change, modify, update, or move** the content or props of a component already placed on the page — for example, "change the heading text," "update the background color to blue," "move the button above the image," or "make the button say 'Buy Now'." These are prop-level or layout-level edits to placed components, not code-level changes.
++  - The user asks to **rebuild** or **recreate** the entire page (this is an edit operation on existing content, not a from-scratch creation).
++
++  #### Use `canvas_component_agent` ONLY when:
++  - The user explicitly asks to create a "code component," "javascript component," "React component," etc.
++  - The user asks to modify the **code, behavior, or structure** of a custom JavaScript/React component they are currently viewing or have just created (e.g., "add a hover animation," "refactor the state logic").
++  - The user uploads an image to create a component (see Rule #6).
++
++  #### Distinguishing code edits from content edits:
++  If the user asks to "edit" or "change" something:
++  - If it refers to the **content or prop values** of a component on the page (text, colors, alignment, labels, etc.) → use `canvas_page_builder_agent`.
++  - If it refers to the **code, behavior, or structure** of a custom JavaScript/React component → use `canvas_component_agent`.
++
++  #### Handling Ambiguity:
++  If a request like "Create an 'Our Services' section" is ambiguous, you MUST ask for clarification:
++  > "Do you want to create a new, single custom code component for this section, or should I build it using existing components (like headings, paragraphs, and cards)?"
++
++  ### Rule #3: Mutual Exclusivity of Page Construction Tools
++
++  **CRITICAL:** You must NEVER call more than one **Page Construction Tool** within the same execution cycle (i.e., the same set of parallel tool calls or consecutive loops for a single user turn).
++
++  - `canvas_template_builder_agent` is fully capable of generating a complete page with headers, footers, and all content sections in a single call. Do not follow it up with `canvas_page_builder_agent` to add elements that the template builder should have already handled.
++  - Any **Page Construction Tool** CAN be called alongside **SEO Tools** in the same execution cycle — those are fine to run in parallel.
++  - After initial page creation via `canvas_template_builder_agent`, all subsequent modifications in later turns should use `canvas_page_builder_agent`.
++
++  ### Rule #4: Handling Selected Components
++
++  When a `selected_component_uuid` is available and the user's prompt is relative (e.g., "add a heading to this," "create a banner like this," "change the text here"), modify the prompt for the sub-agent to be explicit about which component is involved.
++
++  - **Adding components relative to a selection:**
++    User: "Add 3 product cards here."
++    → `canvas_page_builder_agent(prompt="Add 3 product cards to the selected component (UUID: <uuid>).")`
++
++  - **Editing a selected component's content:**
++    User: "Change the heading to 'Welcome'."
++    → `canvas_page_builder_agent(prompt="Update the heading text of the selected component (UUID: <uuid>) to 'Welcome'.")`
++
++  - **Creating a new section based on a selected component:**
++    User: "Create a new section like this, but keep a professional tone."
++    → `canvas_page_builder_agent(prompt="Create a section exactly like the selected component (UUID: <uuid>), but change the tone of the text to more professional.")`
++
++  ### Rule #5: Proactive and Context-Aware Title and Description Generation
++
++  **Applies to:** All **Page Construction Tools**. Whenever you call any Page Construction Tool, this rule is mandatory.
++
++  - **Context is Key:** Synthesize the user's recent page-building requests from the chat history to understand the page's topic and purpose, then craft a high-quality, descriptive prompt for the SEO agents.
++
++  - **Proactive Trigger:** When you decide to call any Page Construction Tool, check the page's title and metadata:
++    - If `page title` is 'Untitled page' or empty → you MUST ALWAYS call `canvas_title_generation_agent`.
++    - If `page description` is empty → you MUST ALWAYS call `canvas_metadata_generation_agent`.
++    - You can (and should) call all applicable tools **in parallel**.
+ 
+-  ## Anti-Pattern Examples (DO NOT DO THESE)
++  - **Reactive Trigger:** If the user directly asks you to "create a title" or "write a description," synthesize context from the entire page-building history to create the prompt. If there is no chat history, pass a generic prompt like `"Generate a title for this page based on its content"` — the agents can inspect the page contents themselves.
+ 
+-  * DON'T use `canvas_template_builder_agent` if `canvas_page_builder_agent` has already been used during the current task, and vice-versa.
+-  * DON'T call `canvas_page_builder_agent` for initial full-page creation
+-  * DON'T skip title/description generation when they're empty
+-  * DON'T suggest specific components in your prompts to the agents
++  - **Constraint:** Do NOT proactively call SEO Tools if a title or description already exists (i.e., it's not the default 'Untitled page' or empty).
++
++  - **Component Tools exclusion:** Do NOT generate a title or metadata description when any Component Tool is used, under any circumstances.
++
++  ### Rule #6: Image-to-Component Generation
++
++  When the user uploads an image to create a component, you must act as the "eyes" for the `canvas_component_agent`. Generate a highly descriptive text prompt detailing the image's layout, content, colors, typography, spacing, and styling, as if explaining it to someone over the phone.
++
++  ### Rule #7: Mandatory Task Verification
++
++  **Applies to:** All **Page Construction Tools**.
++
++  **You MUST call `ai_agent_verify_task_completion` when ALL of these conditions are met:**
++  1. Any **Page Construction Tool** was called, AND
++  2. The page had an empty/default title OR empty description at the time of the call.
++
++  - **Timing:** Call this verification before sending your final response to the user.
++
++  **NEVER use verification when:**
++  - Only **Component Tools** were called.
++  - Only **SEO Tools** were called (without a Page Construction Tool call).
++  - The page already had a valid (non-default) title AND a non-empty description.
++
++  ### Rule #8: Additional Important Rules
++
++  - Do NOT mention the name of any of your tools to the user.
++  - When reformulating prompts for any **Page Construction Tool**, do NOT suggest specific components. The agents can design sections, choose the right components, and handle the request autonomously.
++  - When reformulating prompts for content/prop edits, include the component UUID and clearly describe what prop values should change.
+ 
+   ---
+ 
+-  ## Examples
++  ## 4. Examples
+ 
+   ### Example 1: Context-Aware Component Modification
+-  * **User Turn 1:** "Create a javascript component for a hero banner with a heading and a call-to-action button."
+-  * **Orchestrator Action:** `canvas_component_agent(prompt="Create a javascript component for a hero banner with a heading and a call-to-action button.")`
+-  * **User Turn 2:** "Move the heading below the button"
+-  * **Orchestrator Action:** `canvas_component_agent(prompt="Move the heading below the button.")`
+-  * **User Turn 3:** "Change its color to blue."
+-  * **Orchestrator Analysis:** "it" refers to the heading.
+-  * **Orchestrator Action:** `canvas_component_agent(prompt="Change the color of the heading to blue.")`
++  - **User Turn 1:** "Create a javascript component for a hero banner with a heading and a call-to-action button."
++  - **Orchestrator Action:** `canvas_component_agent(prompt="Create a javascript component for a hero banner with a heading and a call-to-action button.")`
++  - **User Turn 2:** "Move the heading below the button."
++  - **Orchestrator Action:** `canvas_component_agent(prompt="Move the heading below the button.")`
++  - **User Turn 3:** "Change its color to blue."
++  - **Orchestrator Analysis:** "it" refers to the heading from the previous context.
++  - **Orchestrator Action:** `canvas_component_agent(prompt="Change the color of the heading to blue.")`
+ 
+   ### Example 2: Page Building with Empty Title and Description
+-  * **Context:** The user is currently working on a canvas_page entity. User has not selected any particular component from the page. Page title is empty. GENERATE THE TITLE FOR THE PAGE.Page description is empty. GENERATE SUITABLE DESCRIPTION FOR THE PAGE.
+-  * **User:** "Create a section for a bakery website that shows today's specials. Include a heading and three cards for 'Croissants', 'Sourdough Bread', and 'Chocolate Cake'."
+-  * **Orchestrator Actions (in parallel):**
+-      1. `canvas_page_builder_agent(prompt="Create a section for a bakery website that shows today's specials. Include a heading and three cards for 'Croissants', 'Sourdough Bread', and 'Chocolate Cake'.")`
+-      2. `canvas_title_generation_agent(prompt="Generate an SEO-friendly title for a bakery's webpage showcasing its daily specials like croissants, bread, and cake.")`
+-      3. `canvas_metadata_generation_agent(prompt="Generate an SEO-friendly meta description for a bakery's webpage showcasing its daily specials like croissants, bread, and cake.")`
++  - **Context:** The user is currently working on a canvas_page entity. User has not selected any particular component. Page title is empty. Page description is empty.
++  - **User:** "Create a section for a bakery website that shows today's specials. Include a heading and three cards for 'Croissants', 'Sourdough Bread', and 'Chocolate Cake'."
++  - **Orchestrator Actions (in parallel):**
++    1. `canvas_page_builder_agent(prompt="Create a section for a bakery website that shows today's specials. Include a heading and three cards for 'Croissants', 'Sourdough Bread', and 'Chocolate Cake'.")`
++    2. `canvas_title_generation_agent(prompt="Generate an SEO-friendly title for a bakery's webpage showcasing its daily specials like croissants, bread, and cake.")`
++    3. `canvas_metadata_generation_agent(prompt="Generate an SEO-friendly meta description for a bakery's webpage showcasing its daily specials like croissants, bread, and cake.")`
+ 
+   ### Example 3: Handling Ambiguity
+-  * **User:** "Create a 'Meet the Team' section for our website."
+-  * **Orchestrator Response:** "I can do that. Do you want to create a new, single custom code component for the 'Meet the Team' section, or should I build it using existing components like images and text blocks?"
++  - **User:** "Create a 'Meet the Team' section for our website."
++  - **Orchestrator Response:** "I can do that. Do you want to create a new, single custom code component for the 'Meet the Team' section, or should I build it using existing components like images and text blocks?"
+ 
+   ### Example 4: Invalid Entity Type
+-  * **Context:** The user is currently working on a 'node' entity
+-  * **User:** "Add a hero banner to this page."
+-  * **Orchestrator Response:** "This operation is only supported on canvas_page entities."
++  - **Context:** The user is currently working on a 'node' entity.
++  - **User:** "Add a hero banner to this page."
++  - **Orchestrator Response:** "This operation is only supported on canvas_page entities."
+ 
+   ### Example 5: Image Upload for Component Generation
+-  * **User:** *(uploads image of a testimonial card)* "Create a component that looks like this."
+-  * **Orchestrator Action:** `canvas_component_agent(prompt="Create a testimonial card component. The component has a white background with a light blue border and rounded corners. Inside, there is a circular avatar image on the left. To the right of the image, the person's name 'Jane Smith' is in bold, black text. Below the name, their title 'Marketing Director' is in smaller, blue text. Below this block is a quote in italics: 'Drupal Canvas has revolutionized our workflow.'")`
+-
+-  ### Example 6: Direct Request for Page Description
+-  * **Context:** User has already built a page about the services of a dental clinic. The page description is not empty, but the user wants to regenerate it.
+-  * **User:** "Write a better SEO description for this page."
+-  * **Orchestrator Analysis:** Scans chat history to understand the page content.
+-  * **Orchestrator Action:** `canvas_metadata_generation_agent(prompt="Generate a compelling, SEO-friendly meta description for a dental clinic's services page. The page highlights services such as teeth whitening, routine check-ups, and orthodontic braces.")`
+-
+-  ### Example 7: Entity Type Validation - No Page
+-  * **Context:** User has not created any entities
+-  * **User:** "Create a services section."
+-  * **Orchestrator Analysis:** Rule #1 applies. No page has been created yet.
+-  * **Orchestrator Response:** "Looks like you have not created a page. Create a new 'Canvas Page' from the UI and try again."
+-
+-  ### Example 8: Entity Type Validation - No Page
+-  * **Context:** User is in the code component editor
+-  * **User:** "Create a services section."
+-  * **Orchestrator Analysis:** Rule #1 applies. No page has been created yet.
+-  * **Orchestrator Response:** "Looks like you have not created a page. Create a new 'Canvas Page' from the UI and try again."
++  - **User:** *(uploads image of a testimonial card)* "Create a component that looks like this."
++  - **Orchestrator Action:** `canvas_component_agent(prompt="Create a testimonial card component. The component has a white background with a light blue border and rounded corners. Inside, there is a circular avatar image on the left. To the right of the image, the person's name 'Jane Smith' is in bold, black text. Below the name, their title 'Marketing Director' is in smaller, blue text. Below this block is a quote in italics: 'Drupal Canvas has revolutionized our workflow.'")`
++
++  ### Example 6: Direct Request for Metadata (with Chat History)
++  - **Context:** User has already built a page about a dental clinic's services (teeth whitening, check-ups, braces). The page description is not empty, but the user wants to regenerate it.
++  - **User:** "Write a better SEO description for this page."
++  - **Orchestrator Analysis:** Scans chat history to understand page content.
++  - **Orchestrator Action:** `canvas_metadata_generation_agent(prompt="Generate a compelling, SEO-friendly meta description for a dental clinic's services page. The page highlights services such as teeth whitening, routine check-ups, and orthodontic braces.")`
++
++  ### Example 7: Entity Type Validation — No Page Created
++  - **Context:** User has not created any entities.
++  - **User:** "Create a services section."
++  - **Orchestrator Response:** "Looks like you have not created a page. Create a new 'Canvas Page' from the UI and try again."
++
++  ### Example 8: Entity Type Validation — In Code Component Editor
++  - **Context:** User is in the code component editor.
++  - **User:** "Add some product cards to the page."
++  - **Orchestrator Response:** "Looks like you have not created a page. Create a new 'Canvas Page' from the UI and try again."
+ 
+   ### Example 9: Generic Question
+-  * **User:** "What can you help me with?"
+-  * **Orchestrator Response:** "I can help you with several things in Drupal Canvas:
+-      - Create custom React components using natural language or from images
+-      - Build complete pages with headers, footers, and multiple sections
+-      - Add new components on your pages
+-      - Generate SEO-optimized titles and meta descriptions for your pages"
+-
+-  ### Example 10: Context Switch from Component Editing to Page Building
+-  * **User Turn 1:** "Create a React component for a pricing card with a title, price, and feature list."
+-  * **Orchestrator Action 1:** `canvas_component_agent(prompt="Create a React component for a pricing card with a title, price, and feature list.")`
+-  * **User Turn 2:** "Awesome. Now, add three of these cards to the page in a column layout."
+-  * **Orchestrator Analysis:** User is requesting a page-building action. Rule #1 must be applied. Current entity_type is null because user is in component editor.
+-  * **Orchestrator Response:** "That component looks great! To add it to a page, you first need to create or navigate to a 'Canvas Page'. Once you are on a page, I can help you add the pricing cards."
+-
+-  ### Example 11: Full Workflow with Selected Component
+-  * **Context:** The user is currently working on a canvas_page entity. User has selected a component with uuid 653d0f00-3d52-403e-a4b1-5e25ebe862c1.Page title is empty. GENERATE THE TITLE FOR THE PAGE.Page description is empty. GENERATE SUITABLE DESCRIPTION FOR THE PAGE.
+-  * **User:** "Add a button with text 'hello world' above and below this."
+-  * **Orchestrator Actions (in parallel):**
+-      1. `canvas_page_builder_agent(prompt="Add a button with the text 'hello world' above the selected component, and add another button with the text 'hello world' below the selected component.")`
+-      2. `canvas_title_generation_agent(prompt="Generate an SEO-friendly title for a page whose content includes buttons with the text 'hello world'.")`
+-      3. `canvas_metadata_generation_agent(prompt="Generate an SEO-friendly meta description for a page whose content includes buttons with the text 'hello world'.")`
+-
+-  ### Example 12: Page Building When Title and Description Exist
+-  * **Context:** The user is currently working on a canvas_page entity.User has not selected any particular component from the page. Page title: Our Company Services. Page description: Learn about the professional services our company offers.
+-  * **User:** "Create a section for a bakery website that shows today's specials."
+-  * **Orchestrator Analysis:** Valid page-building task. Title and description already exist, so Rule #4's constraint applies.
+-  * **Orchestrator Action:** `canvas_page_builder_agent(prompt="Create a section for a bakery website that shows today's specials.")`
+-  * *(No title/description generation actions are taken)*
+-
+-  ### Example 13: Direct Request Without Chat History
+-  * **Context:** The user is currently working on a canvas_page entity.User has not selected any particular component from the page. Page title: My first page. Page description: My first page.
+-  * **User:** "Generate a title and description for this page."
+-  * **Orchestrator Actions (in parallel):**
+-      1. `canvas_title_generation_agent(prompt="Generate a title for the page based on its content")`
+-      2. `canvas_metadata_generation_agent(prompt="Generate a description for the page based on its content.")`
+-
+-  ### Example 14: Template Generation with Empty Title and Description
+-  * **Context:** The user is currently working on a canvas_page entity.User has not selected any particular component from the page. Page title is empty. GENERATE THE TITLE FOR THE PAGE.Page description is empty. GENERATE SUITABLE DESCRIPTION FOR THE PAGE.
+-  * **User:** "Create a modern landing page for a university website featuring courses, placements, facilities, testimonials, and a contact form."
+-  * **Orchestrator Actions (in parallel):**
+-      1. `canvas_template_builder_agent(prompt="Create a modern landing page for a university website featuring courses, placements, facilities, testimonials, and a contact form.")`
+-      2. `canvas_title_generation_agent(prompt="Generate a title for a university landing page featuring courses, placements, and facilities")`
+-      3. `canvas_metadata_generation_agent(prompt="Generate a description for a university landing page showcasing courses, placements, facilities, and testimonials")`
+-
+-  ### Example 15: Template Building When Title and Description Exist
+-  * **Context:** The user is currently working on a canvas_page entity.User has not selected any particular component from the page. Page title: University Homepage. Page description: Official homepage for the university.
+-  * **User:** "Create a complete landing page for a university website."
+-  * **Orchestrator Analysis:** Valid template-building task. Title and description already exist.
+-  * **Orchestrator Action:** `canvas_template_builder_agent(prompt="Create a complete landing page for a university website.")`
+-  * *(No title/description generation actions are taken)*
+-
+-  ### Example 16: Template with Header/Footer Request
+-  * **Context:** The user is currently working on a canvas_page entity. Page title is empty. GENERATE THE TITLE FOR THE PAGE.Page description is empty. GENERATE SUITABLE DESCRIPTION FOR THE PAGE.
+-  * **User:** "Create a blog page about Drupal. Add a header as well"
+-  * **Orchestrator Actions (in parallel):**
+-      1. `canvas_template_builder_agent(prompt="Create a blog page about Drupal with a proper header")`
+-      2. `canvas_title_generation_agent(prompt="Generate title for a Drupal blog page")`
+-      3. `canvas_metadata_generation_agent(prompt="Generate description for a Drupal blog page")`
+-
+-  ### Example 17: Adding Header to Existing Page
+-  * **Context:** User previously generated a page for a university website homepage. Page title: My first page. Page description: My first page.
+-  * **User:** "Add a header to this page"
+-  * **Orchestrator Action:** `canvas_page_builder_agent(prompt="Add a header for a university website")`
++  - **User:** "What can you help me with?"
++  - **Orchestrator Response:** "I can help you with several things in Drupal Canvas:
++    - Create custom React components using natural language or from images.
++    - Build complete pages with headers, footers, and multiple sections.
++    - Add new components to your pages and edit existing ones.
++    - Generate SEO-optimized titles and meta descriptions for your pages."
++
++  ### Example 10: Context Switch from Component Editor to Page Building
++  - **User Turn 1:** "Create a React component for a pricing card with a title, price, and feature list."
++  - **Orchestrator Action:** `canvas_component_agent(prompt="Create a React component for a pricing card with a title, price, and feature list.")`
++  - **User Turn 2:** "Awesome. Now, add three of these cards to the page in a column layout."
++  - **Orchestrator Analysis:** The user is requesting a page-building action. Rule #1 applies. The current entity_type is null because the user is in the component editor, not on a canvas_page.
++  - **Orchestrator Response:** "That component looks great! To add it to a page, you first need to add this to the component library using the 'Add to components' option, then create or navigate to a 'Canvas Page'. Once you are on a page, I can help you add the pricing cards."
++
++  ### Example 11: Selected Component with Empty Title and Description
++  - **Context:** The user is currently working on a canvas_page entity. User has selected a component with UUID `653d0f00-3d52-403e-a4b1-5e25ebe862c1`. Page title is empty. Page description is empty.
++  - **User:** "Add a button with text 'hello world' above and below this."
++  - **Orchestrator Actions (in parallel):**
++    1. `canvas_page_builder_agent(prompt="Add a button with the text 'hello world' above and below the selected component (UUID: 653d0f00-3d52-403e-a4b1-5e25ebe862c1).")`
++    2. `canvas_title_generation_agent(prompt="Generate an SEO-friendly title for a page whose content includes buttons with the text 'hello world'.")`
++    3. `canvas_metadata_generation_agent(prompt="Generate an SEO-friendly meta description for a page whose content includes buttons with the text 'hello world'.")`
++
++  ### Example 12: Page Building When Title and Description Already Exist
++  - **Context:** The user is currently working on a canvas_page entity. Page title: Our Company Services. Page description: Learn about the professional services our company offers.
++  - **User:** "Create a section for a bakery website that shows today's specials. Include a heading and three cards for 'Croissants', 'Sourdough Bread', and 'Chocolate Cake'."
++  - **Orchestrator Analysis:** Valid page-building task. Title and description already exist → do not invoke SEO agents.
++  - **Orchestrator Action:** `canvas_page_builder_agent(prompt="Create a section for a bakery website that shows today's specials. Include a heading and three cards for 'Croissants', 'Sourdough Bread', and 'Chocolate Cake'.")`
++
++  ### Example 13: Direct Request for Title and Description Without Chat History
++  - **Context:** The user is currently working on a canvas_page entity. Page title: My first page. Page description: My first page.
++  - **User:** "Generate a title and description for this page."
++  - **Orchestrator Analysis:** This is the first message from the user. No chat history to synthesize.
++  - **Orchestrator Actions (in parallel):**
++    1. `canvas_title_generation_agent(prompt="Generate a title for the page based on its content.")`
++    2. `canvas_metadata_generation_agent(prompt="Generate a description for the page based on its content.")`
++
++  ### Example 14: Full-Page Template Generation with Empty Title and Description
++  - **Context:** The user is currently working on a canvas_page entity. Page title is empty. Page description is empty.
++  - **User:** "Create a modern landing page for a university website featuring courses, placements, facilities, testimonials, and a contact form."
++  - **Orchestrator Actions (in parallel):**
++    1. `canvas_template_builder_agent(prompt="Create a modern landing page for a university website featuring courses, placements, facilities, testimonials, and a contact form.")`
++    2. `canvas_title_generation_agent(prompt="Generate a title for a university landing page featuring courses, placements, and facilities.")`
++    3. `canvas_metadata_generation_agent(prompt="Generate a description for a university landing page showcasing courses, placements, facilities, and testimonials.")`
++
++  ### Example 15: Template Building When Title and Description Already Exist
++  - **Context:** The user is currently working on a canvas_page entity. Page title: University Homepage. Page description: Official homepage for the university.
++  - **User:** "Create a complete landing page for a university website."
++  - **Orchestrator Analysis:** Valid template-building task. Title and description already exist → do not invoke SEO agents.
++  - **Orchestrator Action:** `canvas_template_builder_agent(prompt="Create a complete landing page for a university website.")`
++
++  ### Example 16: Template with Header/Footer in Initial Request
++  - **Context:** The user is currently working on a canvas_page entity. Page title is empty. Page description is empty.
++  - **User:** "Create a blog page about Drupal. Add a header as well."
++  - **Orchestrator Analysis:** Full-page creation request including a header → use `canvas_template_builder_agent`. Do NOT follow up with `canvas_page_builder_agent` for the header — the template builder handles it all in one call.
++  - **Orchestrator Actions (in parallel):**
++    1. `canvas_template_builder_agent(prompt="Create a blog page about Drupal with a proper header.")`
++    2. `canvas_title_generation_agent(prompt="Generate a title for a Drupal blog page.")`
++    3. `canvas_metadata_generation_agent(prompt="Generate a description for a Drupal blog page.")`
++
++  ### Example 17: Adding Header to an Existing Page
++  - **Context:** User previously generated a page for a university website homepage. Page title: My first page. Page description: My first page.
++  - **User:** "Add a header to this page."
++  - **Orchestrator Analysis:** The page already has content. This is an incremental addition → use `canvas_page_builder_agent`. Title and description exist → no SEO agents.
++  - **Orchestrator Action:** `canvas_page_builder_agent(prompt="Add a header for a university website.")`
++
++  ### Example 18: Editing Content of an Existing Component
++  - **Context:** The user is currently working on a canvas_page entity. User has selected a component with UUID `a1b2c3d4-5678-90ab-cdef-1234567890ab`. Page title: Fresh Dairy Delivery. Page description: Order fresh milk and dairy products online.
++  - **User:** "Change the heading to 'Farm-Fresh Milk, Delivered Daily' and set the background color to green."
++  - **Orchestrator Analysis:** The user wants to modify prop values of the selected component. This is a content edit → use `canvas_page_builder_agent`. Title and description exist → no SEO agents.
++  - **Orchestrator Action:** `canvas_page_builder_agent(prompt="Update the selected component (UUID: a1b2c3d4-5678-90ab-cdef-1234567890ab). Change the heading text to 'Farm-Fresh Milk, Delivered Daily' and set the background color to green.")`
++
++  ### Example 19: Editing Multiple Components on the Page
++  - **Context:** The user is currently working on a canvas_page entity. No component selected. Page title: Our Services. Page description: Professional services we offer.
++  - **User:** "Change all the card headings to uppercase style and update the first card's description to 'Premium quality guaranteed'."
++  - **Orchestrator Analysis:** Content/prop edit on multiple existing components → use `canvas_page_builder_agent`.
++  - **Orchestrator Action:** `canvas_page_builder_agent(prompt="Update the card components on the page: change all card headings to uppercase style, and update the first card's description text to 'Premium quality guaranteed'.")`
++
++  ### Example 20: Distinguishing Code Edit from Content Edit
++  - **User Turn 1:** "Create a React component for a testimonial card."
++  - **Orchestrator Action:** `canvas_component_agent(prompt="Create a React component for a testimonial card.")`
++  - **User Turn 2:** "Add a hover animation to this component."
++  - **Orchestrator Analysis:** The user wants to change the component's code behavior (hover animation) → use `canvas_component_agent`.
++  - **Orchestrator Action:** `canvas_component_agent(prompt="Add a hover animation to the testimonial card component.")`
++  - *(Later, user is on a canvas_page where this component is placed)*
++  - **User Turn 3:** "Change the testimonial quote text to 'Best service ever!'"
++  - **Orchestrator Analysis:** The user wants to change the content/prop value of a placed component → use `canvas_page_builder_agent`.
++  - **Orchestrator Action:** `canvas_page_builder_agent(prompt="Update the testimonial card component's quote text to 'Best service ever!'.")`
++
++  ### Example 21: Creating a Section Based on an Existing Component
++  - **Context:** The user is currently working on a canvas_page entity. User has selected a component with UUID `a1b2c3d4-5678-90ab-cdef-1234567890ab`. Page title: Fresh Dairy Delivery. Page description: Order fresh milk and dairy products online.
++  - **User:** "Create a new section like this, but keep a professional tone."
++  - **Orchestrator Analysis:** The user wants to create a new section modeled on the selected component → use `canvas_page_builder_agent`. Title and description exist → no SEO agents.
++  - **Orchestrator Action:** `canvas_page_builder_agent(prompt="Create a section exactly like the selected component (UUID: a1b2c3d4-5678-90ab-cdef-1234567890ab), but change the tone of the text to more professional.")`
++
++  ### Example 22: Anti-Pattern — Do NOT Call Both Page Construction Tools
++  - **Context:** Page title is empty. Page description is empty.
++  - **User:** "Create a page for a cookie shop with a header and footer."
++  - **CORRECT Orchestrator Actions (in parallel):**
++    1. `canvas_template_builder_agent(prompt="Create a page for a cookie shop with a header and footer.")`
++    2. `canvas_title_generation_agent(prompt="Generate a title for a cookie shop page.")`
++    3. `canvas_metadata_generation_agent(prompt="Generate a description for a cookie shop page.")`
++  - **INCORRECT (anti-pattern):** Calling `canvas_template_builder_agent` to create the page, then calling `canvas_page_builder_agent` to add the header and footer. The template builder already handles headers and footers.
++
++  ### Example 23: Editing a Component Referenced by Its Content
++  - **Context:** The user is currently working on a canvas_page entity. No component selected. Page title: Team Directory. Page description: Meet our team members.
++  - **User:** "Make the card about John Doe more concise."
++  - **Orchestrator Analysis:** The user is referencing a specific component by its content, not by UUID. This is a content/prop edit → use `canvas_page_builder_agent`. Title and description exist → no SEO agents.
++  - **Orchestrator Action:** `canvas_page_builder_agent(prompt="Find the card component on the page that mentions John Doe, and make its contents more concise.")`
+ 
+   ---
+ 
+@@ -247,33 +330,39 @@ tools:
+   'ai_agents::ai_agent::canvas_title_generation_agent': true
+   'ai_agent:verify_task_completion': true
+ tool_settings:
+-  'ai_agents::ai_agent::canvas_page_builder_agent':
++  'ai_agents::ai_agent::canvas_component_agent':
+     return_directly: 0
++    require_usage: 0
+     description_override: ''
+     progress_message: ''
+     use_artifacts: 0
+-  'ai_agents::ai_agent::canvas_component_agent':
++  'ai_agents::ai_agent::canvas_metadata_generation_agent':
+     return_directly: 0
++    require_usage: 0
+     description_override: ''
+     progress_message: ''
+     use_artifacts: 0
+-  'ai_agents::ai_agent::canvas_metadata_generation_agent':
++  'ai_agents::ai_agent::canvas_page_builder_agent':
+     return_directly: 0
++    require_usage: 0
+     description_override: ''
+     progress_message: ''
+     use_artifacts: 0
+   'ai_agents::ai_agent::canvas_template_builder_agent':
+     return_directly: 0
++    require_usage: 0
+     description_override: ''
+     progress_message: ''
+     use_artifacts: 0
+   'ai_agents::ai_agent::canvas_title_generation_agent':
+     return_directly: 0
++    require_usage: 0
+     description_override: ''
+     progress_message: ''
+     use_artifacts: 0
+   'ai_agent:verify_task_completion':
+     return_directly: 0
++    require_usage: 0
+     description_override: ''
+     progress_message: ''
+     use_artifacts: 0
+@@ -282,7 +371,7 @@ triage_agent: false
+ max_loops: 10
+ default_information_tools: ''
+ tool_usage_limits:
+-  'ai_agents::ai_agent::canvas_page_builder_agent':
++  'ai_agents::ai_agent::canvas_component_agent':
+     prompt:
+       action: ''
+       hide_property: 0
+@@ -291,7 +380,7 @@ tool_usage_limits:
+       action: ''
+       hide_property: 0
+       values: ''
+-  'ai_agents::ai_agent::canvas_component_agent':
++  'ai_agents::ai_agent::canvas_metadata_generation_agent':
+     prompt:
+       action: ''
+       hide_property: 0
+@@ -300,7 +389,7 @@ tool_usage_limits:
+       action: ''
+       hide_property: 0
+       values: ''
+-  'ai_agents::ai_agent::canvas_metadata_generation_agent':
++  'ai_agents::ai_agent::canvas_page_builder_agent':
+     prompt:
+       action: ''
+       hide_property: 0
+@@ -327,7 +416,7 @@ tool_usage_limits:
+       action: ''
+       hide_property: 0
+       values: ''
+-  'ai_agent:verify_task_completion': null
++  'ai_agent:verify_task_completion': {  }
+ exclude_users_role: false
+ masquerade_roles: {  }
+ structured_output_enabled: false
+diff --git a/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_page_builder_agent.yml b/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_page_builder_agent.yml
+index 05fbaf04..011fb340 100644
+--- a/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_page_builder_agent.yml
++++ b/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_page_builder_agent.yml
+@@ -6,14 +6,13 @@ dependencies:
+       - canvas_ai
+ id: canvas_page_builder_agent
+ label: 'Drupal Canvas Page Builder Agent'
+-description: 'This agent can insert one or many existing components or sections into a specific location on a page. Use this to place a previously created component or section on a layout or page.'
+-# The Prop Setting Logic section of 'system_prompt' must remain in sync with the configuration in 'canvas_template_builder_agent'.
+-system_prompt: |
++description: 'This agent can insert one or many existing components or sections into a specific location on a page. Use this to place a previously created component or section on a layout or page. It is also capable of updating existing components present in the page like changing texts, appearances, position etc'
++system_prompt: |-
+   ### **1. Persona and Core Mission**
+ 
+   You are a meticulous and sequential AI agent, serving as an expert YAML architect and content strategist for Drupal Canvas, a visual page builder for Drupal 11.
+ 
+-  Your primary mission is to generate a perfectly structured YAML payload. You are a looping agent. You adhere to a non-negotiable workflow, and use tools as the only method of performing actions. Your final output to the user is a simple confirmation, which you are STRICTLY FORBIDDEN from generating until you have received a successful, error-free response from all required tools. Claiming completion without execution is a critical failure.
++  Your primary mission is to help build and modify pages by **adding new components**, **updating the content of existing components**, and **moving components** to new positions within a page. You are a looping agent. You adhere to a non-negotiable workflow, and use tools as the only method of performing actions. Your final output to the user is a simple confirmation, which you are STRICTLY FORBIDDEN from generating until you have received a successful, error-free response from all required tools. Claiming completion without execution is a critical failure.
+ 
+   ---
+ 
+@@ -21,37 +20,45 @@ system_prompt: |
+ 
+   For each task, you will be provided with:
+ 
+-  1.  **Available Components Catalog:** Your absolute source of truth. A list of components with their `id`, `description`, `props` (with types/enums), and `slots`. You must study and adhere to these definitions precisely.
+-  2.  **Current Page Layout:** A JSON object representing the page's current state.
++  1.  **Available Components Catalog:** A lightweight list of all available components showing only their `id`, `name`, and `description`. **This catalog does NOT include props or slots.** To get the full component definition (props, slots, defaults, enums), you must use the `get_metadata_of_components` tool.
++  2.  **Current Page Layout:** A JSON object representing the page's current state, including the `uuid` and `nodepath` of every placed component.
+   3.  **Selected Component UUID:** (Optional) The UUID of a component the user has selected. Its presence indicates a contextual request.
+   4.  **User Request:** A natural language string describing the desired change.
+-  5.  **Available regions:**: Usable regions and their descriptions.
++  5.  **Available regions:** Usable regions and their descriptions.
+ 
+   ---
+ 
+   ### **3. Mandatory Sequential Workflow**
+ 
+-  You **MUST** follow these steps in this exact order. Do not skip, reorder, or combine steps.
++  You **MUST** follow these steps in this exact order.
+ 
+-  #### **Step 1: Analyze Context and Request**
++  #### **Step 1: Analyze Context and Classify Request**
+ 
+-  1.  **Component Study:** Thoroughly analyze the `Available Components Catalog`. This is your definitive guide for component structure, props, and slots.
+-  2.  **Layout Comprehension:** Parse the `Current Page Layout` to understand the existing structure, regions, and the `nodepath` and `uuid` of every component.
+-  3.  **Identify Component Names:** From the `User Request`, identify the names of any components the user explicitly wants to add.
++  1.  **Layout Comprehension:** Parse the `Current Page Layout` to understand the existing structure, regions, and the `uuid` of every component.
++  2.  **Classify the Request:** Determine which action(s) the user is requesting:
++      *   **ADD** — The user wants to add new component(s) to the page.
++      *   **MODIFY** — The user wants to change the content or prop values of component(s) already on the page.
++      *   **MOVE** — The user wants to reposition an existing component to a different location on the page.
++      *   A single request may involve a combination of these actions (e.g., "add a banner and change the heading text"). Handle each part using its respective workflow below.
++  3.  **Proceed to the appropriate workflow** based on the classification.
+ 
+-  #### **Step 2: CRITICAL Pre-Execution Validation**
++  ---
++
++  ### **Workflow A: Adding New Components**
+ 
+-  This is your first and most critical validation step.
++  #### **A1: Identify and Validate Components**
+ 
+-  1.  If the user's request explicitly names a component (e.g., "add a `Hero Banner`"), you **MUST** first verify that this component's `id` exists in the `Available Components Catalog`.
+-  2.  **If the component does NOT exist:**
+-      *   **IMMEDIATELY STOP** all further processing.
+-      *   Do not proceed to the next steps or use any tools.
+-      *   Respond with the simple text message: "The requested component '[component_name]' is not available."
++  1.  From the `User Request`, identify the components the user wants to add. The user may refer to a component by its **name** or its **id**. Match against the `Available Components Catalog` using either field.
++  2.  **If the component does NOT exist** in the catalog (by name or id): **IMMEDIATELY STOP.** Respond with: "The requested component '[component_name]' is not available."
+ 
+-  #### **Step 3: Determine Placement Strategy**
++  #### **A2: Retrieve Full Component Metadata**
+ 
+-  Based on the user request and current layout, identify the target location and reference component.
++  1.  Use the `get_metadata_of_components` tool to retrieve the full metadata (props, slots, defaults, enums) for all components you plan to add.
++  2.  Pass an array of all required component IDs in a single call — include IDs for both top-level components and any child components you intend to place in slots.
++  3.  **Do NOT proceed to the next step until you have received the full metadata.** The returned metadata is your definitive guide for component structure, props, and slots.
++  4.  If the user has selected a component, use `get_component_content` tool to retrieve its content and use it as the reference.
++
++  #### **A3: Determine Placement Strategy**
+ 
+   1.  **Identify Reference Component:** Determine the existing component that will serve as the anchor for the new component(s).
+       *   **Contextual Request (`selected_component_uuid` is present):** The reference is the selected component itself or a component within its slots.
+@@ -70,15 +77,15 @@ system_prompt: |
+   | Adding to an **empty slot**                    | The slot's ID (`parent_uuid/slot_name`)     | *(Omit this key)*          | `inside`    |
+   | Adding **above/below** an existing component | The reference component's region or slot ID | The reference `uuid`       | `above` or `below` |
+ 
+-  #### **Step 4: Plan Component Architecture & Content Generation**
++  #### **A4: Plan Component Architecture & Content Generation**
+ 
+   Design the structure and content for the new components.
+ 
+-  1.  **Component Selection:** Select the appropriate components from the catalog. If a component has `slots`, you **MUST** fill them with valid child components. **Empty slots are forbidden.**
++  1.  **Component Selection:** Select the appropriate components from the metadata retrieved in step A2. If a component has `slots`, you **MUST** fill them with valid child components. **Empty slots are forbidden.**
+ 
+   2.  **Content Quality:** Generate professional, engaging, and production-ready content. **Avoid generic placeholders like "Lorem Ipsum" or "Sample Text."** The content must be contextually relevant to the component's purpose (e.g., a "Testimonial" component must have a realistic quote and author).
+ 
+-  ### Prop Setting Logic
++  #### Prop Setting Logic
+   Follow this step-by-step logic for every prop of every component:
+ 
+   **1. Default Prop Formatting:**
+@@ -97,6 +104,7 @@ system_prompt: |
+   - **DO NOT** modify the `src` path or `alt` text, even if they don't match the context of the user's request.
+   - **CRITICAL:** Use the exact `src` and `alt` text provided in the default, even if the alt text or image path suggests a different subject matter (e.g., if the default image is about chocolate but the user is creating a library page, still use the chocolate image default exactly as provided).
+   - **DO NOT** set image props to null, empty strings, or omit them unless there is no default provided.
++  - **EXCEPTION:** To use a different image from the media library, directly pass the media ID using the format `prop_name: media_id`.
+ 
+   **Correct Example:**
+   ```yaml
+@@ -160,19 +168,75 @@ system_prompt: |
+                 another_prop: "value"
+     ```
+ 
+-  #### **Step 5: Execute `set_component_structure` tool**
++  #### **A5: Execute `set_component_structure` Tool**
++
++  1.  Build the complete YAML payload. If components must be placed in different locations (e.g., two different slots, or above one component and below another), create multiple `operations` within the single YAML structure.
++
++  2.  **Image prop errors:** If the tool returns an error about image props, verify you are using the exact keys and values from the default values for that prop.
++
++  ---
++
++  ### **Workflow B: Modifying Existing Components**
++
++  #### **B1: Identify Target Components**
++
++  1.  From the `User Request` and the `Current Page Layout`, identify the `uuid` **and** the component `id` of each component that needs to be modified. The `Current Page Layout` JSON contains both the `uuid` and the component `id` for every placed component.
++  2.  If a `selected_component_uuid` is provided and the request is contextual (e.g., "change the text"), the target is the selected component.
++  3.  If the user refers to a component by its content instead of its name, call get_metadata_of_components with no arguments to retrieve the full page content, then determine the component UUID from that content.
++
++  #### **B2: Retrieve Component Metadata and Current Content**
++
++  1.  Use `get_metadata_of_components` with the component `id`(s) obtained from the layout in B1 to retrieve the full prop definitions. This is critical because users typically refer to props by their display **name** (label), but the actual prop **id** may differ. The metadata returns both, allowing you to resolve the user's request to the correct prop ID for the update call.
++  2.  Call `get_component_content` for **each** component you intend to modify, passing its `uuid`.
++  3.  If multiple components need modification, call the tool separately for each one.
++  4.  Review the returned prop values carefully to understand the component's current state before making changes.
++  5.  To get the **entire content of the page**, call this tool without any arguments. Use this option when the user refers to a component based on its content rather than its name.
++
++  #### **B3: Apply Updates**
++
++  1.  For each component, call `update_component_data` **once**, providing the component's `uuid` and a YAML string containing **only the props that need to change**. Do not include props that should remain unchanged.
++  2.  If multiple components need updating, call `update_component_data` separately for each — one call per component UUID.
++
++  #### **B4: Special Case — Changing Images in Existing Components**
++
++  When the user requests a change to an image prop of an existing component:
+ 
+-  1. This is mandatory for all component modification requests.
+-          *   Build the complete YAML payload. If components must be placed in different locations (e.g., two different slots, or above one component and below another), create multiple `operations` within the single YAML structure.
++  1.  If the user provides a specific media ID, use that directly.
++  2.  If the user describes the desired image without providing a media ID, use the `ai_search_rag_search` tool to semantically search the media library. Provide a descriptive `search_string` based on the user's request.
++  3.  From the search results, obtain the `media_id` of the matching image.
++  4.  When calling `update_component_data`, set the image prop directly to the `media_id` value. For example, if the prop name is `featured_image`:
++      ```yaml
++      featured_image: 42
++      ```
+ 
+-  2.  **Error Handling and Retrying:**
+-      *   If a tool call fails, analyze the error message.
+-      *   Diagnose the issue, correct your YAML payload or tool inputs internally.
+-      *   Required error for image props: Make sure you use exact keys and values from default values for the prop.
+-      *   **Retry the tool call immediately.**
+-      *   Continue this internal loop until all tool calls succeed.
++  ---
++
++  ### **Workflow C: Moving Components**
++
++  #### **C1: Identify the Component and Target**
++
++  1.  From the `User Request` and the `Current Page Layout`, identify the `uuid` of the component to be moved.
++  2.  Determine the target location:
++      *   **Moving relative to another component:** Identify the `reference_uuid` of the component it should be positioned near, and the `placement` (`above` or `below`).
++      *   **Moving to an empty region:** Identify the `region` name. This option is **only valid** when the target region has no existing child components.
++
++  #### **C2: Execute the Move**
++
++  1.  Call `move_component_in_page` with the appropriate parameters.
++  2.  If multiple components need to be moved, call this tool once per component movement — execute each move separately.
++
++  ---
+ 
+-  #### **Step 6: Final User-Facing Response**
++  ### **Error Handling (All Workflows)**
++
++  *   If any tool call fails, analyze the error message.
++  *   Diagnose the issue, correct your inputs internally.
++  *   **Retry the tool call immediately.**
++  *   Continue this internal loop until all tool calls succeed.
++
++  ---
++
++  #### **Final User-Facing Response**
+ 
+   Once all tools have executed successfully:
+ 
+@@ -187,15 +251,44 @@ system_prompt: |
+ secured_system_prompt: '[ai_agent:agent_instructions]'
+ tools:
+   'canvas_ai:set_component_structure': true
++  'canvas_ai:update_component_data': true
++  'canvas_ai:get_component_content': true
++  'canvas_ai:get_metadata_of_components': true
++  'canvas_ai:move_component_in_page': true
+ tool_settings:
+   'canvas_ai:set_component_structure':
+     return_directly: 0
++    require_usage: 0
+     description_override: ''
+     progress_message: ''
+     use_artifacts: 0
++  'canvas_ai:update_component_data':
++    return_directly: 0
++    require_usage: 0
++    description_override: "Updates the prop (field) values of an existing component that is already placed on the page. Use this ONLY for components that already exist on the page (i.e., components that have a UUID in the current layout). Do NOT use this tool to add new components — use `set_component_structure` instead. Accepts a `component_uuid` and a `prop_values` YAML string. Call this tool ONCE per component — include ALL props that need to change in a single YAML string. Do not include props that don't need change. For image prop updates, set the prop value to the media ID of the desired image (e.g., `featured_image: 42`)."
++    progress_message: ''
++    use_artifacts: 0
++  'canvas_ai:get_component_content':
++    return_directly: 0
++    require_usage: 0
++    description_override: "- Retrieves the current prop (field) values of a component and its child components already placed on the page.\r\n- Returns the data as YAML, including all existing prop values (for example: heading_text, background_color, text, level, etc.).\r\n- If no UUID is provided, it returns the entire page content.\r\n- You MUST call this tool before using update_component_data to inspect the current state and make precise changes without overwriting unrelated props.\r\n- Accepts a component_uuid."
++    progress_message: ''
++    use_artifacts: 0
++  'canvas_ai:get_metadata_of_components':
++    return_directly: 0
++    require_usage: 0
++    description_override: 'Retrieves the full metadata (props, slots, default values, enums, descriptions) for specific components. Accepts an array of `component_ids`. The Available Components Catalog only provides name, id, and description — you MUST use this tool to get the complete prop and slot definitions before adding any component. Always request metadata for all components you plan to use (including child components for slots) in a single call to minimize round-trips.'
++    progress_message: ''
++    use_artifacts: 0
++  'canvas_ai:move_component_in_page':
++    return_directly: 0
++    require_usage: 0
++    description_override: 'Moves an existing component to a new location on the page. Accepts `component_uuid` (required) and either: (a) `region` — to move the component into an empty region that has no child components (do not provide `reference_uuid` or `placement` in this case), or (b) `reference_uuid` + `placement` (`above` or `below`) — to position the component relative to another existing component (do not provide `region` in this case). Call this tool once per component movement.'
++    progress_message: ''
++    use_artifacts: 0
+ orchestration_agent: false
+ triage_agent: false
+-max_loops: 10
++max_loops: 30
+ default_information_tools: |
+   current_layout:
+     label: 'Current layout'
+@@ -213,6 +306,42 @@ tool_usage_limits:
+       action: ''
+       hide_property: 0
+       values: ''
++  'canvas_ai:update_component_data':
++    component_uuid:
++      action: ''
++      hide_property: 0
++      values: ''
++    prop_values:
++      action: ''
++      hide_property: 0
++      values: ''
++  'canvas_ai:get_component_content':
++    component_uuid:
++      action: ''
++      hide_property: 0
++      values: ''
++  'canvas_ai:get_metadata_of_components':
++    component_ids:
++      action: ''
++      hide_property: 0
++      values: ''
++  'canvas_ai:move_component_in_page':
++    component_uuid:
++      action: ''
++      hide_property: 0
++      values: ''
++    region:
++      action: ''
++      hide_property: 0
++      values: ''
++    reference_uuid:
++      action: ''
++      hide_property: 0
++      values: ''
++    placement:
++      action: ''
++      hide_property: 0
++      values: ''
+ exclude_users_role: false
+ masquerade_roles: {  }
+ structured_output_enabled: false
+diff --git a/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_template_builder_agent.yml b/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_template_builder_agent.yml
+index 89679be4..8021adcc 100644
+--- a/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_template_builder_agent.yml
++++ b/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_template_builder_agent.yml
+@@ -7,7 +7,6 @@ dependencies:
+ id: canvas_template_builder_agent
+ label: 'Drupal Canvas Template Builder Agent'
+ description: 'This tool specializes in building complete web pages by assembling available components into a cohesive layout. It should be used whenever the user requests to create an entire page with or without header and footer. For example, “Create a landing page for a university website” or “Build a landing page template for a cookie shop. Add a header and footer” etc.'
+-# The Prop Setting Logic section of 'system_prompt' must remain in sync with the configuration in 'canvas_page_builder_agent'.
+ system_prompt: |-
+   You are an AI assistant specialized in Drupal Canvas. Your primary function is to generate complete web page templates by using a predefined set of tools and adhering to a strict operational flow.
+ 
+@@ -24,6 +23,9 @@ system_prompt: |-
+   - **Region descriptions**: Region descriptions may suggest which components are preferred in each region.
+ 
+   ### 2. Component Selection and Configuration
++
++  A lightweight list of all available components showing only their `id`, `name`, and `description` will be provided. **This catalog does NOT include props or slots.** To get the full component definition (props, slots, defaults, enums), you must use the `get_metadata_of_components` tool.
++
+   - **Strict Adherence**: Only use components explicitly provided in the context
+   - **Component Type Filtering**: Never use header/footer-specific components when generating page body content
+   - **Deep Analysis**: Carefully study each component's description for:
+@@ -33,6 +35,7 @@ system_prompt: |-
+     - Slot component recommendations
+     - Available enum values for props
+     - Standalone vs. nested component usage patterns
++  - **Use the `get_metadata_of_components` tool**: to retrieve the full metadata (props, slots, defaults, enums) for all components you plan to add.
+   - **Content Generation**: Create high-quality, professional, creative, production-ready content for all props
+ 
+   ### 3. Template Interpretation and Enhancement
+@@ -64,6 +67,7 @@ system_prompt: |-
+   - **DO NOT** modify the `src` path or `alt` text, even if they don't match the context of the user's request.
+   - **CRITICAL:** Use the exact `src` and `alt` text provided in the default, even if the alt text or image path suggests a different subject matter (e.g., if the default image is about chocolate but the user is creating a library page, still use the chocolate image default exactly as provided).
+   - **DO NOT** set image props to null, empty strings, or omit them unless there is no default provided.
++  - **EXCEPTION:** To use a different image from the media library, directly pass the media ID using the format `prop_name: media_id`.
+ 
+   **Correct Example:**
+   ```yaml
+@@ -136,9 +140,17 @@ system_prompt: |-
+ secured_system_prompt: '[ai_agent:agent_instructions]'
+ tools:
+   'canvas_ai:set_template_data': true
++  'canvas_ai:get_metadata_of_components': true
+ tool_settings:
+   'canvas_ai:set_template_data':
+     return_directly: 0
++    require_usage: 0
++    description_override: ''
++    progress_message: ''
++    use_artifacts: 0
++  'canvas_ai:get_metadata_of_components':
++    return_directly: 0
++    require_usage: 0
+     description_override: ''
+     progress_message: ''
+     use_artifacts: 0
+@@ -162,6 +174,11 @@ tool_usage_limits:
+       action: ''
+       hide_property: 0
+       values: ''
++  'canvas_ai:get_metadata_of_components':
++    component_ids:
++      action: ''
++      hide_property: 0
++      values: ''
+ exclude_users_role: false
+ masquerade_roles: {  }
+ structured_output_enabled: false
+diff --git a/modules/canvas_ai/config/schema/canvas_ai.schema.yml b/modules/canvas_ai/config/schema/canvas_ai.schema.yml
+index 8a6c45a1..079a5c9c 100644
+--- a/modules/canvas_ai/config/schema/canvas_ai.schema.yml
++++ b/modules/canvas_ai/config/schema/canvas_ai.schema.yml
+@@ -20,23 +20,23 @@ canvas_ai.component_description.settings:
+   label: 'Canvas AI Component Description Settings'
+   mapping:
+     component_context:
+-      type: mapping
+-      label: 'Component context definitions'
+-      mapping:
+-        '*':
+-          type: component_source_entry
+-          label: 'Component source entry'
+-
+-component_source_entry:
+-  type: mapping
+-  label: 'Single component source with components'
+-  mapping:
+-    enabled:
+-      type: boolean
+-      label: 'Enable components from this source in the context'
+-    data:
+-      type: text
+-      label: 'YAML string of components'
++      type: sequence
++      label: 'Component Source'
++      orderby: key
++      sequence:
++        type: mapping
++        label: 'Source config'
++        mapping:
++          enabled:
++            type: boolean
++            label: 'Enabled'
++            description: 'Enable or disable the components from this source.'
++          data:
++            type: text
++            label: 'Data'
++            description: 'YAML string containing the component data.'
++            constraints:
++              NotBlank: []
+ 
+ canvas_ai.theme_region.settings:
+   type: config_object
+@@ -58,3 +58,4 @@ canvas_ai.theme_region.settings:
+             description:
+               type: text
+               label: 'Region description'
++
+diff --git a/modules/canvas_ai/src/AiResponseValidator.php b/modules/canvas_ai/src/AiResponseValidator.php
+index 426a8950..14b333d5 100644
+--- a/modules/canvas_ai/src/AiResponseValidator.php
++++ b/modules/canvas_ai/src/AiResponseValidator.php
+@@ -6,6 +6,7 @@ use Drupal\canvas\Entity\Component;
+ use Drupal\canvas\Exception\ConstraintViolationException;
+ use Drupal\canvas\Plugin\Field\FieldType\ComponentTreeItemListInstantiatorTrait;
+ use Drupal\canvas\Validation\ConstraintPropertyPathTranslatorTrait;
++use Drupal\Component\Serialization\Json;
+ use Drupal\Component\Uuid\UuidInterface;
+ use Drupal\Core\Validation\BasicRecursiveValidatorFactory;
+ 
+@@ -24,10 +25,13 @@ class AiResponseValidator {
+    *   The validator factory.
+    * @param \Drupal\Component\Uuid\UuidInterface $uuidService
+    *   The UUID service.
++   * @param \Drupal\canvas_ai\CanvasAiTempStore $canvasAiTempStore
++   *   The Canvas AI tempstore service.
+    */
+   public function __construct(
+     protected readonly BasicRecursiveValidatorFactory $validatorFactory,
+     protected readonly UuidInterface $uuidService,
++    protected readonly CanvasAiTempStore $canvasAiTempStore,
+   ) {
+   }
+ 
+@@ -103,7 +107,7 @@ class AiResponseValidator {
+         if ($component instanceof Component && !empty($componentData['props'])) {
+           $source = $component->getComponentSource();
+           $clientNormalized = $component->normalizeForClientSide()->values;
+-          $clientModel['source'] = $clientNormalized['propSources'];
++          $clientModel['source'] = $clientNormalized['propSources'] ?? [];
+           $clientModel['resolved'] = $componentData['props'];
+           $inputs = $source->clientModelToInput($componentUuid, $component, $clientModel, NULL);
+         }
+@@ -185,4 +189,119 @@ class AiResponseValidator {
+     return $pathMap;
+   }
+ 
++  /**
++   * Validates prop values for a component update.
++   *
++   * @param string $componentId
++   *   The component ID (e.g. "sdc.byte_theme.card").
++   * @param array $props
++   *   The prop values provided by the update_component_data tool.
++   *
++   * @throws \InvalidArgumentException
++   *   When the component does not exist or media props have an invalid format.
++   * @throws \Drupal\canvas\Exception\ConstraintViolationException
++   *   When validation fails.
++   */
++  public function validateComponentPropUpdate(string $componentId, array $props): void {
++    // Load the component.
++    $component = Component::load($componentId);
++    if (!$component instanceof Component) {
++      throw new \InvalidArgumentException(
++        sprintf('Component "%s" does not exist.', $componentId)
++      );
++    }
++
++    $source = $component->getComponentSource();
++    $clientNormalized = $component->normalizeForClientSide()->values;
++    $propSources = $clientNormalized['propSources'] ?? [];
++
++    // Validate media props: if a media prop is provided as an array, it must
++    // contain exactly one key: target_id.
++    foreach ($propSources as $propName => $propDefinition) {
++      if (!array_key_exists($propName, $props)) {
++        continue;
++      }
++      $targetType = $propDefinition['sourceTypeSettings']['storage']['target_type'] ?? '';
++      if ($targetType === 'media' && is_array($props[$propName])) {
++        $mediaValue = $props[$propName];
++        if (count($mediaValue) !== 1 || !array_key_exists('target_id', $mediaValue)) {
++          throw new \InvalidArgumentException(
++            sprintf(
++              'The prop "%s" is a media reference. Provide it in this format: %s',
++              $propName,
++              Json::encode([$propName => ['target_id' => 91]])
++            )
++          );
++        }
++      }
++    }
++
++    // Fill in default values for required props not provided by the tool.
++    foreach ($propSources as $propName => $propDefinition) {
++      if (array_key_exists($propName, $props)) {
++        continue;
++      }
++      if (!empty($propDefinition['required'])) {
++        $defaultValue = $propDefinition['default_values']['resolved'] ?? NULL;
++        if ($defaultValue !== NULL) {
++          $props[$propName] = $defaultValue;
++        }
++      }
++    }
++
++    // Build a single-component tree and validate.
++    $componentUuid = $this->uuidService->generate();
++    $componentVersion = $component->getActiveVersion();
++
++    $clientModel = [
++      'source' => $propSources,
++      'resolved' => $props,
++    ];
++    $inputs = $source->clientModelToInput($componentUuid, $component, $clientModel, NULL);
++
++    $componentTreeData = [
++      [
++        'uuid' => $componentUuid,
++        'component_id' => $componentId,
++        'component_version' => $componentVersion,
++        'inputs' => $inputs,
++      ],
++    ];
++
++    $componentTreeItemList = $this->createDanglingComponentTreeItemList();
++    $componentTreeItemList->setValue($componentTreeData);
++    $violations = $componentTreeItemList->validate();
++
++    if ($violations->count() > 0) {
++      throw new ConstraintViolationException(
++        $violations,
++        'Component prop validation errors'
++      );
++    }
++  }
++
++  /**
++   * Validates that a component exists in the current page.
++   *
++   * @param string $uuid
++   *   The UUID of the component to validate.
++   *
++   * @throws \InvalidArgumentException
++   *   When the component does not exist in the page.
++   */
++  public function validateComponentExistsInPage(string $uuid): void {
++    $componentsJson = $this->canvasAiTempStore->getData(
++      CanvasAiTempStore::COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY
++    );
++
++    // Decode to array.
++    $components = !empty($componentsJson) ? Json::decode($componentsJson) : [];
++
++    if (!is_array($components) || !array_key_exists($uuid, $components)) {
++      throw new \InvalidArgumentException(
++        sprintf('Component with UUID "%s" does not exist in the current page.', $uuid)
++      );
++    }
++  }
++
+ }
+diff --git a/modules/canvas_ai/src/CanvasAiComponentContextHelper.php b/modules/canvas_ai/src/CanvasAiComponentContextHelper.php
+new file mode 100644
+index 00000000..6ae3f5d6
+--- /dev/null
++++ b/modules/canvas_ai/src/CanvasAiComponentContextHelper.php
+@@ -0,0 +1,89 @@
++<?php
++
++namespace Drupal\canvas_ai;
++
++use Symfony\Component\Yaml\Yaml;
++
++/**
++ * Provides helper methods for component context.
++ */
++class CanvasAiComponentContextHelper {
++
++  /**
++   * Constructor.
++   *
++   * @param \Drupal\canvas_ai\CanvasAiPageBuilderHelper $pageBuilderHelper
++   *   The Canvas AI page builder helper service.
++   */
++  public function __construct(
++    private readonly CanvasAiPageBuilderHelper $pageBuilderHelper,
++  ) {
++  }
++
++  /**
++   * Gets the less detailed component context for AI.
++   *
++   * Returns component context with only id, name, and description fields,
++   * excluding props and slots data.
++   *
++   * @return string
++   *   The component context as a YAML string.
++   */
++  public function getLessDetailedComponentContext(): string {
++    $component_context = $this->pageBuilderHelper->getComponentContextForAi();
++    $filtered_context = [];
++
++    foreach ($component_context as $source_label => $components) {
++      $filtered_context[$source_label] = [];
++      foreach ($components as $component_id => $component_data) {
++        // Keep only id, name, and description fields.
++        $filtered_context[$source_label][$component_id] = [
++          'name' => $component_data['name'] ?? '',
++          'description' => $component_data['description'] ?? '',
++        ];
++      }
++    }
++
++    return Yaml::dump($filtered_context, 4, 2);
++  }
++
++  /**
++   * Gets detailed metadata for specific components.
++   *
++   * Returns full component data for the specified component IDs containing
++   * data of props and slots.
++   *
++   * @param array $component_ids
++   *   Array of component IDs to retrieve.
++   *
++   * @return string
++   *   The component metadata as a YAML string, keyed by component ID.
++   */
++  public function getDetailedMetadataOfComponents(array $component_ids): string {
++    $component_context = $this->pageBuilderHelper->getComponentContextForAi();
++    $detailed_metadata = [];
++
++    // Loop through requested component IDs.
++    foreach ($component_ids as $component_id) {
++      // Check each source for the component.
++      foreach ($component_context as $components) {
++        if (isset($components[$component_id])) {
++          // If the component descriptions are overriden with the Canvas AI Component
++          // Description form, the 'detailed_description' field will be present. Use that
++          // instead of the default 'description' field.
++          if (isset($components[$component_id]['detailed_description'])) {
++            $components[$component_id]['description'] = $components[$component_id]['detailed_description'];
++            unset($components[$component_id]['detailed_description']);
++          }
++          // Add the full component data keyed by component ID.
++          $detailed_metadata[$component_id] = $components[$component_id];
++          // Component found, no need to check other sources.
++          break;
++        }
++      }
++    }
++
++    return Yaml::dump($detailed_metadata, 4, 2);
++  }
++
++}
+diff --git a/modules/canvas_ai/src/CanvasAiPageBuilderHelper.php b/modules/canvas_ai/src/CanvasAiPageBuilderHelper.php
+index 4336255d..e32cbf97 100644
+--- a/modules/canvas_ai/src/CanvasAiPageBuilderHelper.php
++++ b/modules/canvas_ai/src/CanvasAiPageBuilderHelper.php
+@@ -2,23 +2,29 @@
+ 
+ namespace Drupal\canvas_ai;
+ 
++use Drupal\canvas\Component\Schema\PropMetadataNormalizer;
++use Drupal\canvas\Plugin\Canvas\ComponentSource\BlockComponent;
++use Drupal\Component\Datetime\TimeInterface;
+ use Drupal\Component\Serialization\Json;
++use Drupal\Component\Utility\NestedArray;
++use Drupal\Core\Cache\CacheableMetadata;
++use Drupal\Core\Cache\CacheBackendInterface;
++use Drupal\Core\Cache\Context\CacheContextsManager;
+ use Drupal\Core\Entity\EntityTypeManagerInterface;
++use Drupal\Core\Extension\ThemeHandlerInterface;
+ use Drupal\Core\Theme\ComponentPluginManager;
+ use Drupal\Core\StringTranslation\StringTranslationTrait;
+-use Drupal\Core\Url;
+-use Symfony\Component\HttpFoundation\Request;
+-use Symfony\Component\HttpFoundation\RequestStack;
+-use Symfony\Component\HttpKernel\HttpKernelInterface;
+ use Symfony\Component\Yaml\Yaml;
+ use Drupal\Component\Utility\DiffArray;
++use Drupal\Component\Render\MarkupInterface;
+ use Drupal\Component\Uuid\UuidInterface;
++use Drupal\canvas\Controller\ApiConfigControllers;
+ use Drupal\Core\Config\ConfigFactoryInterface;
+-use Drupal\Core\Extension\ThemeHandlerInterface;
+ use Drupal\canvas\Entity\Component;
+ use Drupal\canvas\Plugin\Canvas\ComponentSource\JsComponent;
+ use Drupal\canvas\Plugin\Canvas\ComponentSource\SingleDirectoryComponent;
+-use Drupal\Component\Utility\NestedArray;
++use Drupal\Core\StreamWrapper\PublicStream;
++use Drupal\file\FileRepositoryInterface;
+ 
+ /**
+  * Provides helper methods for AI page builder.
+@@ -27,6 +33,11 @@ class CanvasAiPageBuilderHelper {
+ 
+   use StringTranslationTrait;
+ 
++  /**
++   * Cache key for storing all components keyed by source.
++   */
++  public const CACHE_KEY_ALL_COMPONENTS_BY_SOURCE = 'canvas_ai:all_components_by_source';
++
+   /**
+    * Constructor.
+    *
+@@ -36,26 +47,38 @@ class CanvasAiPageBuilderHelper {
+    *   The entity type manager.
+    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+    *   The config factory.
+-   * @param \Symfony\Component\HttpKernel\HttpKernelInterface $httpKernel
+-   *   The HTTP kernel.
+-   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+-   *   The stack of requests.
+    * @param \Drupal\Component\Uuid\UuidInterface $uuidService
+    *   The UUID service.
+    * @param \Drupal\canvas_ai\CanvasAiTempStore $canvasAiTempstore
+    *   The Canvas AI tempstore.
++   * @param \Drupal\Core\Cache\Context\CacheContextsManager $cacheContextsManager
++   *   The cache contexts manager.
++   * @param \Drupal\Core\Cache\CacheBackendInterface $cacheBackend
++   *   The cache backend.
++   * @param \Drupal\Component\Datetime\TimeInterface $time
++   *   The time service.
++   * @param \Drupal\canvas\Controller\ApiConfigControllers $apiConfigControllers
++   *   The API config controllers service.
+    * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
+    *   The theme handler.
++   * @param \Drupal\canvas\Component\Schema\PropMetadataNormalizer $propMetadataNormalizer
++   *   The prop metadata normalizer.
++   * @param \Drupal\file\FileRepositoryInterface $fileRepository
++   *   The file repository.
+    */
+   public function __construct(
+     private readonly ComponentPluginManager $componentPluginManager,
+     private readonly EntityTypeManagerInterface $entityTypeManager,
+     private readonly ConfigFactoryInterface $configFactory,
+-    private readonly HttpKernelInterface $httpKernel,
+-    private readonly RequestStack $requestStack,
+     private readonly UuidInterface $uuidService,
+     private readonly CanvasAiTempStore $canvasAiTempstore,
++    private readonly CacheContextsManager $cacheContextsManager,
++    private readonly CacheBackendInterface $cacheBackend,
++    private readonly TimeInterface $time,
++    private readonly ApiConfigControllers $apiConfigControllers,
+     private readonly ThemeHandlerInterface $themeHandler,
++    private readonly PropMetadataNormalizer $propMetadataNormalizer,
++    private readonly FileRepositoryInterface $fileRepository,
+   ) {
+   }
+ 
+@@ -64,22 +87,18 @@ class CanvasAiPageBuilderHelper {
+    *
+    * The output will be used as the context for the AI agent.
+    */
+-  public function getComponentContextForAi(): string {
++  public function getComponentContextForAi(): array {
+     $component_context = [];
+     $component_context_from_config = $this->getComponentContextFromConfig();
+     $available_components = !empty($component_context_from_config) ? $component_context_from_config : $this->getAllComponentsKeyedBySource();
+     foreach ($available_components as $components) {
+-      // Component info would be under 'components' key, when not loaded from
+-      // config.
++      // Component info would be under 'components' key.
+       if (isset($components['components'])) {
+-        $component_context += $components['components'];
+-      }
+-      else {
+-        $component_context += $components;
++        $component_context[$components['label']] = $components['components'];
+       }
+ 
+     }
+-    return Yaml::dump($component_context, 4, 2);
++    return $component_context;
+   }
+ 
+   /**
+@@ -243,21 +262,19 @@ class CanvasAiPageBuilderHelper {
+    *   The components keyed by source.
+    */
+   public function getAllComponentsKeyedBySource(): array {
++    $base_cacheability = $this->getComponentListCacheability();
++    $cache_id = $this->buildCacheId($base_cacheability);
++    $cache = $this->cacheBackend->get($cache_id);
++    if ($cache) {
++      return $cache->data ?? [];
++    }
+     $output = [];
+-    $current_request = $this->requestStack->getCurrentRequest();
+-    $sub_request = Request::create(
+-      Url::fromRoute('canvas.api.config.list', ['canvas_config_entity_type_id' => Component::ENTITY_TYPE_ID])->toString(),
+-      'GET',
+-      [],
+-      $current_request?->cookies->all() ?? [],
+-      [],
+-      $current_request?->server->all() ?? []
+-    );
+-    $sub_request->attributes->set('_format', 'json');
++
++    // Call the controller method directly instead of making a subrequest.
++    // This avoids the subrequest overhead that was interfering with form rendering.
+     try {
+-      $available_components_response = $this->httpKernel->handle($sub_request, HttpKernelInterface::SUB_REQUEST);
+-      $available_components = (string) $available_components_response->getContent();
+-      $available_components = Json::decode($available_components);
++      $available_components_response = $this->apiConfigControllers->list(Component::ENTITY_TYPE_ID);
++      $available_components = Json::decode((string) $available_components_response->getContent());
+     }
+     catch (\Exception) {
+       return [];
+@@ -267,7 +284,7 @@ class CanvasAiPageBuilderHelper {
+     }
+ 
+     /** @var \Drupal\canvas\Entity\Component[] $component_entities */
+-    $component_entities = $this->entityTypeManager->getStorage(Component::ENTITY_TYPE_ID)->loadMultiple(\array_keys($available_components));
++    $component_entities = $this->entityTypeManager->getStorage(Component::ENTITY_TYPE_ID)->loadMultiple(array_keys($available_components));
+     $sdc_definitions = $this->componentPluginManager->getDefinitions();
+ 
+     foreach ($component_entities as $component) {
+@@ -285,18 +302,54 @@ class CanvasAiPageBuilderHelper {
+       elseif ($source === JsComponent::SOURCE_PLUGIN_ID) {
+         $this->processCodeComponents($component, $output, $available_components[$component_id]);
+       }
+-      else {
+-        // Other sources: id, name, description (description = name)
+-        $output[$source]['components'][$component_id] = [
+-          'id' => $component_id,
+-          'name' => $component->label(),
+-          'description' => $component->label(),
+-        ];
++      elseif ($source === BlockComponent::SOURCE_PLUGIN_ID) {
++        $this->processBlock($component, $output);
+       }
+     }
++    $response_cacheability = $available_components_response->getCacheableMetadata();
++    $response_cacheability->addCacheableDependency($base_cacheability);
++
++    $max_age = $response_cacheability->getCacheMaxAge();
++    if ($max_age !== 0) {
++      $expire = $max_age === CacheBackendInterface::CACHE_PERMANENT
++        ? CacheBackendInterface::CACHE_PERMANENT
++        : $this->time->getRequestTime() + $max_age;
++      $this->cacheBackend->set(
++        $cache_id,
++        $output,
++        $expire,
++        $response_cacheability->getCacheTags()
++      );
++    }
++
+     return $output;
+   }
+ 
++  /**
++   * Builds cacheable metadata for the component listing.
++   */
++  private function getComponentListCacheability(): CacheableMetadata {
++    $component_entity_type = $this->entityTypeManager->getDefinition(Component::ENTITY_TYPE_ID);
++    $cacheability = new CacheableMetadata();
++    $cacheability->setCacheContexts($component_entity_type->getListCacheContexts());
++    $cacheability->setCacheTags($component_entity_type->getListCacheTags());
++    $cacheability->addCacheContexts(['user.permissions']);
++    return $cacheability;
++  }
++
++  /**
++   * Builds a cache ID that varies by cache contexts.
++   */
++  private function buildCacheId(CacheableMetadata $cacheability): string {
++    $keys = [self::CACHE_KEY_ALL_COMPONENTS_BY_SOURCE];
++    if ($contexts = $cacheability->getCacheContexts()) {
++      $context_cache_keys = $this->cacheContextsManager->convertTokensToKeys($contexts);
++      $keys = array_merge($keys, $context_cache_keys->getKeys());
++      $cacheability->addCacheableDependency($context_cache_keys);
++    }
++    return implode(':', $keys);
++  }
++
+   /**
+    * Gets the component context from the config.
+    *
+@@ -317,7 +370,8 @@ class CanvasAiPageBuilderHelper {
+     // Provide only the components from enabled sources.
+     foreach ($component_context as $source => $components) {
+       if ($components['enabled']) {
+-        $enabled_sources[$source] = Yaml::parse($components['data']);
++        $enabled_sources[$source]['label'] = $components['label'];
++        $enabled_sources[$source]['components'] = Yaml::parse($components['data']);
+       }
+     }
+ 
+@@ -385,7 +439,7 @@ class CanvasAiPageBuilderHelper {
+         $previous_props = is_array($component_data['props']) ? $component_data['props'] : [];
+         $current_props = is_array($latest_components_under_source[$component_id]['props']) ? $latest_components_under_source[$component_id]['props'] : [];
+ 
+-        if (\array_keys($previous_props) != \array_keys($current_props)) {
++        if (array_keys($previous_props) != array_keys($current_props)) {
+           // If the keys of the previous props and current props are different,
+           // then there are changes.
+           $has_changes = TRUE;
+@@ -423,7 +477,7 @@ class CanvasAiPageBuilderHelper {
+         $previous_slots = is_array($component_data['slots']) ? $component_data['slots'] : [];
+         $current_slots = is_array($latest_components_under_source[$component_id]['slots']) ? $latest_components_under_source[$component_id]['slots'] : [];
+ 
+-        if (\array_keys($previous_slots) != \array_keys($current_slots)) {
++        if (array_keys($previous_slots) != array_keys($current_slots)) {
+           // If the keys of the previous slots and current slots are different,
+           // then there are changes.
+           $has_changes = TRUE;
+@@ -496,23 +550,32 @@ class CanvasAiPageBuilderHelper {
+       $client_normalized = $component->normalizeForClientSide()->values;
+       $output[$source_id]['components'][$component_id]['props'] = [];
+       foreach ($props as $prop_name => $prop_details) {
+-        if ($prop_name === 'attributes') {
++        // Skip Drupal attributes prop.
++        if ($prop_details['type'] === 'Drupal\Core\Template\Attribute') {
+           continue;
+         }
+-        $output[$source_id]['components'][$component_id]['props'][$prop_name] = [
++        $default_value = $client_normalized["propSources"][$prop_name]["default_values"]["resolved"] ?? $prop_details['default'] ?? $prop_details['examples'][0] ?? NULL;
++        // Default values of some props may have HTML markup as default value.
++        // Convert it to string so that it can be safely YAML encoded when saving
++        // the CanvasAiComponentDescriptionSettingsForm config.
++        if ($default_value instanceof MarkupInterface) {
++          $default_value = $default_value->__toString();
++        }
++        $prop_metadata = [
+           'name' => $prop_details['title'] ?? $prop_name,
+           'description' => $prop_details['description'] ?? 'No description available',
+           'type' => $prop_details['type'],
+-          'default' => $client_normalized["propSources"][$prop_name]["default_values"]["resolved"] ?? $prop_details['default'] ?? $prop_details['examples'][0] ?? NULL,
++          'default' => $default_value,
+         ];
+ 
+         // Mark required props.
+         if (isset($sdc_definition['props']['required']) && in_array($prop_name, $sdc_definition['props']['required'], TRUE)) {
+-          $output[$source_id]['components'][$component_id]['props'][$prop_name]['required'] = TRUE;
++          $prop_metadata['required'] = TRUE;
+         }
+         if (isset($prop_details['enum'])) {
+-          $output[$source_id]['components'][$component_id]['props'][$prop_name]['enum'] = $prop_details['enum'];
++          $prop_metadata['enum'] = $prop_details['enum'];
+         }
++        $output[$source_id]['components'][$component_id]['props'][$prop_name] = $this->propMetadataNormalizer->normalize($prop_metadata, $prop_details);
+       }
+     }
+   }
+@@ -566,6 +629,38 @@ class CanvasAiPageBuilderHelper {
+     }
+   }
+ 
++  /**
++   * Create the context data for Block components.
++   *
++   * @param \Drupal\canvas\Entity\Component $component
++   *   The component entity.
++   * @param array &$output
++   *   The output array to store the Block component data.
++   */
++  public function processBlock(Component $component, array &$output): void {
++    $component_source = $component->getComponentSource();
++    assert($component_source instanceof BlockComponent);
++    // Get block default props. This returns an array keyed with prop names and
++    // their default values.
++    $block_props = $component_source->getDefaultExplicitInput();
++    $component_id = $component->id();
++    $component_name = $component->label();
++    $output[BlockComponent::SOURCE_PLUGIN_ID]['components'][$component_id] = [
++      'id' => $component_id,
++      'name' => $component_name,
++      'description' => $component_name,
++    ];
++
++    foreach ($block_props as $prop_name => $default_value) {
++      $output[BlockComponent::SOURCE_PLUGIN_ID]['components'][$component_id]['props'][$prop_name] = [
++        'name' => $prop_name,
++        'description' => $prop_name,
++        'type' => gettype($default_value),
++        'default' => $default_value,
++      ];
++    }
++  }
++
+   /**
+    * Gets the index of a slot by its name for a given component ID.
+    *
+@@ -585,7 +680,7 @@ class CanvasAiPageBuilderHelper {
+ 
+     foreach ($component_context as $source_info) {
+       if (isset($source_info['components'][$component_id]['slots'][$slot_name])) {
+-        $index = array_search($slot_name, \array_keys($source_info['components'][$component_id]['slots']), TRUE);
++        $index = array_search($slot_name, array_keys($source_info['components'][$component_id]['slots']), TRUE);
+         return ($index === FALSE) ? 0 : (int) $index;
+       }
+     }
+@@ -997,7 +1092,7 @@ class CanvasAiPageBuilderHelper {
+ 
+     // Get the position of the reference component.
+     $reference_key = end($path);
+-    $keys = \array_keys($reference);
++    $keys = array_keys($reference);
+     $reference_position = array_search($reference_key, $keys, TRUE);
+ 
+     if ($reference_position !== FALSE) {
+@@ -1104,7 +1199,7 @@ class CanvasAiPageBuilderHelper {
+       }
+       $path = $findPath($layout[$region], $uuid);
+       if (!empty($path)) {
+-        $regionIndex = array_search($region, \array_keys($layout), TRUE);
++        $regionIndex = array_search($region, array_keys($layout), TRUE);
+         if ($regionIndex !== FALSE) {
+           array_unshift($path, $regionIndex);
+         }
+@@ -1303,7 +1398,7 @@ class CanvasAiPageBuilderHelper {
+ 
+       // Add page title.
+       if (empty($prompt['page_title']) || $prompt['page_title'] === 'Untitled page') {
+-        $base_message .= 'Page title is empty. GENERATE THE TITLE FOR THE PAGE using canvas_title_generation_agent. This is a **CRITICAL** step to ensure that request is successful. ';
++        $base_message .= 'Page title is empty.';
+       }
+       else {
+         $base_message .= 'Page title: ' . $prompt['page_title'] . '. ';
+@@ -1314,7 +1409,7 @@ class CanvasAiPageBuilderHelper {
+         $base_message .= 'Page description: ' . $prompt['page_description'];
+       }
+       else {
+-        $base_message .= 'Page description is empty. GENERATE THE DESCRIPTION FOR THE PAGE using canvas_metadata_generation_agent. This is a **CRITICAL** step to ensure that request is successful.';
++        $base_message .= 'Page description is empty.';
+       }
+ 
+       return $base_message;
+@@ -1324,4 +1419,453 @@ class CanvasAiPageBuilderHelper {
+     return 'User has not created any entities';
+   }
+ 
++  /**
++   * Gets component data (name and nodePath) from a UUID in the current layout.
++   *
++   * @param string $uuid
++   *   The UUID of the component.
++   *
++   * @return array
++   *   An array with 'name' and 'nodePath' keys, or an empty array if not
++   *   found.
++   */
++  public function getComponentDataFromCurrentLayout(string $uuid): array {
++    $current_layout = $this->canvasAiTempstore->getData(CanvasAiTempStore::CURRENT_LAYOUT_KEY) ?? '';
++    $current_layout = Json::decode($current_layout);
++    if (!is_array($current_layout) || !isset($current_layout['regions'])) {
++      return [];
++    }
++
++    foreach ($current_layout['regions'] as $region_data) {
++      $components = $region_data['components'] ?? [];
++      if (!is_array($components)) {
++        continue;
++      }
++      $result = $this->findComponentDataByUuid($components, $uuid);
++      if (!empty($result)) {
++        return $result;
++      }
++    }
++
++    return [];
++  }
++
++  /**
++   * Recursively searches components for a matching UUID.
++   *
++   * @param array $components
++   *   The components array to search.
++   * @param string $uuid
++   *   The UUID to find.
++   *
++   * @return array
++   *   An array with 'name' and 'nodePath' keys, or an empty array if not
++   *   found.
++   */
++  private function findComponentDataByUuid(array $components, string $uuid): array {
++    foreach ($components as $component) {
++      if (!is_array($component)) {
++        continue;
++      }
++      if (isset($component['uuid']) && $component['uuid'] === $uuid) {
++        return [
++          'name' => $component['name'],
++          'nodePath' => $component['nodePath'],
++        ];
++      }
++      // Search in slots.
++      if (isset($component['slots']) && is_array($component['slots'])) {
++        foreach ($component['slots'] as $slot_data) {
++          $slot_components = $slot_data['components'] ?? [];
++          if (!is_array($slot_components)) {
++            continue;
++          }
++          $result = $this->findComponentDataByUuid($slot_components, $uuid);
++          if (!empty($result)) {
++            return $result;
++          }
++        }
++      }
++    }
++
++    return [];
++  }
++
++  /**
++   * Calculates the nodePath for moving a component.
++   *
++   * @param string|null $region
++   *   The target region name, if moving to an empty region.
++   * @param string|null $reference_uuid
++   *   The UUID of the reference component, if positioning relative to it.
++   * @param string|null $placement
++   *   The placement relative to the reference ('above' or 'below').
++   *
++   * @return array
++   *   The calculated nodePath.
++   */
++  public function calculateNodepathToMoveComponent(?string $region = NULL, ?string $reference_uuid = NULL, ?string $placement = NULL): array {
++    if (!empty($region)) {
++      $current_layout = $this->canvasAiTempstore->getData(CanvasAiTempStore::CURRENT_LAYOUT_KEY) ?? '';
++      $region_indices = $this->getRegionIndex($current_layout);
++      return [$region_indices[$region], 0];
++    }
++
++    if (!empty($reference_uuid)) {
++      $reference_data = $this->getComponentDataFromCurrentLayout($reference_uuid);
++      $nodePath = $reference_data['nodePath'];
++      if ($placement === 'below') {
++        $nodePath[count($nodePath) - 1]++;
++      }
++      return $nodePath;
++    }
++
++    return [];
++  }
++
++  /**
++   * Gets the content of components from the page.
++   *
++   * @param string|null $uuid
++   *   The UUID of the component to get content for. If NULL, returns all
++   *   component contents.
++   *
++   * @return array
++   *   The component content(s). Returns an empty array if no components are
++   *   stored.
++   */
++  public function getComponentContents(?string $uuid = NULL): array {
++    $components_json = $this->canvasAiTempstore->getData(
++      CanvasAiTempStore::COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY
++    );
++
++    $components = !empty($components_json) ? Json::decode($components_json) : [];
++
++    if ($uuid === NULL) {
++      return $components;
++    }
++
++    $result = $components[$uuid] ?? [];
++    if (empty($result)) {
++      return $result;
++    }
++
++    // Find the component in the current layout to check for child components.
++    $current_layout_json = $this->canvasAiTempstore->getData(CanvasAiTempStore::CURRENT_LAYOUT_KEY) ?? '';
++    $current_layout = Json::decode($current_layout_json);
++    if (!is_array($current_layout) || !isset($current_layout['regions'])) {
++      return $result;
++    }
++
++    // Search for the component node in the layout tree.
++    $component_node = NULL;
++    foreach ($current_layout['regions'] as $region_data) {
++      $layout_components = $region_data['components'] ?? [];
++      if (!is_array($layout_components)) {
++        continue;
++      }
++      $component_node = $this->findComponentNodeByUuid($layout_components, $uuid);
++      if ($component_node !== NULL) {
++        break;
++      }
++    }
++
++    // If the component has slots, recursively collect child component contents.
++    if (!empty($component_node['slots'])) {
++      $result['slots'] = $this->collectSlotChildContents($component_node['slots'], $components, $current_layout);
++    }
++
++    return $result;
++  }
++
++  /**
++   * Finds a component node in the layout tree by UUID.
++   *
++   * @param array $components
++   *   The components array from the layout.
++   * @param string $uuid
++   *   The UUID to find.
++   *
++   * @return array|null
++   *   The full component node from the layout, or NULL if not found.
++   */
++  private function findComponentNodeByUuid(array $components, string $uuid): ?array {
++    foreach ($components as $component) {
++      if (!is_array($component)) {
++        continue;
++      }
++      if (isset($component['uuid']) && $component['uuid'] === $uuid) {
++        return $component;
++      }
++      if (isset($component['slots']) && is_array($component['slots'])) {
++        foreach ($component['slots'] as $slot_data) {
++          $slot_components = $slot_data['components'] ?? [];
++          if (!is_array($slot_components)) {
++            continue;
++          }
++          $found = $this->findComponentNodeByUuid($slot_components, $uuid);
++          if ($found !== NULL) {
++            return $found;
++          }
++        }
++      }
++    }
++    return NULL;
++  }
++
++  /**
++   * Recursively collects child component contents from slots.
++   *
++   * @param array $slots
++   *   The slots array from the layout component node.
++   * @param array $all_components
++   *   The full components prop values keyed by UUID.
++   * @param array $current_layout
++   *   The decoded current layout array.
++   *
++   * @return array
++   *   An array keyed by slot name, containing child component contents
++   *   with recursive slot data.
++   */
++  private function collectSlotChildContents(array $slots, array $all_components, array $current_layout): array {
++    $slot_contents = [];
++    foreach ($slots as $slot_name => $slot_data) {
++      $children = [];
++      $slot_components = $slot_data['components'] ?? [];
++      if (!is_array($slot_components)) {
++        continue;
++      }
++      foreach ($slot_components as $child_component) {
++        if (!is_array($child_component) || !isset($child_component['uuid'])) {
++          continue;
++        }
++        $child_uuid = $child_component['uuid'];
++        $child_contents = $all_components[$child_uuid] ?? [];
++        // Recursively collect nested slot children.
++        if (!empty($child_component['slots'])) {
++          $child_contents['slots'] = $this->collectSlotChildContents($child_component['slots'], $all_components, $current_layout);
++        }
++        $children[$child_uuid] = $child_contents;
++      }
++      $slot_contents[$slot_name] = $children;
++    }
++    return $slot_contents;
++  }
++
++  /**
++   * Includes UPDATE operations in the response alongside any existing ADD ops.
++   *
++   * @param array $updateComponents
++   *   An array of component update entries, each containing 'uuid' and
++   *   'fieldValues' keys.
++   * @param array $response
++   *   The current response array, which may already contain 'operations' with
++   *   ADD entries from SetAIGeneratedComponentStructure.
++   *
++   * @return array
++   *   The response array with the UPDATE operation included.
++   */
++  public function includeUpdateOperations(array $updateComponents, array $response): array {
++    $updateOperation = [
++      'operation' => 'UPDATE',
++      'components' => $updateComponents,
++    ];
++
++    if (isset($response['operations']) && $this->hasAddOperation($response['operations'])) {
++      // Operations with ADD already exist. Append the UPDATE operation.
++      $response['operations'][] = $updateOperation;
++    }
++    else {
++      // No operations or no ADD operation present. Create operations with
++      // the UPDATE entry.
++      $response['operations'] = [$updateOperation];
++    }
++
++    return $response;
++  }
++
++  /**
++   * Checks if any operation in the array has the ADD type.
++   *
++   * @param array $operations
++   *   The operations array to check.
++   *
++   * @return bool
++   *   TRUE if an ADD operation exists, FALSE otherwise.
++   */
++  private function hasAddOperation(array $operations): bool {
++    foreach ($operations as $operation) {
++      if (isset($operation['operation']) && $operation['operation'] === 'ADD') {
++        return TRUE;
++      }
++    }
++    return FALSE;
++  }
++
++  /**
++   * Checks if any operation in the array has the UPDATE type.
++   *
++   * @param array $operations
++   *   The operations array to check.
++   *
++   * @return bool
++   *   TRUE if an UPDATE operation exists, FALSE otherwise.
++   */
++  private function hasUpdateOperation(array $operations): bool {
++    foreach ($operations as $operation) {
++      if (isset($operation['operation']) && $operation['operation'] === 'UPDATE') {
++        return TRUE;
++      }
++    }
++    return FALSE;
++  }
++
++  /**
++   * Includes MOVE operations in the response alongside any existing operations.
++   *
++   * @param array $moveComponents
++   *   An array of component move entries, each containing 'uuid' and
++   *   'nodePath' keys.
++   * @param array $response
++   *   The current response array, which may already contain 'operations' with
++   *   ADD and/or UPDATE entries.
++   *
++   * @return array
++   *   The response array with the MOVE operation appended.
++   */
++  public function includeMoveOperations(array $moveComponents, array $response): array {
++    $moveOperation = [
++      'operation' => 'MOVE',
++      'components' => $moveComponents,
++    ];
++
++    if (isset($response['operations']) && ($this->hasAddOperation($response['operations']) || $this->hasUpdateOperation($response['operations']))) {
++      $response['operations'][] = $moveOperation;
++    }
++    else {
++      $response['operations'] = [$moveOperation];
++    }
++
++    return $response;
++  }
++
++  /**
++   * Populates media prop values for component updates when not provided.
++   *
++   * If a component has a media prop and a media is added to it other than the
++   * default image, Canvas throws render errors when updating the component. So
++   * we check if the component to be updated has any media props, and then check
++   * if the agent is trying to update the media prop. If not, we try to load
++   * the media entity corresponding to the image uploaded in the prop and if it
++   * exists, we append it to the current prop values to prevent the render
++   * error.
++   *
++   * @param string $componentId
++   *   The component ID (e.g., "sdc.byte_theme.card").
++   * @param string $uuid
++   *   The UUID of the component instance in the page.
++   * @param array $propValuesGivenByAgent
++   *   The prop values from the update tool after validation.
++   *
++   * @return array
++   *   The prop values with media entity IDs populated where needed.
++   */
++  public function populateMediaPropIfNeeded(string $componentId, string $uuid, array $propValuesGivenByAgent): array {
++    $component = Component::load($componentId);
++    if (!$component instanceof Component) {
++      return $propValuesGivenByAgent;
++    }
++
++    $clientNormalized = $component->normalizeForClientSide()->values;
++    $propSources = $clientNormalized['propSources'] ?? [];
++
++    // Collect media prop names that need population.
++    $mediaPropsToPopulate = [];
++    foreach ($propSources as $propName => $propDefinition) {
++      $targetType = $propDefinition['sourceTypeSettings']['storage']['target_type'] ?? '';
++      if ($targetType !== 'media') {
++        continue;
++      }
++
++      // If the tool already provided a value for this prop, skip.
++      if (array_key_exists($propName, $propValuesGivenByAgent)) {
++        continue;
++      }
++
++      $mediaPropsToPopulate[] = $propName;
++    }
++
++    if (empty($mediaPropsToPopulate)) {
++      return $propValuesGivenByAgent;
++    }
++
++    // Get the current component contents to resolve media URLs.
++    $componentContents = $this->getComponentContents($uuid);
++    if (empty($componentContents)) {
++      return $propValuesGivenByAgent;
++    }
++
++    foreach ($mediaPropsToPopulate as $propName) {
++      $mediaPropValue = $componentContents[$propName] ?? NULL;
++      if (!is_array($mediaPropValue) || empty($mediaPropValue['src'])) {
++        continue;
++      }
++
++      $mediaId = $this->getMediaIdFromSrc($mediaPropValue['src']);
++      if ($mediaId !== NULL) {
++        $propValuesGivenByAgent[$propName] = $mediaId;
++      }
++    }
++
++    return $propValuesGivenByAgent;
++  }
++
++  /**
++   * Resolves a file URL to its corresponding media entity ID.
++   *
++   * @param string $src
++   *   The file URL path (e.g.,
++   *   "/sites/default/files/2025-07/person_3.png?alternateWidths=...").
++   *
++   * @return int|null
++   *   The media entity ID, or NULL if no matching media entity was found.
++   */
++  protected function getMediaIdFromSrc(string $src): ?int {
++    // Strip query string from the src URL.
++    $path = \parse_url($src, PHP_URL_PATH);
++    if (empty($path)) {
++      return NULL;
++    }
++
++    // Convert the public file URL path to a stream URI.
++    $publicFilesPath = PublicStream::basePath();
++    $pos = \strpos($path, $publicFilesPath);
++    if ($pos === FALSE) {
++      return NULL;
++    }
++
++    // Extract the relative path after the public files directory.
++    $relativePath = \substr($path, $pos + \strlen($publicFilesPath));
++    $relativePath = ltrim($relativePath, '/');
++    $uri = 'public://' . $relativePath;
++
++    // Load the file entity by URI.
++    $file = $this->fileRepository->loadByUri($uri);
++    if ($file === NULL) {
++      return NULL;
++    }
++
++    // Query media entities that reference this file via field_media_image.
++    $mediaIds = $this->entityTypeManager->getStorage('media')->getQuery()
++      ->accessCheck(FALSE)
++      ->condition('field_media_image.target_id', $file->id())
++      ->execute();
++
++    if (!empty($mediaIds)) {
++      return (int) reset($mediaIds);
++    }
++
++    return NULL;
++  }
++
+ }
+diff --git a/modules/canvas_ai/src/CanvasAiTempStore.php b/modules/canvas_ai/src/CanvasAiTempStore.php
+index a8efc073..c35269e6 100644
+--- a/modules/canvas_ai/src/CanvasAiTempStore.php
++++ b/modules/canvas_ai/src/CanvasAiTempStore.php
+@@ -15,6 +15,12 @@ class CanvasAiTempStore {
+    */
+   public const CURRENT_LAYOUT_KEY = 'current_layout';
+ 
++  /**
++   * Storage key for components in the page with their prop values.
++   * This holds the content added to the props of each component in the pagae.
++   */
++  public const COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY = 'components_in_page_with_prop_values';
++
+   /**
+    * The private tempstore object.
+    *
+@@ -73,4 +79,12 @@ class CanvasAiTempStore {
+     $this->tempStore->delete($key);
+   }
+ 
++  /**
++   * Deletes all data for the defined keys.
++   */
++  public function deleteAll(): void {
++    $this->deleteData(self::CURRENT_LAYOUT_KEY);
++    $this->deleteData(self::COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY);
++  }
++
+ }
+diff --git a/modules/canvas_ai/src/Controller/CanvasBuilder.php b/modules/canvas_ai/src/Controller/CanvasBuilder.php
+index 690a875c..be745336 100644
+--- a/modules/canvas_ai/src/Controller/CanvasBuilder.php
++++ b/modules/canvas_ai/src/Controller/CanvasBuilder.php
+@@ -10,6 +10,8 @@ use Drupal\ai\OperationType\GenericType\ImageFile;
+ use Drupal\ai_agents\Service\AgentStatus\Interfaces\AiAgentStatusPollerServiceInterface;
+ use Drupal\ai_agents\Service\AgentStatus\UpdateItems\TextGenerated;
+ use Drupal\canvas_ai\Plugin\AiFunctionCall\BuilderResponseFunctionCallInterface;
++use Drupal\canvas_ai\Plugin\AiFunctionCall\MoveComponentInPage;
++use Drupal\canvas_ai\Plugin\AiFunctionCall\UpdateComponentData;
+ use Drupal\Component\Plugin\PluginManagerInterface;
+ use Drupal\Component\Serialization\Json;
+ use Drupal\Core\Access\CsrfTokenGenerator;
+@@ -65,6 +67,8 @@ final class CanvasBuilder extends ControllerBase {
+    *   The current request.
+    */
+   public function render(Request $request): JsonResponse {
++    // Clear all data in the temp store at the beginning of each request.
++    $this->canvasAiTempStore->deleteAll();
+     $token = $request->headers->get('X-CSRF-Token') ?? '';
+     if (!$this->csrfTokenGenerator->validate($token, 'canvas_ai.canvas_builder')) {
+       throw new AccessDeniedHttpException('Invalid CSRF token');
+@@ -231,6 +235,14 @@ final class CanvasBuilder extends ControllerBase {
+       'verbose_context_for_orchestrator' => $this->canvasAiPageBuilderHelper->generateVerboseContextForOrchestrator($prompt),
+       'custom_libraries' => $this->getSupportedLibraries(),
+     ]);
++
++    // This holds the content added to the props of each component in the pagae.
++    $layout = $prompt['layout'] ?? [];
++    $this->canvasAiTempStore->setData(
++      CanvasAiTempStore::COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY,
++      $layout
++    );
++
+     try {
+       $solvability = $agent->determineSolvability();
+     }
+@@ -256,18 +268,39 @@ final class CanvasBuilder extends ControllerBase {
+     elseif ($solvability == AiAgentInterface::JOB_SOLVABLE) {
+       $response['status'] = TRUE;
+       $tools = $agent->getToolResults(TRUE);
++      $updateComponents = [];
++      $moveComponents = [];
+       if (!empty($tools)) {
+         foreach ($tools as $tool) {
+           if ($tool instanceof BuilderResponseFunctionCallInterface) {
+-            $response = array_merge($response, $tool->getStructuredOutput());
++            if ($tool instanceof UpdateComponentData) {
++              $updateComponents[] = $tool->getStructuredOutput();
++            }
++            elseif ($tool instanceof MoveComponentInPage) {
++              $moveComponents[] = $tool->getStructuredOutput();
++            }
++            else {
++              $response = array_merge($response, $tool->getStructuredOutput());
++            }
+           }
+           if (in_array($tool->getPluginId(), ['ai_agents::ai_agent::canvas_page_builder_agent', 'ai_agents::ai_agent::canvas_template_builder_agent'], TRUE)) {
+             $this->canvasAiTempStore->deleteData(CanvasAiTempStore::CURRENT_LAYOUT_KEY);
+           }
+         }
+       }
++      if (!empty($updateComponents)) {
++        $response = $this->canvasAiPageBuilderHelper->includeUpdateOperations($updateComponents, $response);
++      }
++      if (!empty($moveComponents)) {
++        $response = $this->canvasAiPageBuilderHelper->includeMoveOperations($moveComponents, $response);
++      }
+       // The final message seen by the user should be the one from the orchestrator agent.
+       $response['message'] = $agent->solve();
++      if (isset($response['operations'])) {
++        // Keep operations first so they are executed first; this includes
++        // component add/update instructions for the page.
++        $response = ['operations' => $response['operations']] + $response;
++      }
+       return new JsonResponse(
+         $response,
+       );
+@@ -468,12 +501,6 @@ final class CanvasBuilder extends ControllerBase {
+         "description" => "A utility function to efficiently merge Tailwind CSS classes in JS without style conflicts.",
+         "code" => "```js\nimport { twMerge } from 'tailwind-merge';\n\ntwMerge('px-2 py-1 bg-red hover:bg-dark-red', 'p-3 bg-[#B91C1C]');\n// → 'hover:bg-dark-red p-3 bg-[#B91C1C]'\n```",
+       ],
+-      [
+-        "name" => 'tailwindcss_typography',
+-        "type" => "Bundled npm package",
+-        "description" => "A Tailwind CSS plugin that provides a set of pre-configured typography classes for consistent and readable text styles.",
+-        "code" => "```js\n<FormattedText className=\"prose md:prose-lg lg:prose-xl\">\n  {body}\n</FormattedText>\n```",
+-      ],
+     ];
+   }
+ 
+diff --git a/modules/canvas_ai/src/EventSubscriber/PageBuilderAgentPreExecuteSubscriber.php b/modules/canvas_ai/src/EventSubscriber/PageBuilderAgentPreExecuteSubscriber.php
+new file mode 100644
+index 00000000..c4d5926d
+--- /dev/null
++++ b/modules/canvas_ai/src/EventSubscriber/PageBuilderAgentPreExecuteSubscriber.php
+@@ -0,0 +1,56 @@
++<?php
++
++namespace Drupal\canvas_ai\EventSubscriber;
++
++use Drupal\ai_agents\Event\AgentRequestEvent;
++use Drupal\ai_agents\PluginInterfaces\ConfigAiAgentInterface;
++use Symfony\Component\EventDispatcher\EventSubscriberInterface;
++
++/**
++ * Prepends selected component UUID to user input for the page builder agent.
++ */
++class PageBuilderAgentPreExecuteSubscriber implements EventSubscriberInterface {
++
++  /**
++   * {@inheritdoc}
++   */
++  public static function getSubscribedEvents(): array {
++    return [
++      AgentRequestEvent::EVENT_NAME => 'onAgentRequest',
++    ];
++  }
++
++  /**
++   * Prepends selected component UUID to user input if not already present.
++   */
++  public function onAgentRequest(AgentRequestEvent $event): void {
++    if ($event->getAgentId() !== 'canvas_page_builder_agent') {
++      return;
++    }
++
++    $agent = $event->getAgent();
++    if (!$agent instanceof ConfigAiAgentInterface) {
++      return;
++    }
++
++    $tokens = $agent->getTokenContexts();
++    $uuid = $tokens['active_component_uuid'] ?? '';
++    if (empty($uuid) || $uuid === 'None') {
++      return;
++    }
++
++    $input = $event->getChatInput();
++    /** @var \Drupal\ai\OperationType\Chat\ChatMessage $message */
++    foreach ($input->getMessages() as $message) {
++      if ($message->getRole() !== 'user') {
++        continue;
++      }
++      $text = $message->getText();
++      if (str_contains($text, $uuid)) {
++        continue;
++      }
++      $message->setText('Selected Component UUID: ' . $uuid . '. For component additions and edits, use this component and its child components as reference.' . "\n" . $text);
++    }
++  }
++
++}
+diff --git a/modules/canvas_ai/src/Form/CanvasAiComponentDescriptionSettingsForm.php b/modules/canvas_ai/src/Form/CanvasAiComponentDescriptionSettingsForm.php
+index 382529a6..12e57d6e 100644
+--- a/modules/canvas_ai/src/Form/CanvasAiComponentDescriptionSettingsForm.php
++++ b/modules/canvas_ai/src/Form/CanvasAiComponentDescriptionSettingsForm.php
+@@ -93,6 +93,8 @@ final class CanvasAiComponentDescriptionSettingsForm extends ConfigFormBase {
+   public function submitForm(array &$form, FormStateInterface $form_state): void {
+     $component_context = $form_state->getValue('component_context');
+     $available_components = $this->pageBuilderHelper->getAllComponentsKeyedBySource();
++    $config_data = [];
++
+     foreach ($component_context as $source => $components) {
+       // Replace descriptions with the submitted descriptions.
+       foreach ($components['components'] as $component_id => $component_data_from_form) {
+@@ -100,6 +102,9 @@ final class CanvasAiComponentDescriptionSettingsForm extends ConfigFormBase {
+           // Replace the component description.
+           $available_components[$source]['components'][$component_id]['description'] = $component_data_from_form['description'];
+ 
++          // Replace the component detailed description.
++          $available_components[$source]['components'][$component_id]['detailed_description'] = $component_data_from_form['detailed_description'];
++
+           // Replace the props descriptions.
+           if (isset($available_components[$source]['components'][$component_id]['props']) && is_array($available_components[$source]['components'][$component_id]['props'])) {
+             foreach ($available_components[$source]['components'][$component_id]['props'] as $prop_id => $prop_data) {
+@@ -116,11 +121,16 @@ final class CanvasAiComponentDescriptionSettingsForm extends ConfigFormBase {
+         }
+       }
+ 
+-      $this->config('canvas_ai.component_description.settings')
+-        ->set('component_context.' . $source . '.enabled', $components['enabled'])
+-        ->set('component_context.' . $source . '.data', Yaml::encode($available_components[$source]['components']))
+-        ->save();
++      $config_data[$source] = [
++        'enabled' => $components['enabled'],
++        'label' => $available_components[$source]['label'],
++        'data' => Yaml::encode($available_components[$source]['components']),
++      ];
+     }
++
++    $this->config('canvas_ai.component_description.settings')
++      ->set('component_context', $config_data)
++      ->save();
+     parent::submitForm($form, $form_state);
+   }
+ 
+@@ -134,7 +144,21 @@ final class CanvasAiComponentDescriptionSettingsForm extends ConfigFormBase {
+       '#tree' => TRUE,
+     ];
+     $form['description'] = [
+-      '#markup' => $this->t('Use this form to customize the descriptions of available components, including their props and slots. These descriptions will help the AI better understand and utilize components when building pages.'),
++      '#markup' => $this->t('
++        <p>Use this form to customize the descriptions of available components, including their props and slots. These descriptions will help the AI better understand and utilize components when building pages.</p>
++        <p><strong>Description:</strong> Write one clear sentence that briefly explains what this component is and its primary purpose, so AI can quickly understand it.</p>
++        <p><strong>Detailed description:</strong> Provide a concise, structured explanation describing when to use this component, how it should be used, and any important constraints, so AI understands the correct context and usage.</p>
++        <p><strong>Example: For an accordion component</strong></p>
++        <p><strong>Description:</strong> A collapsible accordion component that groups related content into expandable panels to save space and let users reveal details on demand.</p>
++        <p><strong>Detailed description:</strong> Use this component to organize large or dense content into clearly labeled sections that users can expand or collapse.</p>
++        <ul>
++          <li>Best suited for FAQs, help content, or overview-plus-details patterns where not all information must be visible at once.</li>
++          <li>Helps reduce vertical clutter while keeping all content accessible through user interaction.</li>
++          <li>Panels should have clear, descriptive titles that indicate what content will be revealed.</li>
++          <li>Avoid using when users must compare multiple sections at the same time or read content sequentially.</li>
++          <li>Works best with a limited number of panels (roughly 3–7) and well-structured, scannable content inside each panel.</li>
++        </ul>
++      '),
+     ];
+ 
+     foreach ($usable_components as $source => $source_data) {
+@@ -160,8 +184,15 @@ final class CanvasAiComponentDescriptionSettingsForm extends ConfigFormBase {
+         $form[$source]['components'][$component_id]['description'] = [
+           '#type' => 'textarea',
+           '#title' => $this->t('Description'),
++          '#rows' => 2,
+           '#default_value' => $this->getDefaultValue($source, $component_id) ?? $component_data['description'],
+         ];
++        // Component Detailed description element.
++        $form[$source]['components'][$component_id]['detailed_description'] = [
++          '#type' => 'textarea',
++          '#title' => $this->t('Detailed description'),
++          '#default_value' => $this->getDefaultValue($source, $component_id, '', '', TRUE) ?? $component_data['description'],
++        ];
+ 
+         // Description elements for each prop.
+         if (isset($component_data['props']) && is_array($component_data['props'])) {
+@@ -237,11 +268,13 @@ final class CanvasAiComponentDescriptionSettingsForm extends ConfigFormBase {
+    *   The id of the prop or slot.
+    * @param string $type
+    *   The type: 'props' or 'slots'.
++   * @param bool $detailed
++   *   Whether to get the detailed description. Defaults to FALSE.
+    *
+    * @return string|null
+    *   The default description value for the component, prop, or slot.
+    */
+-  private function getDefaultValue(string $source, string $component_id, string $identifier = '', string $type = ''): ?string {
++  private function getDefaultValue(string $source, string $component_id, string $identifier = '', string $type = '', bool $detailed = FALSE): ?string {
+     $component_context_decoded = $this->getComponentContextData($source);
+     if ($component_context_decoded) {
+       if ($type && $identifier) {
+@@ -254,8 +287,21 @@ final class CanvasAiComponentDescriptionSettingsForm extends ConfigFormBase {
+       else {
+         // If type and identifier are not provided, return the description for
+         // the component.
+-        if (isset($component_context_decoded[$component_id]['description'])) {
+-          return $component_context_decoded[$component_id]['description'];
++        if ($detailed) {
++          // First try to get the detailed description.
++          if (isset($component_context_decoded[$component_id]['detailed_description'])) {
++            return $component_context_decoded[$component_id]['detailed_description'];
++          }
++          // Fall back to the regular description if detailed description is not found.
++          if (isset($component_context_decoded[$component_id]['description'])) {
++            return $component_context_decoded[$component_id]['description'];
++          }
++        }
++        else {
++          // Return the regular description.
++          if (isset($component_context_decoded[$component_id]['description'])) {
++            return $component_context_decoded[$component_id]['description'];
++          }
+         }
+       }
+     }
+diff --git a/modules/canvas_ai/src/Plugin/AiFunctionCall/GetComponentContent.php b/modules/canvas_ai/src/Plugin/AiFunctionCall/GetComponentContent.php
+new file mode 100644
+index 00000000..57ceeb18
+--- /dev/null
++++ b/modules/canvas_ai/src/Plugin/AiFunctionCall/GetComponentContent.php
+@@ -0,0 +1,98 @@
++<?php
++
++namespace Drupal\canvas_ai\Plugin\AiFunctionCall;
++
++use Drupal\ai\Attribute\FunctionCall;
++use Drupal\ai\Base\FunctionCallBase;
++use Drupal\ai\Service\FunctionCalling\ExecutableFunctionCallInterface;
++use Drupal\ai\Service\FunctionCalling\FunctionCallInterface;
++use Drupal\ai_agents\PluginInterfaces\AiAgentContextInterface;
++use Drupal\canvas_ai\AiResponseValidator;
++use Drupal\canvas_ai\CanvasAiPageBuilderHelper;
++use Drupal\Core\Logger\LoggerChannelFactoryInterface;
++use Drupal\Core\Plugin\Context\ContextDefinition;
++use Drupal\Core\StringTranslation\TranslatableMarkup;
++use Symfony\Component\DependencyInjection\ContainerInterface;
++use Symfony\Component\Yaml\Yaml;
++
++/**
++ * Plugin to get component content from the current page.
++ */
++#[FunctionCall(
++  id: 'canvas_ai:get_component_content',
++  function_name: 'get_component_content',
++  name: 'Get Component Content',
++  description: 'Retrieves the content and property values of components placed in the current page. Use this to get the actual content that has been set for components.',
++  group: 'information_tools',
++  module_dependencies: ['canvas_ai'],
++  context_definitions: [
++    'component_uuid' => new ContextDefinition(
++      data_type: 'string',
++      label: new TranslatableMarkup("Component UUID"),
++      description: new TranslatableMarkup("The UUID of the component for which content should be extracted. If not provided, this tool will return the complete content of all components placed in the page."),
++      required: FALSE,
++    ),
++  ],
++)]
++final class GetComponentContent extends FunctionCallBase implements ExecutableFunctionCallInterface, AiAgentContextInterface {
++
++  /**
++   * The Canvas AI page builder helper.
++   *
++   * @var \Drupal\canvas_ai\CanvasAiPageBuilderHelper
++   */
++  protected CanvasAiPageBuilderHelper $pageBuilderHelper;
++
++  /**
++   * The response validator service.
++   *
++   * @var \Drupal\canvas_ai\AiResponseValidator
++   */
++  protected AiResponseValidator $responseValidator;
++
++  /**
++   * The logger factory.
++   *
++   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
++   */
++  protected LoggerChannelFactoryInterface $loggerFactory;
++
++  /**
++   * {@inheritdoc}
++   */
++  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): FunctionCallInterface | static {
++    $instance = new static(
++      $configuration,
++      $plugin_id,
++      $plugin_definition,
++      $container->get('ai.context_definition_normalizer'),
++    );
++    $instance->pageBuilderHelper = $container->get('canvas_ai.page_builder_helper');
++    $instance->responseValidator = $container->get('canvas_ai.response_validator');
++    $instance->loggerFactory = $container->get('logger.factory');
++    return $instance;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function execute(): void {
++    try {
++      $component_uuid = $this->getContextValue('component_uuid');
++      if (!empty($component_uuid)) {
++        // Validate if component with the provided uuid exists in the page.
++        $this->responseValidator->validateComponentExistsInPage($component_uuid);
++      }
++
++      // Get component contents - will throw exception if UUID provided but not found.
++      $contents = $this->pageBuilderHelper->getComponentContents($component_uuid);
++
++      $this->setOutput(Yaml::dump($contents, 10, 2));
++    }
++    catch (\InvalidArgumentException $e) {
++      $this->loggerFactory->get('canvas_ai')->error($e->getMessage());
++      $this->setOutput(Yaml::dump(['error' => $e->getMessage()], 10, 2));
++    }
++  }
++
++}
+diff --git a/modules/canvas_ai/src/Plugin/AiFunctionCall/GetComponentContext.php b/modules/canvas_ai/src/Plugin/AiFunctionCall/GetComponentContext.php
+index ace1c96c..ed2bdd4a 100644
+--- a/modules/canvas_ai/src/Plugin/AiFunctionCall/GetComponentContext.php
++++ b/modules/canvas_ai/src/Plugin/AiFunctionCall/GetComponentContext.php
+@@ -7,7 +7,7 @@ use Drupal\ai\Base\FunctionCallBase;
+ use Drupal\ai\Service\FunctionCalling\ExecutableFunctionCallInterface;
+ use Drupal\ai\Service\FunctionCalling\FunctionCallInterface;
+ use Drupal\ai_agents\PluginInterfaces\AiAgentContextInterface;
+-use Drupal\canvas_ai\CanvasAiPageBuilderHelper;
++use Drupal\canvas_ai\CanvasAiComponentContextHelper;
+ use Drupal\canvas_ai\CanvasAiPermissions;
+ use Symfony\Component\DependencyInjection\ContainerInterface;
+ use Drupal\Core\Session\AccountProxyInterface;
+@@ -16,7 +16,7 @@ use Drupal\Core\Session\AccountProxyInterface;
+  * Function call plugin to get component context.
+  *
+  * This plugin retrieves information about all available components in the site
+- * using the CanvasPageBuilderHelper service. The information can be used by AI
++ * using the CanvasAiComponentContextHelper service. The information can be used by AI
+  * agents to understand available components and their capabilities.
+  *
+  * @internal
+@@ -32,11 +32,11 @@ use Drupal\Core\Session\AccountProxyInterface;
+ final class GetComponentContext extends FunctionCallBase implements ExecutableFunctionCallInterface, AiAgentContextInterface {
+ 
+   /**
+-   * The Canvas page builder helper service.
++   * The Canvas AI component context helper service.
+    *
+-   * @var \Drupal\canvas_ai\CanvasAiPageBuilderHelper
++   * @var \Drupal\canvas_ai\CanvasAiComponentContextHelper
+    */
+-  protected CanvasAiPageBuilderHelper $pageBuilderHelper;
++  protected CanvasAiComponentContextHelper $componentContextHelper;
+ 
+   /**
+    * The current user.
+@@ -55,7 +55,7 @@ final class GetComponentContext extends FunctionCallBase implements ExecutableFu
+       $plugin_definition,
+       $container->get('ai.context_definition_normalizer'),
+     );
+-    $instance->pageBuilderHelper = $container->get('canvas_ai.page_builder_helper');
++    $instance->componentContextHelper = $container->get('canvas_ai.component_context_helper');
+     $instance->currentUser = $container->get('current_user');
+     return $instance;
+   }
+@@ -68,7 +68,7 @@ final class GetComponentContext extends FunctionCallBase implements ExecutableFu
+     if (!$this->currentUser->hasPermission(CanvasAiPermissions::USE_CANVAS_AI)) {
+       throw new \Exception('The current user does not have the right permissions to run this tool.');
+     }
+-    $this->setOutput($this->pageBuilderHelper->getComponentContextForAi());
++    $this->setOutput($this->componentContextHelper->getLessDetailedComponentContext());
+   }
+ 
+ }
+diff --git a/modules/canvas_ai/src/Plugin/AiFunctionCall/GetMetadataOfComponents.php b/modules/canvas_ai/src/Plugin/AiFunctionCall/GetMetadataOfComponents.php
+new file mode 100644
+index 00000000..2ec6cb72
+--- /dev/null
++++ b/modules/canvas_ai/src/Plugin/AiFunctionCall/GetMetadataOfComponents.php
+@@ -0,0 +1,95 @@
++<?php
++
++namespace Drupal\canvas_ai\Plugin\AiFunctionCall;
++
++use Drupal\ai\Attribute\FunctionCall;
++use Drupal\ai\Base\FunctionCallBase;
++use Drupal\ai\Service\FunctionCalling\ExecutableFunctionCallInterface;
++use Drupal\ai\Service\FunctionCalling\FunctionCallInterface;
++use Drupal\ai_agents\PluginInterfaces\AiAgentContextInterface;
++use Drupal\canvas_ai\CanvasAiComponentContextHelper;
++use Drupal\canvas_ai\CanvasAiPermissions;
++use Drupal\Core\Plugin\Context\ContextDefinition;
++use Drupal\Core\Session\AccountProxyInterface;
++use Drupal\Core\StringTranslation\TranslatableMarkup;
++use Symfony\Component\DependencyInjection\ContainerInterface;
++
++/**
++ * Function call plugin to get detailed metadata for specific components.
++ *
++ * This plugin retrieves full component information (including props and slots)
++ * for a list of component IDs using the CanvasAiComponentContextHelper service.
++ *
++ * @internal
++ */
++#[FunctionCall(
++  id: 'canvas_ai:get_metadata_of_components',
++  function_name: 'get_metadata_of_components',
++  name: 'Get Metadata of Components',
++  description: 'This method gets detailed metadata (including props and slots) for specific components. Provide an array of component IDs.',
++  group: 'information_tools',
++  context_definitions: [
++    'component_ids' => new ContextDefinition(
++      data_type: 'string',
++      label: new TranslatableMarkup("Component IDs"),
++      description: new TranslatableMarkup("Array of component IDs to retrieve metadata for. Example: ['js.banner', 'block.system_menu_block.footer']"),
++      required: TRUE,
++      multiple: TRUE,
++    ),
++  ],
++  module_dependencies: ['canvas_ai'],
++)]
++final class GetMetadataOfComponents extends FunctionCallBase implements ExecutableFunctionCallInterface, AiAgentContextInterface {
++
++  /**
++   * The Canvas AI component context helper service.
++   *
++   * @var \Drupal\canvas_ai\CanvasAiComponentContextHelper
++   */
++  protected CanvasAiComponentContextHelper $componentContextHelper;
++
++  /**
++   * The current user.
++   *
++   * @var \Drupal\Core\Session\AccountProxyInterface
++   */
++  protected AccountProxyInterface $currentUser;
++
++  /**
++   * The component metadata output.
++   *
++   * @var string
++   */
++  protected string $output = '';
++
++  /**
++   * Load from dependency injection container.
++   */
++  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): FunctionCallInterface | static {
++    $instance = new static(
++      $configuration,
++      $plugin_id,
++      $plugin_definition,
++      $container->get('ai.context_definition_normalizer'),
++    );
++    $instance->componentContextHelper = $container->get('canvas_ai.component_context_helper');
++    $instance->currentUser = $container->get('current_user');
++    return $instance;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function execute(): void {
++    // Make sure that the user has the right permissions.
++    if (!$this->currentUser->hasPermission(CanvasAiPermissions::USE_CANVAS_AI)) {
++      throw new \Exception('The current user does not have the right permissions to run this tool.');
++    }
++
++    // Get the component IDs from context (this will be an array).
++    $component_ids = $this->getContextValue('component_ids');
++
++    $this->setOutput($this->componentContextHelper->getDetailedMetadataOfComponents($component_ids));
++  }
++
++}
+diff --git a/modules/canvas_ai/src/Plugin/AiFunctionCall/MoveComponentInPage.php b/modules/canvas_ai/src/Plugin/AiFunctionCall/MoveComponentInPage.php
+new file mode 100644
+index 00000000..a57bbce3
+--- /dev/null
++++ b/modules/canvas_ai/src/Plugin/AiFunctionCall/MoveComponentInPage.php
+@@ -0,0 +1,136 @@
++<?php
++
++namespace Drupal\canvas_ai\Plugin\AiFunctionCall;
++
++use Drupal\ai\Attribute\FunctionCall;
++use Drupal\ai\Base\FunctionCallBase;
++use Drupal\ai\Service\FunctionCalling\ExecutableFunctionCallInterface;
++use Drupal\ai\Service\FunctionCalling\FunctionCallInterface;
++use Drupal\ai_agents\PluginInterfaces\AiAgentContextInterface;
++use Drupal\canvas_ai\AiResponseValidator;
++use Drupal\canvas_ai\CanvasAiPageBuilderHelper;
++use Drupal\Core\Logger\LoggerChannelFactoryInterface;
++use Drupal\Core\Plugin\Context\ContextDefinition;
++use Drupal\Core\StringTranslation\TranslatableMarkup;
++use Symfony\Component\DependencyInjection\ContainerInterface;
++
++/**
++ * Function call plugin to move a component in the page.
++ */
++#[FunctionCall(
++  id: 'canvas_ai:move_component_in_page',
++  function_name: 'move_component_in_page',
++  name: 'Move Component In Page',
++  description: 'Moves an existing component to a new location in the page.',
++  group: 'modification_tools',
++  module_dependencies: ['canvas_ai'],
++  context_definitions: [
++    'component_uuid' => new ContextDefinition(
++      data_type: 'string',
++      label: new TranslatableMarkup("Component UUID"),
++      description: new TranslatableMarkup("The UUID of the component to move."),
++      required: TRUE,
++    ),
++    'region' => new ContextDefinition(
++      data_type: 'string',
++      label: new TranslatableMarkup("Region"),
++      description: new TranslatableMarkup("The region to move the component to. Use this only when moving to an empty region."),
++      required: FALSE,
++    ),
++    'reference_uuid' => new ContextDefinition(
++      data_type: 'string',
++      label: new TranslatableMarkup("Reference UUID"),
++      description: new TranslatableMarkup("The UUID of the reference component to position near."),
++      required: FALSE,
++    ),
++    'placement' => new ContextDefinition(
++      data_type: 'string',
++      label: new TranslatableMarkup("Placement"),
++      description: new TranslatableMarkup("Placement relative to the reference component ('above' or 'below')."),
++      required: FALSE,
++    ),
++  ],
++)]
++final class MoveComponentInPage extends FunctionCallBase implements ExecutableFunctionCallInterface, AiAgentContextInterface, BuilderResponseFunctionCallInterface {
++
++  /**
++   * The response validator service.
++   *
++   * @var \Drupal\canvas_ai\AiResponseValidator
++   */
++  protected AiResponseValidator $responseValidator;
++
++  /**
++   * The Canvas page builder helper service.
++   *
++   * @var \Drupal\canvas_ai\CanvasAiPageBuilderHelper
++   */
++  protected CanvasAiPageBuilderHelper $pageBuilderHelper;
++
++  /**
++   * The logger factory.
++   *
++   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
++   */
++  protected LoggerChannelFactoryInterface $loggerFactory;
++
++  /**
++   * {@inheritdoc}
++   */
++  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): FunctionCallInterface | static {
++    $instance = new static(
++      $configuration,
++      $plugin_id,
++      $plugin_definition,
++      $container->get('ai.context_definition_normalizer'),
++    );
++    $instance->responseValidator = $container->get('canvas_ai.response_validator');
++    $instance->pageBuilderHelper = $container->get('canvas_ai.page_builder_helper');
++    $instance->loggerFactory = $container->get('logger.factory');
++    return $instance;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function execute(): void {
++    try {
++      $component_uuid = $this->getContextValue('component_uuid');
++      $region = $this->getContextValue('region');
++      $reference_uuid = $this->getContextValue('reference_uuid');
++      $placement = $this->getContextValue('placement');
++
++      $this->responseValidator->validateComponentExistsInPage($component_uuid);
++
++      if (!empty($region)) {
++        if (!empty($reference_uuid)) {
++          throw new \InvalidArgumentException('If region is used, reference UUID must not be provided.');
++        }
++        if ($this->pageBuilderHelper->hasChildComponents($region)) {
++          throw new \InvalidArgumentException('Region is used only when there are no child components in that region.');
++        }
++      }
++
++      if (!empty($reference_uuid)) {
++        // Validate if the reference component exists in the page.
++        $this->responseValidator->validateComponentExistsInPage($reference_uuid);
++        if (empty($placement)) {
++          throw new \InvalidArgumentException('If reference UUID is provided, then placement must be provided.');
++        }
++      }
++
++      $nodePath = $this->pageBuilderHelper->calculateNodepathToMoveComponent($region, $reference_uuid, $placement);
++
++      $this->setStructuredOutput([
++        'uuid' => $component_uuid,
++        'nodePath' => $nodePath,
++      ]);
++      $this->setOutput(sprintf('Component %s moved successfully.', $component_uuid));
++    }
++    catch (\Exception $e) {
++      $this->loggerFactory->get('canvas_ai')->error($e->getMessage());
++      $this->setOutput(sprintf('Failed to move component: %s', $e->getMessage()));
++    }
++  }
++
++}
+diff --git a/modules/canvas_ai/src/Plugin/AiFunctionCall/SetAIGeneratedComponentStructure.php b/modules/canvas_ai/src/Plugin/AiFunctionCall/SetAIGeneratedComponentStructure.php
+index a60d24d5..b96bca50 100644
+--- a/modules/canvas_ai/src/Plugin/AiFunctionCall/SetAIGeneratedComponentStructure.php
++++ b/modules/canvas_ai/src/Plugin/AiFunctionCall/SetAIGeneratedComponentStructure.php
+@@ -110,7 +110,7 @@ final class SetAIGeneratedComponentStructure extends FunctionCallBase implements
+       // Once validated, convert this yml to JSON that will be processed by
+       // the Canvas UI.
+       $custom_yaml = $this->pageBuilderHelper->customYamlToArrayMapper($component_structure);
+-      \assert(\array_keys($custom_yaml) === ['operations']);
++      \assert(array_keys($custom_yaml) === ['operations']);
+       $this->setStructuredOutput($custom_yaml);
+       $this->setOutput('Component structure processed successfully.');
+     }
+diff --git a/modules/canvas_ai/src/Plugin/AiFunctionCall/SetAIGeneratedTemplateData.php b/modules/canvas_ai/src/Plugin/AiFunctionCall/SetAIGeneratedTemplateData.php
+index 6468b41e..6a2dfd95 100644
+--- a/modules/canvas_ai/src/Plugin/AiFunctionCall/SetAIGeneratedTemplateData.php
++++ b/modules/canvas_ai/src/Plugin/AiFunctionCall/SetAIGeneratedTemplateData.php
+@@ -112,9 +112,9 @@ final class SetAIGeneratedTemplateData extends FunctionCallBase implements Execu
+       // Validate if regions are correct.
+       $current_layout = $this->tempStore->getData(CanvasAiTempStore::CURRENT_LAYOUT_KEY) ?? '';
+       $layout_regions = $this->pageBuilderHelper->getRegionIndex($current_layout);
+-      foreach (\array_keys($component_structure_array) as $region) {
+-        if (!\array_key_exists($region, $layout_regions)) {
+-          $available_regions = implode(', ', \array_keys($layout_regions));
++      foreach (array_keys($component_structure_array) as $region) {
++        if (!array_key_exists($region, $layout_regions)) {
++          $available_regions = implode(', ', array_keys($layout_regions));
+           throw new \Exception(\sprintf(
+             'Region "%s" does not exist. Available regions are: %s.',
+             $region,
+diff --git a/modules/canvas_ai/src/Plugin/AiFunctionCall/UpdateComponentData.php b/modules/canvas_ai/src/Plugin/AiFunctionCall/UpdateComponentData.php
+new file mode 100644
+index 00000000..b83d390d
+--- /dev/null
++++ b/modules/canvas_ai/src/Plugin/AiFunctionCall/UpdateComponentData.php
+@@ -0,0 +1,118 @@
++<?php
++
++namespace Drupal\canvas_ai\Plugin\AiFunctionCall;
++
++use Drupal\ai\Attribute\FunctionCall;
++use Drupal\ai\Base\FunctionCallBase;
++use Drupal\ai\Service\FunctionCalling\ExecutableFunctionCallInterface;
++use Drupal\ai\Service\FunctionCalling\FunctionCallInterface;
++use Drupal\ai_agents\PluginInterfaces\AiAgentContextInterface;
++use Drupal\canvas_ai\AiResponseValidator;
++use Drupal\canvas_ai\CanvasAiPageBuilderHelper;
++use Drupal\Core\Logger\LoggerChannelFactoryInterface;
++use Drupal\Core\Plugin\Context\ContextDefinition;
++use Drupal\Core\StringTranslation\TranslatableMarkup;
++use Symfony\Component\DependencyInjection\ContainerInterface;
++use Symfony\Component\Yaml\Yaml;
++
++/**
++ * Function call plugin to update component data.
++ */
++#[FunctionCall(
++  id: 'canvas_ai:update_component_data',
++  function_name: 'update_component_data',
++  name: 'Update Component Data',
++  description: 'Updates the property values of an existing component in the page.',
++  group: 'modification_tools',
++  module_dependencies: ['canvas_ai'],
++  context_definitions: [
++    'component_uuid' => new ContextDefinition(
++      data_type: 'string',
++      label: new TranslatableMarkup("Component UUID"),
++      description: new TranslatableMarkup("The UUID of the component to update."),
++      required: TRUE,
++    ),
++    'prop_values' => new ContextDefinition(
++      data_type: 'string',
++      label: new TranslatableMarkup("Property Values"),
++      description: new TranslatableMarkup("The new property values for the component in YAML format."),
++      required: TRUE,
++    ),
++  ],
++)]
++final class UpdateComponentData extends FunctionCallBase implements ExecutableFunctionCallInterface, AiAgentContextInterface, BuilderResponseFunctionCallInterface {
++
++  /**
++   * The response validator service.
++   *
++   * @var \Drupal\canvas_ai\AiResponseValidator
++   */
++  protected AiResponseValidator $responseValidator;
++
++  /**
++   * The page builder helper service.
++   *
++   * @var \Drupal\canvas_ai\CanvasAiPageBuilderHelper
++   */
++  protected CanvasAiPageBuilderHelper $pageBuilderHelper;
++
++  /**
++   * The logger factory.
++   *
++   * @var \Drupal\Core\Logger\LoggerChannelFactoryInterface
++   */
++  protected LoggerChannelFactoryInterface $loggerFactory;
++
++  /**
++   * {@inheritdoc}
++   */
++  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): FunctionCallInterface | static {
++    $instance = new static(
++      $configuration,
++      $plugin_id,
++      $plugin_definition,
++      $container->get('ai.context_definition_normalizer'),
++    );
++    $instance->responseValidator = $container->get('canvas_ai.response_validator');
++    $instance->pageBuilderHelper = $container->get('canvas_ai.page_builder_helper');
++    $instance->loggerFactory = $container->get('logger.factory');
++    return $instance;
++  }
++
++  /**
++   * {@inheritdoc}
++   */
++  public function execute(): void {
++    try {
++      $component_uuid = $this->getContextValue('component_uuid');
++      $prop_values = $this->getContextValue('prop_values');
++
++      // Validate if component with the provided uuid exists in the page.
++      $this->responseValidator->validateComponentExistsInPage($component_uuid);
++
++      // Get the component ID from the UUID and validate prop values.
++      $component_data = $this->pageBuilderHelper->getComponentDataFromCurrentLayout($component_uuid);
++      $component_id = $component_data['name'];
++      $parsed_props = Yaml::parse($prop_values);
++      $this->responseValidator->validateComponentPropUpdate($component_id, $parsed_props);
++
++      // Populate media prop values with their current media entity IDs
++      // if not explicitly provided by the tool.
++      $parsed_props = $this->pageBuilderHelper->populateMediaPropIfNeeded($component_id, $component_uuid, $parsed_props);
++
++      // Return the uuid and parsed prop values as structured output.
++      $this->setStructuredOutput([
++        'uuid' => $component_uuid,
++        'fieldValues' => $parsed_props,
++      ]);
++
++      // Set output message.
++      $this->setOutput(sprintf('The component with uuid %s was updated successfully.', $component_uuid));
++    }
++    catch (\Exception $e) {
++      $this->loggerFactory->get('canvas_ai')->error($e->getMessage());
++      $this->setOutput(sprintf('Failed to update component data: %s', $e->getMessage()));
++    }
++  }
++
++}
+diff --git a/modules/canvas_ai/tests/src/Kernel/CanvasPackagesDocsFileHashTest.php b/modules/canvas_ai/tests/src/Kernel/CanvasPackagesDocsFileHashTest.php
+index b337cc3a..2902a0fa 100644
+--- a/modules/canvas_ai/tests/src/Kernel/CanvasPackagesDocsFileHashTest.php
++++ b/modules/canvas_ai/tests/src/Kernel/CanvasPackagesDocsFileHashTest.php
+@@ -19,7 +19,7 @@ class CanvasPackagesDocsFileHashTest extends KernelTestBase {
+   public function testLibrariesFileHash(): void {
+     // Path to the packages file as defined in the docs section.
+     $file_path = __DIR__ . '/../../../../../docs/user/src/content/docs/code-components/packages.mdx';
+-    $expected_hash = 'bebc3622fad500a681f343b17a9e058b1ed923c7b09b57b5b0fb4fae630832ad';
++    $expected_hash = '5f0692937656ba9507ad247ee085e10c6d18849e76117e65a2888893816204ca';
+ 
+     $this->assertFileExists($file_path);
+ 
+diff --git a/src/Component/Schema/PropChoiceOptionsResolver.php b/src/Component/Schema/PropChoiceOptionsResolver.php
+new file mode 100644
+index 00000000..febe2a58
+--- /dev/null
++++ b/src/Component/Schema/PropChoiceOptionsResolver.php
+@@ -0,0 +1,174 @@
++<?php
++
++declare(strict_types=1);
++
++namespace Drupal\canvas\Component\Schema;
++
++use Drupal\Component\Serialization\Json;
++use Drupal\Core\Cache\CacheableMetadata;
++use Drupal\Core\StringTranslation\TranslatableMarkup;
++use Drupal\Core\StringTranslation\TranslationInterface;
++
++/**
++ * Resolves enum option labels for component prop schemas.
++ *
++ * @internal
++ */
++final class PropChoiceOptionsResolver {
++
++  /**
++   * Constructs a PropChoiceOptionsResolver.
++   *
++   * @param \Drupal\Core\StringTranslation\TranslationInterface $stringTranslation
++   *   The string translation service.
++   */
++  public function __construct(
++    private readonly TranslationInterface $stringTranslation,
++  ) {
++  }
++
++  /**
++   * Resolve label/value options for a prop schema fragment.
++   *
++   * @param array $prop_schema
++   *   The prop schema fragment.
++   * @param \Drupal\Core\Cache\CacheableMetadata|null $cacheability
++   *   Cacheability metadata to bubble.
++   *
++   * @return array<int, array{label: string, value: mixed}>
++   *   A list of label/value options for the enum.
++   */
++  public function resolveEnumOptions(array $prop_schema, ?CacheableMetadata $cacheability = NULL): array {
++    if (!isset($prop_schema['enum']) || !is_array($prop_schema['enum'])) {
++      return [];
++    }
++
++    $meta_enum = $prop_schema['meta:enum'] ?? NULL;
++    $has_meta_enum = is_array($meta_enum);
++    $meta_enum_is_list = $has_meta_enum && array_is_list($meta_enum);
++
++    $translation_context = isset($prop_schema['x-translation-context'])
++      ? (string) $prop_schema['x-translation-context']
++      : '';
++    $translate_labels = $translation_context !== '';
++    if ($translate_labels && $cacheability) {
++      $cacheability->addCacheContexts(['languages:language_interface']);
++    }
++
++    $options = [];
++    foreach ($prop_schema['enum'] as $index => $value) {
++      $label = NULL;
++      if ($has_meta_enum) {
++        if ($meta_enum_is_list) {
++          if (array_key_exists($index, $meta_enum)) {
++            $label = $meta_enum[$index];
++          }
++        }
++        else {
++          $lookup = $this->stringifyEnumValue($value);
++          if (array_key_exists($lookup, $meta_enum)) {
++            $label = $meta_enum[$lookup];
++          }
++        }
++      }
++
++      if ($label === NULL) {
++        $label = $value;
++      }
++
++      $options[] = [
++        'label' => $this->normalizeLabel($label, $translation_context, $translate_labels),
++        'value' => $value,
++      ];
++    }
++
++    return $options;
++  }
++
++  /**
++   * Normalizes a label to a string, optionally translating it.
++   *
++   * @param mixed $label
++   *   The label value.
++   * @param string $translation_context
++   *   Translation context string.
++   * @param bool $translate
++   *   Whether to run translation on plain strings.
++   *
++   * @return string
++   *   The normalized label.
++   */
++  private function normalizeLabel(mixed $label, string $translation_context, bool $translate): string {
++    if ($label instanceof TranslatableMarkup) {
++      return (string) $label;
++    }
++    if ($label instanceof \Stringable) {
++      return (string) $label;
++    }
++
++    if ($label === TRUE) {
++      $label = 'true';
++    }
++    elseif ($label === FALSE) {
++      $label = 'false';
++    }
++    elseif ($label === NULL) {
++      $label = 'null';
++    }
++    elseif (is_scalar($label)) {
++      $label = (string) $label;
++    }
++    else {
++      $label = $this->encodeFallback($label);
++    }
++
++    if ($translate && $translation_context !== '') {
++      return (string) $this->stringTranslation->translate($label, [], ['context' => $translation_context]);
++    }
++
++    return (string) $label;
++  }
++
++  /**
++   * Stringifies an enum value for meta:enum lookup.
++   *
++   * @param mixed $value
++   *   Enum value.
++   *
++   * @return string
++   *   Stringified enum value.
++   */
++  private function stringifyEnumValue(mixed $value): string {
++    if ($value === TRUE) {
++      return 'true';
++    }
++    if ($value === FALSE) {
++      return 'false';
++    }
++    if ($value === NULL) {
++      return 'null';
++    }
++    if (is_scalar($value)) {
++      return (string) $value;
++    }
++    if ($value instanceof \Stringable) {
++      return (string) $value;
++    }
++    return $this->encodeFallback($value);
++  }
++
++  /**
++   * Encodes a fallback label for non-scalar values.
++   *
++   * @param mixed $value
++   *   The value to encode.
++   *
++   * @return string
++   *   The encoded value or placeholder.
++   */
++  private function encodeFallback(mixed $value): string {
++    $encoded = Json::encode($value);
++    return $encoded === FALSE ? '[unable to encode]' : $encoded;
++  }
++
++}
+diff --git a/src/Component/Schema/PropMetadataNormalizer.php b/src/Component/Schema/PropMetadataNormalizer.php
+new file mode 100644
+index 00000000..8aa27557
+--- /dev/null
++++ b/src/Component/Schema/PropMetadataNormalizer.php
+@@ -0,0 +1,48 @@
++<?php
++
++declare(strict_types=1);
++
++namespace Drupal\canvas\Component\Schema;
++
++use Drupal\Core\Cache\CacheableMetadata;
++
++/**
++ * Normalizes prop metadata for consumers.
++ *
++ * @internal
++ */
++final class PropMetadataNormalizer {
++
++  /**
++   * Constructs a PropMetadataNormalizer.
++   *
++   * @param \Drupal\canvas\Component\Schema\PropChoiceOptionsResolver $choiceOptionsResolver
++   *   The choice options resolver.
++   */
++  public function __construct(
++    private readonly PropChoiceOptionsResolver $choiceOptionsResolver,
++  ) {
++  }
++
++  /**
++   * Adds normalized metadata to a prop.
++   *
++   * @param array $prop_metadata
++   *   Baseline prop metadata array.
++   * @param array $prop_schema
++   *   Prop schema fragment.
++   * @param \Drupal\Core\Cache\CacheableMetadata|null $cacheability
++   *   Optional cacheability metadata to bubble.
++   *
++   * @return array
++   *   Normalized prop metadata.
++   */
++  public function normalize(array $prop_metadata, array $prop_schema, ?CacheableMetadata $cacheability = NULL): array {
++    $options = $this->choiceOptionsResolver->resolveEnumOptions($prop_schema, $cacheability);
++    if ($options !== []) {
++      $prop_metadata['enum_options'] = $options;
++    }
++    return $prop_metadata;
++  }
++
++}
+diff --git a/ui/src/components/aiExtension/AiWizard.tsx b/ui/src/components/aiExtension/AiWizard.tsx
+index f2dbb3cb..d398874a 100644
+--- a/ui/src/components/aiExtension/AiWizard.tsx
++++ b/ui/src/components/aiExtension/AiWizard.tsx
+@@ -23,6 +23,7 @@ import { deserializeProps } from '@/features/code-editor/utils/utils';
+ import {
+   selectModel,
+   setUpdatePreview,
++  moveNode,
+ } from '@/features/layout/layoutModelSlice';
+ import {
+   selectPageData,
+@@ -171,6 +172,7 @@ const createdContentHandler = {
+     const value = message.created_content;
+     dispatch(setUpdatePreview(true));
+     dispatch(updatePageDataExternally({ 'title[0][value]': value }));
++    await delay(1000);
+   },
+ };
+ 
+@@ -180,6 +182,7 @@ const editContentHandler = {
+     const value = message.refined_text;
+     dispatch(setUpdatePreview(true));
+     dispatch(updatePageDataExternally({ 'title[0][value]': value }));
++    await delay(1000);
+   },
+ };
+ const metadataHandler = {
+@@ -192,29 +195,24 @@ const metadataHandler = {
+         'description[0][value]': value.metatag_description,
+       }),
+     );
++    await delay(1000);
++  },
++};
++
++const seoHandler = {
++  canHandle: (msg: any) => 'schema_org_data' in msg && msg.schema_org_data,
++  handle: async ({ message, dispatch }: { message: any; dispatch: any }) => {
++    const value = message.schema_org_data;
++    dispatch(setUpdatePreview(true));
++    dispatch(
++      updatePageDataExternally({
++        'schema_jsonld[0][value]': value,
++      }),
++    );
++    await delay(1000);
+   },
+ };
+ 
+-// Filters out 'media' fields from a js component instance's fieldValues based on the
+-// component definition's propSources, forcing the component to use the example
+-// image from its definition.
+-// @todo Refactor this after https://www.drupal.org/i/3552000 is fixed.
+-function removeMediaFields(componentDef: CanvasComponent, componentInst: any) {
+-  const newFieldValues = {} as any;
+-  const fieldValues = componentInst.fieldValues || {};
+-  for (const [key, value] of Object.entries(fieldValues)) {
+-    const prop = (componentDef as PropSourceComponent).propSources[key];
+-    const isMedia =
+-      (prop?.sourceTypeSettings?.storage as any)?.target_type === 'media';
+-    if (!isMedia) {
+-      newFieldValues[key] = value;
+-    }
+-  }
+-  return {
+-    ...componentInst,
+-    fieldValues: newFieldValues,
+-  };
+-}
+ 
+ // Helper to delay the placement of components.
+ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+@@ -240,7 +238,7 @@ const operationsHandler = {
+   }) => {
+     // Logic for placing components (SDCs/Blocks/Code components) to the editor frame.
+     for (const op of message.operations) {
+-      // Only 'Add' operation is supported for now.
++      // Handle ADD operation - adds new components to the layout.
+       if (
+         op.operation === 'ADD' &&
+         op.components &&
+@@ -251,15 +249,11 @@ const operationsHandler = {
+           if (component.id && availableComponents[component.id]) {
+             const componentToUse: CanvasComponent =
+               availableComponents[component.id];
+-            const componentAfterFilteringImageProps = removeMediaFields(
+-              componentToUse,
+-              component,
+-            );
+             dispatch(
+               layoutUtils.addNewComponentToLayout(
+                 {
+                   component: componentToUse,
+-                  withValues: componentAfterFilteringImageProps.fieldValues,
++                  withValues: component.fieldValues,
+                   to: component.nodePath,
+                 },
+                 componentSelectionUtils.setSelectedComponent,
+@@ -270,6 +264,45 @@ const operationsHandler = {
+           }
+         }
+       }
++
++      // Handle UPDATE operation - updates prop values of existing components.
++      if (
++        op.operation === 'UPDATE' &&
++        op.components &&
++        Array.isArray(op.components)
++      ) {
++        for (const component of op.components) {
++          if (component.uuid && component.fieldValues) {
++            console.log('here');
++            await dispatch(
++              layoutUtils.updateExistingComponentValues({
++                componentToUpdateId: component.uuid,
++                values: component.fieldValues,
++              }),
++            );
++          }
++        }
++      }
++
++      // Handle MOVE operation - moves components to a new position.
++      if (
++        op.operation === 'MOVE' &&
++        op.components &&
++        Array.isArray(op.components)
++      ) {
++        for (const component of op.components) {
++          if (component.uuid && component.nodePath) {
++            dispatch(
++              moveNode({
++                uuid: component.uuid,
++                to: component.nodePath,
++              }),
++            );
++            // Wait for a short duration to allow the move to complete/render if necessary.
++            await delay(500);
++          }
++        }
++      }
+     }
+     const { entityId, entityType } = params;
+     // Redirect to /editor.
+@@ -286,6 +319,7 @@ const messageHandlers = [
+   propsMetadataHandler,
+   requiredPropsHandler,
+   metadataHandler,
++  seoHandler,
+   operationsHandler,
+ ];
+ 
+@@ -790,7 +824,7 @@ const AiWizard = () => {
+           }}
+           // @todo Revisit once https://www.drupal.org/node/3528730 is in.
+           requestBodyLimits={{
+-            maxMessages: 3,
++            maxMessages: 5,
+           }}
+           connect={{
+             // Defining a handler instead of an object to ensure we can work with

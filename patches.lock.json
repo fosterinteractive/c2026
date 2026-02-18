@@ -1,5 +1,5 @@
 {
-    "_hash": "a10fd81821aac1cad88645607ecc7fee905161995f14b4d8c752c4489de91725",
+    "_hash": "a1929010b2b4d6a68f7a188b4b5dae6359a1584f098c8f491c372dd6754443f8",
     "patches": {
         "drupal/ai_agents": [
             {
@@ -7,6 +7,18 @@
                 "description": "MR #236: Fix system prompt handling in AiAgentEntityWrapper",
                 "url": "https://git.drupalcode.org/project/ai_agents/-/merge_requests/236.diff",
                 "sha256": "397fd684bdffce9162d581b4c6b7c03fea3bef05c0ae406c49e7d0a498a20136",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "drupal/canvas": [
+            {
+                "package": "drupal/canvas",
+                "description": "issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873",
+                "url": "patches/canvas/issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873.patch",
+                "sha256": "804a49e4a88726fea47aaf2b511701baa4364d8bee43087e6e229de84be32088",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

@@ -8,18 +8,10 @@ ddev delete -O -y
 ddev start
 ddev composer install
 
-# Remove the canvas module from contrib. Use the one under custom modules.
-# @todo: Replace with a patch.
-if [ -d "web/modules/contrib/canvas" ]; then
-  echo "Deleting canvas module from contrib: web/modules/contrib/canvas"
-  rm -rf web/modules/contrib/canvas
-else
-  echo "Can't find canvas module at web/modules/contrib/canvas"
-fi
-
+## This recipe was generated with the command  ddev drush site:export --destination=../custom_recipes/findrop
 ddev drush si ../custom_recipes/findrop -y
 
-# AI context module has a dependncy on ECA ^2.0. BUt Drupal CMS 2 requires ECA ^3.
+# AI context module has a dependncy on ECA ^2.0. BUt Drupal CMS 2.0 requires ECA ^3.
 # So clone AI Context module from its repo and setup separately.
 if [ -d "web/modules/contrib/ai_context" ]; then
   echo "Deleting existing ai_context module from contrib: web/modules/contrib/ai_context"
@@ -30,26 +22,5 @@ git clone git@git.drupal.org:project/ai_context.git web/modules/contrib/ai_conte
 ddev drush en ai_context -y
 ddev drush recipe ../custom_recipes/ai_context_setup
 
-if [ -d "web/modules/custom/canvas" ]; then
-  pushd web/modules/custom/canvas > /dev/null
-  npm install
-
-  if [ -d "ui" ]; then
-    pushd ui > /dev/null
-    npm run build
-    popd > /dev/null
-  else
-    echo "Can't find UI directory at web/modules/custom/canvas/ui"
-    exit 1
-  fi
-
-  popd > /dev/null
-else
-  echo "Can't find custom canvas module at web/modules/custom/canvas"
-  exit 1
-fi
-
-ddev drush sapi-i
-ddev drush cr
-
+echo "Demo setup complete. You can log in to the Drupal site using the following URL:"
 ddev drush uli
