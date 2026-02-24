@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+## Description: Export all Canvas page entities (with media and other dependencies) into the findrop recipe.
+## Usage: export-canvas-pages
+## Example: ddev export-canvas-pages
+
+set -euo pipefail
+
+RECIPE_CONTENT_DIR="custom_recipes/findrop/content"
+EXPORT_CMD="php web/core/scripts/drupal content:export"
+
+echo "==> Clearing existing canvas_page exports..."
+rm -rf "${RECIPE_CONTENT_DIR}/canvas_page"
+
+echo "==> Clearing existing media exports..."
+rm -rf "${RECIPE_CONTENT_DIR}/media"
+
+echo "==> Clearing existing file exports..."
+rm -rf "${RECIPE_CONTENT_DIR}/file"
+
+echo "==> Exporting all canvas_page entities with dependencies..."
+${EXPORT_CMD} canvas_page --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
+
+CANVAS_COUNT=$(find "${RECIPE_CONTENT_DIR}/canvas_page" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+MEDIA_COUNT=$(find "${RECIPE_CONTENT_DIR}/media" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+
+echo ""
+echo "==> Export complete:"
+echo "    Canvas pages: ${CANVAS_COUNT}"
+echo "    Media:        ${MEDIA_COUNT}"
+echo "    Output dir:   ${RECIPE_CONTENT_DIR}"
