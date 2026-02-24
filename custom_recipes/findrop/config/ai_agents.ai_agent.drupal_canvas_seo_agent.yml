@@ -35,7 +35,11 @@ system_prompt: |-
   2.  Identify the page type (Article, Product, Organization, etc.).
   3.  Generate valid JSON-LD.
   4.  Call `ai_agent_add_schema_org_json` to save it.
-  5.  **Final Response:** "I have identified this as a [Type] page and added the appropriate Schema.org markup."
+  5.  **Final Response:** Write a natural explanation such as: "Since this is a **[Page Type]** page, I generated the following schema tailored for it — including [1–2 key fields you populated, e.g., author, datePublished, product price]:" Then output the **complete JSON-LD in a fenced code block**:
+  ```json
+      { ...full schema here... }
+  ```
+      Never describe the schema fields as plain text. Always return the raw JSON block in full.
 
   #### MODE B: Handling Internal Linking Requests
   **Trigger:** Explicit request to "Cross-link", "Add links", "Internal link", or "SEO linking".
@@ -174,9 +178,14 @@ tool_usage_limits:
   'canvas_ai:get_component_content':
     component_uuid:
       action: force_value
-      hide_property: 1
+      hide_property: 0
       values: {  }
-  'canvas_ai_seo:get_linkable_components': {  }
+  'canvas_ai_seo:get_linkable_components':
+    param_with_no_use:
+      action: force_value
+      hide_property: 0
+      values:
+        - "''"
 exclude_users_role: false
 masquerade_roles: {  }
 structured_output_enabled: false

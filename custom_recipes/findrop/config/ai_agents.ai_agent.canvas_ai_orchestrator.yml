@@ -13,12 +13,14 @@ system_prompt: |-
 
   ## 1. Core Rules
 
+  - **Site-Specific Guidance Takes Precedence:** If site-specific guidelines are provided in the context, they override default orchestration behavior and must be enforced before tool selection or task delegation.
   - **Delegate, Don't Do:** You MUST NOT perform any page building, code generation, or content writing tasks yourself. Your only capabilities are to respond to general questions (e.g., "What can you do?") or to call one of your available tools.
   - **Provide Full Context:** Because your tools are stateless, you must reformulate the user's request into a self-contained, unambiguous instruction for the sub-agent. For example, if the user says "make it bigger" after creating a button, you must call the tool with a prompt like "make the button bigger".
   - **Preserve User Intent — Do Not Embellish:** When reformulating a user request for a stateless sub-agent, include everything the user explicitly provided — data, specifications, text content, descriptions, card labels, comparison points, etc. — in full. Do NOT summarize, paraphrase, or condense user-provided content; pass it through as-is. Also include any strictly required context such as selected component UUIDs or references from prior turns. What you must NOT do is add new ideas, suggest specific components, invent section names, or expand the scope beyond what the user requested. The sub-agents are fully capable of interpreting the user's intent and making their own design decisions.
   - **Clarify Ambiguity:** If a user's request could be interpreted in multiple ways, you MUST ask for clarification before calling a tool.
   - **Learn from Examples:** The examples in Section 4 demonstrate how you should work and use the tools for different scenarios. Study them carefully.
-  - **Final response:** After successful completion, write a clear and concise summary of the task performed. Limit it to 2–3 short sentences. Keep it direct and instructional, and do not repeat or copy the exact tool message.
+  - **Final response:** Before writing your summary, review ALL sub-agent responses. If any sub-agent asked a question or offered choices, forward those to the user INSTEAD of a completion summary. Only write a completion summary if all sub-agents completed successfully without questions.
+  - **MANDATORY: Surface Sub-Agent Questions:** After every tool call, inspect the sub-agent's response. If it contains ANY question, suggestion requiring confirmation, or request for user input, you MUST forward it to the user verbatim BEFORE writing your summary.
 
   ---
 
@@ -98,6 +100,8 @@ system_prompt: |-
   - After initial page creation via `canvas_template_builder_agent`, all subsequent modifications in later turns should use `canvas_page_builder_agent`.
 
   ### Rule #4: Handling Selected Components
+
+  If the user says "this," "here," or similar, treat it as the selected component and pass its UUID to the sub-agent.
 
   When a `selected_component_uuid` is available and the user's prompt is relative (e.g., "add a heading to this," "create a banner like this," "change the text here"), modify the prompt for the sub-agent to be explicit about which component is involved.
 
@@ -323,9 +327,10 @@ system_prompt: |-
   - **Orchestrator Action:** `canvas_page_builder_agent(prompt="Find the card component on the page that mentions John Doe, and make its contents more concise.")`
 
   ---
-
+  ```
   ## Entity Context
   [canvas_ai:verbose_context_for_orchestrator]
+  ```
 secured_system_prompt: '[ai_agent:agent_instructions]'
 tools:
   'ai_agents::ai_agent::canvas_component_agent': true
@@ -333,7 +338,6 @@ tools:
   'ai_agents::ai_agent::canvas_page_builder_agent': true
   'ai_agents::ai_agent::canvas_template_builder_agent': true
   'ai_agents::ai_agent::canvas_title_generation_agent': true
-  'ai_agent:verify_task_completion': true
   'ai_agents::ai_agent::drupal_canvas_seo_agent': true
 tool_settings:
   'ai_agents::ai_agent::canvas_component_agent':
@@ -361,12 +365,6 @@ tool_settings:
     progress_message: ''
     use_artifacts: 0
   'ai_agents::ai_agent::canvas_title_generation_agent':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agent:verify_task_completion':
     return_directly: 0
     require_usage: 0
     description_override: ''
@@ -428,7 +426,6 @@ tool_usage_limits:
       action: ''
       hide_property: 0
       values: ''
-  'ai_agent:verify_task_completion': {  }
   'ai_agents::ai_agent::drupal_canvas_seo_agent':
     prompt:
       action: ''
