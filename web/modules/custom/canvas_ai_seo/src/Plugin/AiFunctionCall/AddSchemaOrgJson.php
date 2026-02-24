@@ -41,15 +41,6 @@ final class AddSchemaOrgJson extends FunctionCallBase implements ExecutableFunct
       if (json_last_error() !== JSON_ERROR_NONE) {
         throw new \Exception(\sprintf('Invalid JSON: %s', json_last_error_msg()));
       }
-      if (empty($decoded['@context'])) {
-        throw new \Exception('The @context key is missing in the Schema.org JSON-LD data.');
-      }
-      if (!str_contains((string) $decoded['@context'], 'schema.org')) {
-        throw new \Exception('The @context must reference schema.org.');
-      }
-      if (empty($decoded['@type'])) {
-        throw new \Exception('The @type key is missing in the Schema.org JSON-LD data.');
-      }
       $this->setStructuredOutput([
         'schema_org_data' => $schema_org_data,
       ]);

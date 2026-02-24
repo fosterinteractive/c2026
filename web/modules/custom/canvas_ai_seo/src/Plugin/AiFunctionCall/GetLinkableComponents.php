@@ -13,6 +13,8 @@ use Drupal\canvas_ai\CanvasAiTempStore;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Logger\LoggerChannelFactoryInterface;
+use Drupal\Core\Plugin\Context\ContextDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Yaml\Yaml;
 
@@ -26,6 +28,14 @@ use Symfony\Component\Yaml\Yaml;
   description: 'Retrieves components from the current page that conatins a Rich text prop. Use this to identify components with text content that can be enriched with internal links. The output preserves the layout tree structure, showing ancestor components with their uuid and name, and only the linkable components include their content.',
   group: 'information_tools',
   module_dependencies: ['canvas_ai_seo'],
+  context_definitions: [
+    'param_with_no_use' => new ContextDefinition(
+      data_type: 'string',
+      label: new TranslatableMarkup("Param With No Use"),
+      description: new TranslatableMarkup("Anthropic provider does not support tools that don't contain any context definitions, so create a dummy parameter."),
+      required: FALSE,
+    ),
+  ],
 )]
 final class GetLinkableComponents extends FunctionCallBase implements ExecutableFunctionCallInterface, AiAgentContextInterface {
 
