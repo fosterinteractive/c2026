@@ -13,19 +13,21 @@ config:
               - '1'
               - '2'
               - '3'
-              - '5'
+            excluded_subcontext: {  }
           -
             id: canvas_page_builder_agent
             context_items: {  }
             always_include:
               - '2'
-              - '5'
+              - '1'
+            excluded_subcontext: {  }
           -
             id: canvas_ai_orchestrator
             context_items: {  }
             always_include:
               - '5'
-              - '6'
+              - '1'
+            excluded_subcontext: {  }
           -
             id: drupal_canvas_seo_agent
             context_items: {  }
