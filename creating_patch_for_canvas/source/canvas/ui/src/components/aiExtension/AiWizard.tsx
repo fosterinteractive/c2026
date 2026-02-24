@@ -280,6 +280,7 @@ const operationsHandler = {
                 values: component.fieldValues,
               }),
             );
+            await delay(1000);
           }
         }
       }
@@ -824,7 +825,7 @@ const AiWizard = () => {
           }}
           // @todo Revisit once https://www.drupal.org/node/3528730 is in.
           requestBodyLimits={{
-            maxMessages: 5,
+            maxMessages: 100,
           }}
           connect={{
             // Defining a handler instead of an object to ensure we can work with

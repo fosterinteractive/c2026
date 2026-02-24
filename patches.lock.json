@@ -1,5 +1,5 @@
 {
-    "_hash": "a1929010b2b4d6a68f7a188b4b5dae6359a1584f098c8f491c372dd6754443f8",
+    "_hash": "38b9e50c94aacbee6f7a935c2520af974d024461ed0066d3e30e3f26d56252eb",
     "patches": {
         "drupal/ai_agents": [
             {
@@ -18,7 +18,7 @@
                 "package": "drupal/canvas",
                 "description": "issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873",
                 "url": "patches/canvas/issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873.patch",
-                "sha256": "804a49e4a88726fea47aaf2b511701baa4364d8bee43087e6e229de84be32088",
+                "sha256": "5135ef6d3d2f21d35a14eb751c846a6787ef290ff5370d72ffaa727f60fd3309",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

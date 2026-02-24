@@ -17,7 +17,3 @@ services:
     class: Drupal\canvas_ai\CanvasAiComponentContextHelper
     arguments:
       - '@canvas_ai.page_builder_helper'
-  # canvas_ai.page_builder_agent_pre_execute_subscriber:
-  #   class: Drupal\canvas_ai\EventSubscriber\PageBuilderAgentPreExecuteSubscriber
-  #   tags:
-  #     - { name: event_subscriber }

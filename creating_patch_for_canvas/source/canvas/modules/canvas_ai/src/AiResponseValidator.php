@@ -215,6 +215,21 @@ class AiResponseValidator {
     $clientNormalized = $component->normalizeForClientSide()->values;
     $propSources = $clientNormalized['propSources'] ?? [];
 
+    // All keys in 'props' array must the present in $propSources.
+    $propNamesGivenByAi = array_keys($props);
+    $propNamesDefinedInComponent = array_keys($propSources);
+    $invalidProps = array_diff($propNamesGivenByAi, $propNamesDefinedInComponent);
+    if (!empty($invalidProps)) {
+      throw new \InvalidArgumentException(
+        sprintf(
+          'The following props are not defined for component "%s": %s. Valid props are: %s',
+          $componentId,
+          implode(', ', $invalidProps),
+          implode(', ', $propNamesDefinedInComponent)
+        )
+      );
+    }
+
     // Validate media props: if a media prop is provided as an array, it must
     // contain exactly one key: target_id.
     foreach ($propSources as $propName => $propDefinition) {
@@ -238,9 +253,6 @@ class AiResponseValidator {
 
     // Fill in default values for required props not provided by the tool.
     foreach ($propSources as $propName => $propDefinition) {
-      if (array_key_exists($propName, $props)) {
-        continue;
-      }
       if (!empty($propDefinition['required'])) {
         $defaultValue = $propDefinition['default_values']['resolved'] ?? NULL;
         if ($defaultValue !== NULL) {
