@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 4ed9ba30-66a9-4e6e-a432-9a66743f7c30
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: findrop-travel-live-spend-dashboard.png
+  uri:
+    -
+      value: 'public://2026-02/findrop-travel-live-spend-dashboard.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 826392
+  status:
+    -
+      value: true

@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 638308bd-0806-4f42-8985-50057a2b4b1b
+  bundle: image
+  default_langcode: en
+  depends:
+    b0590586-9e63-4815-aa53-963a38ab68c0: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: findrop-travel-corporate-policy-compliance.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a digital graphic or app interface mockup, not a photograph. The main color scheme features dark blue and black tones for the background, with glowing cyan and teal accents highlighting key elements. The central focus is a smartphone screen displaying a "BOOKING APPROVAL" section with travel options, each in glowing boxes. No people are present in the image; the interface and travel icons create a clean, modern, and professional mood. Iconography includes airplanes and shields, hinting at security and travel. Two travel options are highlighted in bright colors, while the third is grayed-out, suggesting unavailability or non-compliance. The background subtly incorporates travel-themed line drawings, enhancing the corporate and travel-related context.'
+  field_media_image:
+    -
+      alt: 'Smartphone screen showing booking approval with a shield icon and flight details list.'
+      title: ''
+      width: 1024
+      height: 1024
+      entity: b0590586-9e63-4815-aa53-963a38ab68c0

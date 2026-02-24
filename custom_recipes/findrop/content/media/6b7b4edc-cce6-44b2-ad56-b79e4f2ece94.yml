@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 6b7b4edc-cce6-44b2-ad56-b79e4f2ece94
+  bundle: image
+  default_langcode: en
+  depends:
+    970be5ca-62c9-4dbe-a46e-7f58649c254f: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: findrop-travel-fast-booking.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a digital graphic illustration. The background is a deep navy blue, creating a modern tech feel, with glowing cyan-blue accents throughout. At the center, a smartphone displays a “BOOKING CONFIRMED” message with details for a flight from London to NYC and a hotel booking, using white and cyan-blue fonts. To the left of the smartphone is an icon of an airport terminal, and to the right is an icon of a hotel building, both rendered in the same glowing cyan. There are no people present in the image; the scene is entirely composed of graphical elements. The overall mood is efficient, reassuring, and high-tech, suggesting a seamless booking experience. The design elements come together to clearly communicate the concept of fast online travel booking.'
+  field_media_image:
+    -
+      alt: 'Smartphone screen showing booking confirmation for a flight and hotel reservation.'
+      title: ''
+      width: 1024
+      height: 1024
+      entity: 970be5ca-62c9-4dbe-a46e-7f58649c254f

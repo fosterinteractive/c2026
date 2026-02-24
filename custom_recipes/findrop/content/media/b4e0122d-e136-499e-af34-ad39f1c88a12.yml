@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: b4e0122d-e136-499e-af34-ad39f1c88a12
+  bundle: image
+  default_langcode: en
+  depends:
+    4ed9ba30-66a9-4e6e-a432-9a66743f7c30: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: findrop-travel-live-spend-dashboard.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a digital infographic or dashboard graphic, not a photo, featuring a dark navy-blue background with neon blue accents. The main colors are shades of dark blue and glowing cyan. There are no people present in this image—only graphical elements and icons related to travel and spending such as a line graph, airplane, hotel, and shield icons. The centerpiece is a shield labeled "Policy Alerts" suggesting some form of monitoring or security feature. The left panel is a line chart labeled "Live Travel Spend," with travel-related icons. The right side has digital cards for "Flight Bookings" and "Hotel Reservations," each listing brief details and amounts. The overall mood is sleek, futuristic, and professional, conveying a tech-forward financial or travel management tool. No facial expressions or human moods are depicted, as this is a purely graphical interface design.'
+  field_media_image:
+    -
+      alt: 'Futuristic dashboard with live travel spend graph and protection alerts on dark background.'
+      title: ''
+      width: 1024
+      height: 1024
+      entity: 4ed9ba30-66a9-4e6e-a432-9a66743f7c30
