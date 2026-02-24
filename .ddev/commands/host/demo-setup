@@ -8,6 +8,12 @@ ddev delete -O -y
 ddev start
 ddev composer install
 
+# Canvas is currently required as a dev release. Composer installs dev modules from
+# their Git repository, and we also apply a patch to Canvas. That makes Git think
+# many files in web/modules/contrib/canvas are changed, which clutters IDE sidebars.
+# Remove the module's .git directory as a workaround.
+rm -rf web/modules/contrib/canvas/.git
+
 ## This recipe was generated with the command  ddev drush site:export --destination=../custom_recipes/findrop
 ddev drush si ../custom_recipes/findrop -y
 
