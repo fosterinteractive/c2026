@@ -110,6 +110,9 @@
             },
             "drupal/canvas": {
                 "issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873": "patches/canvas/issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873.patch"
+            },
+            "drupal/byte_theme": {
+                "Remove default aspect ratio from icon card": "patches/byte_theme/remove-default-aspect-ration-from-icon-card-component.patch"
             }
         }
     },
