@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 1807ccef-7ada-4683-9166-8365e1ff3f9c
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: findrop-travel-business-traveler-booking.png
+  uri:
+    -
+      value: 'public://2026-02/findrop-travel-business-traveler-booking.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 1137472
+  status:
+    -
+      value: true

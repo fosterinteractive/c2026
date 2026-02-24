@@ -1,0 +1,13 @@
+diff --git a/components/card-icon/card-icon.component.yml b/components/card-icon/card-icon.component.yml
+index 7c18a39..a8c487f 100644
+--- a/components/card-icon/card-icon.component.yml
++++ b/components/card-icon/card-icon.component.yml
+@@ -18,8 +18,6 @@ props:
+         square: Square
+         "4:3": Rectangle 4 × 3
+         "16:9": Rectangle 16 × 9
+-      examples:
+-        - square
+     background_color:
+       type: string
+       title: Background color

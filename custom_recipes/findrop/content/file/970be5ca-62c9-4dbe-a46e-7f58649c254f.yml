@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 970be5ca-62c9-4dbe-a46e-7f58649c254f
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: findrop-travel-fast-booking.png
+  uri:
+    -
+      value: 'public://2026-02/findrop-travel-fast-booking.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 978331
+  status:
+    -
+      value: true

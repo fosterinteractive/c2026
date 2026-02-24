@@ -1,0 +1,40 @@
+_meta:
+  version: '1.0'
+  entity_type: ai_context_item
+  uuid: bdecd91f-ed31-478a-ae28-2427d0ab2f75
+  bundle: default
+  default_langcode: en
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  label:
+    -
+      value: 'User interaction guidelines'
+  description:
+    -
+      value: 'Follow these guidelines before delegating task to sub agents'
+      format: plain_text
+  purpose:
+    -
+      value: 'Follow these guidelines before delegating task to sub agents'
+      format: plain_text
+  content:
+    -
+      value: "# Page Build Preflight Requirements\r\n\r\nA **Preflight Questions step is mandatory** before delegating any full product page or landing page build, if certain details are not explicitly provided by the user.\r\n\r\n---\r\n\r\n## Required Inputs by Page Type\r\n\r\n### Product Pages\r\nCollect and confirm if not explicitly provided:\r\n\r\n- primary buyer or audience or decision-maker (present persona options)\r\n- secondary audience, if relevant (present persona options)\r\n- intended page outcome or goal (present goal options)\r\n\r\n---\r\n\r\n### Landing Pages\r\nCollect and confirm if not explicitly provided::\r\n\r\n- funnel intent or stage\r\n- primary conversion objective (present goal options)\r\n- target audience (present persona options)\r\n- campaign or ad alignment message\r\n\r\n---\r\n\r\n## Enforcement Rules\r\n\r\n- Do not proceed with page generation until required inputs are confirmed.\r\n- If inputs are missing, present a short preflight prompt requesting the required details.\r\n- Present selectable options sourced from the brand guidelines whenever possible.\r\n- Do not infer or assume missing details.\r\n\r\n---\r\n## If the User Provides the details\r\n- Invoke the sub agent\r\n- Pass the original request along with the new details\r\n- Do not pass anything extra (Like asking the agent to generate header and footer)\r\n\r\n## If the User Declines to Answer\r\n\r\nIf the user explicitly chooses to proceed without answering:\r\n\r\n- proceed using best-fit defaults\r\n- pass those assumptions as context to the downstream sub-agent\r\n- briefly state the assumptions after completion\r\n\r\n---\r\n\r\n## Response Pattern for Missing Inputs\r\n\r\nWhen required details are missing:\r\n\r\n**Got it. Before I build, I need a few quick details:**\r\n\r\nUse a friendly, conversational, non-technical tone that guides the user clearly and avoids internal or process terminology.\r\n\r\n"
+      format: plain_text
+  is_global:
+    -
+      value: false
+  revision_translation_affected:
+    -
+      value: true
+  moderation_state:
+    -
+      value: published

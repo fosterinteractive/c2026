@@ -11,10 +11,10 @@ index 4297f82f..1c42d403 100644
 +      $stringTranslation: '@string_translation'
 +  Drupal\canvas\Component\Schema\PropMetadataNormalizer: {}
 diff --git a/modules/canvas_ai/canvas_ai.services.yml b/modules/canvas_ai/canvas_ai.services.yml
-index 658b58f3..170bc3bf 100644
+index 658b58f3..517338d0 100644
 --- a/modules/canvas_ai/canvas_ai.services.yml
 +++ b/modules/canvas_ai/canvas_ai.services.yml
-@@ -13,3 +13,11 @@ services:
+@@ -13,3 +13,7 @@ services:
        - '@Drupal\Core\Validation\BasicRecursiveValidatorFactory'
        - '@uuid'
    Drupal\canvas_ai\CanvasAiTempStore: '@canvas_ai.tempstore'
@@ -22,10 +22,6 @@ index 658b58f3..170bc3bf 100644
 +    class: Drupal\canvas_ai\CanvasAiComponentContextHelper
 +    arguments:
 +      - '@canvas_ai.page_builder_helper'
-+  # canvas_ai.page_builder_agent_pre_execute_subscriber:
-+  #   class: Drupal\canvas_ai\EventSubscriber\PageBuilderAgentPreExecuteSubscriber
-+  #   tags:
-+  #     - { name: event_subscriber }
 diff --git a/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_ai_orchestrator.yml b/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_ai_orchestrator.yml
 index c5d5faae..e5295e6e 100644
 --- a/modules/canvas_ai/config/install/ai_agents.ai_agent.canvas_ai_orchestrator.yml
@@ -1016,7 +1012,7 @@ index 8a6c45a1..079a5c9c 100644
                label: 'Region description'
 +
 diff --git a/modules/canvas_ai/src/AiResponseValidator.php b/modules/canvas_ai/src/AiResponseValidator.php
-index 426a8950..14b333d5 100644
+index 426a8950..6d2d5a25 100644
 --- a/modules/canvas_ai/src/AiResponseValidator.php
 +++ b/modules/canvas_ai/src/AiResponseValidator.php
 @@ -6,6 +6,7 @@ use Drupal\canvas\Entity\Component;
@@ -1050,7 +1046,7 @@ index 426a8950..14b333d5 100644
            $clientModel['resolved'] = $componentData['props'];
            $inputs = $source->clientModelToInput($componentUuid, $component, $clientModel, NULL);
          }
-@@ -185,4 +189,119 @@ class AiResponseValidator {
+@@ -185,4 +189,131 @@ class AiResponseValidator {
      return $pathMap;
    }
  
@@ -1080,6 +1076,21 @@ index 426a8950..14b333d5 100644
 +    $clientNormalized = $component->normalizeForClientSide()->values;
 +    $propSources = $clientNormalized['propSources'] ?? [];
 +
++    // All keys in 'props' array must the present in $propSources.
++    $propNamesGivenByAi = array_keys($props);
++    $propNamesDefinedInComponent = array_keys($propSources);
++    $invalidProps = array_diff($propNamesGivenByAi, $propNamesDefinedInComponent);
++    if (!empty($invalidProps)) {
++      throw new \InvalidArgumentException(
++        sprintf(
++          'The following props are not defined for component "%s": %s. Valid props are: %s',
++          $componentId,
++          implode(', ', $invalidProps),
++          implode(', ', $propNamesDefinedInComponent)
++        )
++      );
++    }
++
 +    // Validate media props: if a media prop is provided as an array, it must
 +    // contain exactly one key: target_id.
 +    foreach ($propSources as $propName => $propDefinition) {
@@ -1103,9 +1114,6 @@ index 426a8950..14b333d5 100644
 +
 +    // Fill in default values for required props not provided by the tool.
 +    foreach ($propSources as $propName => $propDefinition) {
-+      if (array_key_exists($propName, $props)) {
-+        continue;
-+      }
 +      if (!empty($propDefinition['required'])) {
 +        $defaultValue = $propDefinition['default_values']['resolved'] ?? NULL;
 +        if ($defaultValue !== NULL) {
@@ -2218,68 +2226,6 @@ index 690a875c..be745336 100644
      ];
    }
  
-diff --git a/modules/canvas_ai/src/EventSubscriber/PageBuilderAgentPreExecuteSubscriber.php b/modules/canvas_ai/src/EventSubscriber/PageBuilderAgentPreExecuteSubscriber.php
-new file mode 100644
-index 00000000..c4d5926d
---- /dev/null
-+++ b/modules/canvas_ai/src/EventSubscriber/PageBuilderAgentPreExecuteSubscriber.php
-@@ -0,0 +1,56 @@
-+<?php
-+
-+namespace Drupal\canvas_ai\EventSubscriber;
-+
-+use Drupal\ai_agents\Event\AgentRequestEvent;
-+use Drupal\ai_agents\PluginInterfaces\ConfigAiAgentInterface;
-+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-+
-+/**
-+ * Prepends selected component UUID to user input for the page builder agent.
-+ */
-+class PageBuilderAgentPreExecuteSubscriber implements EventSubscriberInterface {
-+
-+  /**
-+   * {@inheritdoc}
-+   */
-+  public static function getSubscribedEvents(): array {
-+    return [
-+      AgentRequestEvent::EVENT_NAME => 'onAgentRequest',
-+    ];
-+  }
-+
-+  /**
-+   * Prepends selected component UUID to user input if not already present.
-+   */
-+  public function onAgentRequest(AgentRequestEvent $event): void {
-+    if ($event->getAgentId() !== 'canvas_page_builder_agent') {
-+      return;
-+    }
-+
-+    $agent = $event->getAgent();
-+    if (!$agent instanceof ConfigAiAgentInterface) {
-+      return;
-+    }
-+
-+    $tokens = $agent->getTokenContexts();
-+    $uuid = $tokens['active_component_uuid'] ?? '';
-+    if (empty($uuid) || $uuid === 'None') {
-+      return;
-+    }
-+
-+    $input = $event->getChatInput();
-+    /** @var \Drupal\ai\OperationType\Chat\ChatMessage $message */
-+    foreach ($input->getMessages() as $message) {
-+      if ($message->getRole() !== 'user') {
-+        continue;
-+      }
-+      $text = $message->getText();
-+      if (str_contains($text, $uuid)) {
-+        continue;
-+      }
-+      $message->setText('Selected Component UUID: ' . $uuid . '. For component additions and edits, use this component and its child components as reference.' . "\n" . $text);
-+    }
-+  }
-+
-+}
 diff --git a/modules/canvas_ai/src/Form/CanvasAiComponentDescriptionSettingsForm.php b/modules/canvas_ai/src/Form/CanvasAiComponentDescriptionSettingsForm.php
 index 382529a6..12e57d6e 100644
 --- a/modules/canvas_ai/src/Form/CanvasAiComponentDescriptionSettingsForm.php
@@ -3206,7 +3152,7 @@ index 00000000..8aa27557
 +
 +}
 diff --git a/ui/src/components/aiExtension/AiWizard.tsx b/ui/src/components/aiExtension/AiWizard.tsx
-index f2dbb3cb..d398874a 100644
+index f2dbb3cb..298ea77e 100644
 --- a/ui/src/components/aiExtension/AiWizard.tsx
 +++ b/ui/src/components/aiExtension/AiWizard.tsx
 @@ -23,6 +23,7 @@ import { deserializeProps } from '@/features/code-editor/utils/utils';
@@ -3304,7 +3250,7 @@ index f2dbb3cb..d398874a 100644
                    to: component.nodePath,
                  },
                  componentSelectionUtils.setSelectedComponent,
-@@ -270,6 +264,45 @@ const operationsHandler = {
+@@ -270,6 +264,46 @@ const operationsHandler = {
            }
          }
        }
@@ -3324,6 +3270,7 @@ index f2dbb3cb..d398874a 100644
 +                values: component.fieldValues,
 +              }),
 +            );
++            await delay(1000);
 +          }
 +        }
 +      }
@@ -3350,7 +3297,7 @@ index f2dbb3cb..d398874a 100644
      }
      const { entityId, entityType } = params;
      // Redirect to /editor.
-@@ -286,6 +319,7 @@ const messageHandlers = [
+@@ -286,6 +320,7 @@ const messageHandlers = [
    propsMetadataHandler,
    requiredPropsHandler,
    metadataHandler,
@@ -3358,12 +3305,12 @@ index f2dbb3cb..d398874a 100644
    operationsHandler,
  ];
  
-@@ -790,7 +824,7 @@ const AiWizard = () => {
+@@ -790,7 +825,7 @@ const AiWizard = () => {
            }}
            // @todo Revisit once https://www.drupal.org/node/3528730 is in.
            requestBodyLimits={{
 -            maxMessages: 3,
-+            maxMessages: 5,
++            maxMessages: 100,
            }}
            connect={{
              // Defining a handler instead of an object to ensure we can work with

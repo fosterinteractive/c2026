@@ -10,20 +10,28 @@ config:
             id: canvas_template_builder_agent
             context_items: {  }
             always_include:
+              - '1'
               - '2'
               - '3'
-              - '4'
+            excluded_subcontext: {  }
           -
             id: canvas_page_builder_agent
             context_items: {  }
             always_include:
               - '2'
-              - '3'
+              - '1'
+            excluded_subcontext: {  }
           -
             id: canvas_ai_orchestrator
             context_items: {  }
             always_include:
+              - '5'
               - '1'
+            excluded_subcontext: {  }
+          -
+            id: drupal_canvas_seo_agent
+            context_items: {  }
+            always_include: {  }
     ai_context.settings:
       simpleConfigUpdate:
-        max_tokens: 10000
+        max_tokens: 30000

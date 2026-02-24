@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 596fd6af-df75-4681-bc27-86f59c4a225d
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: findrop-travel-auto-expense-sync.png
+  uri:
+    -
+      value: 'public://2026-02/findrop-travel-auto-expense-sync.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 1074230
+  status:
+    -
+      value: true

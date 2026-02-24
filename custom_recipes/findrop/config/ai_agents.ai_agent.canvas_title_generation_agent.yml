@@ -7,33 +7,6 @@ dependencies:
 id: canvas_title_generation_agent
 label: 'Drupal Canvas Title Generation Agent'
 description: 'This agent focuses solely on generating new title and editing existing title for Drupal Canvas. It ensures that the created or edited title matches user-provided guidelines and specifications.'
-system_prompt: |-
-  Generate an SEO friendly title for  the page based on its content
-
-  Use `ai_agent_create_field_content` tool to save the new title
-  Use `ai_agent_edit_field_content` to update an existing title
-
-  As final response, return the title you generated
-secured_system_prompt: '[ai_agent:agent_instructions]'
-tools:
-  'ai_agent:create_field_content': true
-  'ai_agent:edit_field_content': true
-tool_settings:
-  'ai_agent:create_field_content':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-  'ai_agent:edit_field_content':
-    return_directly: 0
-    require_usage: 0
-    description_override: ''
-    progress_message: ''
-    use_artifacts: 0
-orchestration_agent: false
-triage_agent: false
-max_loops: 5
 default_information_tools: |
   get_entity_context:
     label: 'Get entity context'
@@ -49,6 +22,17 @@ default_information_tools: |
     tool: 'ai_agent:get_page_data'
     parameters:
       page_title: '[canvas_ai:page_title]'
+system_prompt: |-
+  Generate an SEO friendly title for  the page based on its content
+
+  Use `ai_agent_create_field_content` tool to save the new title
+  Use `ai_agent_edit_field_content` to update an existing title
+
+  As final response, return the title you generated
+secured_system_prompt: '[ai_agent:agent_instructions]'
+tools:
+  'ai_agent:create_field_content': true
+  'ai_agent:edit_field_content': true
 tool_usage_limits:
   'ai_agent:create_field_content':
     field_content:
@@ -68,7 +52,23 @@ tool_usage_limits:
       action: ''
       hide_property: 0
       values: ''
-exclude_users_role: false
+tool_settings:
+  'ai_agent:create_field_content':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+  'ai_agent:edit_field_content':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+orchestration_agent: false
+triage_agent: false
+max_loops: 5
 masquerade_roles: {  }
+exclude_users_role: false
 structured_output_enabled: false
 structured_output_schema: ''

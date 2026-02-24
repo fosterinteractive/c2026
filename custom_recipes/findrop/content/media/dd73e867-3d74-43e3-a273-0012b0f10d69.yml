@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: dd73e867-3d74-43e3-a273-0012b0f10d69
+  bundle: image
+  default_langcode: en
+  depends:
+    596fd6af-df75-4681-bc27-86f59c4a225d: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: findrop-travel-auto-expense-sync.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a digital graphic or infographic with a sleek, modern design. The background is a deep navy blue, with the main visual elements using shades of white and neon blue, giving it a tech-savvy and futuristic appearance. There are no people depicted in the image. The primary objects include animated receipts being digitally scanned or processed, which are funneled into floating data panels and charts representing auto expense tracking or synchronization. The mood is efficient, high-tech, and professional, suggesting automation and ease of use. Light blue lines connect the receipts to the digital panels, emphasizing seamless syncing and data flow. The infographic elements include labels, icons, and a summary dashboard showing expense totals and analytics. The visual style suggests clarity and organization, ideal for illustrating a tech-based travel or expense management solution.'
+  field_media_image:
+    -
+      alt: 'Digital infographic showing data flowing from documents to charts and graphs on a dark background.'
+      title: ''
+      width: 1024
+      height: 1024
+      entity: 596fd6af-df75-4681-bc27-86f59c4a225d

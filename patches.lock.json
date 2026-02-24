@@ -1,5 +1,5 @@
 {
-    "_hash": "a1929010b2b4d6a68f7a188b4b5dae6359a1584f098c8f491c372dd6754443f8",
+    "_hash": "297f04078131d6fb4e8f0dbadea20d2b72e84547fd12b45b56a4c4fe91527fcf",
     "patches": {
         "drupal/ai_agents": [
             {
@@ -18,7 +18,19 @@
                 "package": "drupal/canvas",
                 "description": "issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873",
                 "url": "patches/canvas/issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873.patch",
-                "sha256": "804a49e4a88726fea47aaf2b511701baa4364d8bee43087e6e229de84be32088",
+                "sha256": "5135ef6d3d2f21d35a14eb751c846a6787ef290ff5370d72ffaa727f60fd3309",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
+        "drupal/byte_theme": [
+            {
+                "package": "drupal/byte_theme",
+                "description": "Remove default aspect ratio from icon card",
+                "url": "patches/byte_theme/remove-default-aspect-ration-from-icon-card-component.patch",
+                "sha256": "335eefbe63b84faa767d07919f8749ab66028f8ac0cccd96704ff0993ebeaa0a",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

@@ -1,0 +1,40 @@
+_meta:
+  version: '1.0'
+  entity_type: ai_context_item
+  uuid: 0ddd4133-6b3c-4b05-8a59-3b1f45ffa4df
+  bundle: default
+  default_langcode: en
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  label:
+    -
+      value: 'FinDrop Brand Guidelines'
+  description:
+    -
+      value: 'The following are the Brand Guidelines for FinDrop - The organization of the cutrrent website'
+      format: plain_text
+  purpose:
+    -
+      value: 'These brand guidelines define how FinDrop presents itself across all content and experiences, including its mission, product naming, messaging, tone of voice, and visual identity. They ensure consistent communication by outlining audience personas, writing patterns, content rules, and positioning for FinDrop Cards, Expense, and Travel. Their purpose is to help teams and AI tools create clear, data-confident, and on-brand content that reinforces FinDrop’s value and market positioning.'
+      format: plain_text
+  content:
+    -
+      value: "# FinDrop BRAND GUIDELINES - Shared with All agents\r\n\r\n## 1. CORE IDENTITY & POSITIONING\r\n*   **Company:** FinDrop\r\n*   **Industry:** B2B Financial Automation (Mid-market).\r\n*   **Core Promise:** \"From expense chaos to complete control in minutes, not months.\"\r\n*   **Key Value Props:** Speed (instant action), Transparency (live visibility), Intelligence (AI optimization), Control (pre-spend prevention).\r\n*   **Platform Scope:** Unified solution for Corporate Cards, Expense Management, and Business Travel.\r\n\r\n## 2. NAMING CONVENTIONS\r\n*   **Master Brand:** FinDrop (One word, CamelCase). **NEVER** abbreviate as \"FD\".\r\n*   **Product Portfolio:**\r\n    1.  **FinDrop Cards:** Virtual/physical corporate card platform.\r\n    2.  **FinDrop Expense:** Automated tracking and reconciliation.\r\n    3.  **FinDrop Travel:** Business travel booking and management.\r\n*   **Naming Rules:** Always \"FinDrop\" + [Single Descriptive Noun]. No technical jargon.\r\n\r\n## 3. VOICE & TONE GUIDELINES\r\n*   **Persona:** Expert without jargon; Confident without arrogance; Direct; Data-confident.\r\n*   **Negative Constraints:** Never academic, preachy, passive, or hyperbolic (\"revolutionary,\" \"game-changing\") without data.\r\n\r\n### The FinDrop Copy Pattern\r\n**MUST** follow this hierarchy for all marketing copy:\r\n`[Quantified Result]` → `[Method/How]` → `[Human Impact]`\r\n*   *Correct:* \"Close books 8x faster with automated reconciliation. That's 15 hours saved monthly.\"\r\n*   *Incorrect:* \"Our AI engine categorizes transactions automatically.\"\r\n\r\n### Style & Grammar Rules\r\n*   **Voice:** Active voice required.\r\n*   **Numbers:** Spell 1-9; use numerals for 10+; always use numerals for percentages (e.g., \"5%\", not \"five percent\").\r\n*   **Formatting:** Oxford comma required. Use \"x\" for multipliers (\"8x\", not \"8 times\").\r\n*   **Vocabulary:**\r\n    *   *Use:* Live, Automate, Prevent, Control, Visibility.\r\n    *   *Avoid:* Real-time, Leverage, Mitigate, Governance, Transparency, Seamlessly integrates.\r\n\r\n## 4. AUDIENCE & MESSAGING MATRIX\r\n\r\n| Target Persona | Primary Focus | Key Message Angle |\r\n| :--- | :--- | :--- |\r\n| **CFO / Controller** | ROI, Compliance, Control | Business impact numbers. \"Reduce close from 10 days to 2.\" |\r\n| **Accounting Team** | Time Savings, Accuracy | Pain point elimination. \"No chasing receipts; auto-sync.\" |\r\n| **IT Decision Makers** | Security, Integrations | Compliance credentials. \"SOC 2 Type II, Bank-level encryption.\" |\r\n| **End Users** | Simplicity, Speed | Convenience. \"Create a card in seconds.\" |\r\n| **Travel Managers** | Adoption, Policy | Program outcomes. \"90% adoption, policy enforced at booking.\" |\r\n\r\n## 5. PRODUCT VALUE PROPOSITIONS (Source of Truth)\r\n\r\n### FinDrop Platform (Combined)\r\n*   **Hook:** The only platform where cards, expense, and travel work as one.\r\n*   **Stat:** Cuts processing time by 80% (approx. 15 hours/month).\r\n\r\n### FinDrop Cards\r\n*   **One-Liner:** \"Create and control corporate cards in seconds, not days.\"\r\n*   **Benefit:** Set limits before spending happens.\r\n\r\n### FinDrop Expense\r\n*   **One-Liner:** \"Stop chasing receipts. Start closing books faster.\"\r\n*   **Benefit:** Automated reconciliation; month-end close in 2 days.\r\n\r\n### FinDrop Travel\r\n*   **One-Liner:** \"Business travel your employees love and your finance team trusts.\"\r\n*   **Benefit:** 90%+ adoption; policy enforcement at point of booking; zero expense reports.\r\n\r\n## 6. COMPETITIVE & LEGAL SAFETY\r\n*   **Strict Prohibition:** NEVER mention competitors by name (e.g., Ramp, SAP Concur, Brex) in public-facing content without explicit legal approval.\r\n*   **Positioning:** Use category language (e.g., \"Unlike legacy travel portals,\" \"Unlike traditional corporate cards\").\r\n*   **Review Required:** Any claims of being \"first,\" \"only,\" or \"best,\" or specific performance comparisons (\"2x faster\").\r\n\r\n## 7. CALL TO ACTION (CTA) LIBRARY\r\n*   **High Intent:** \"Start Saving 15 Hours Per Week\", \"Get Your First Card in 60 Seconds\", \"See Your ROI Calculator\".\r\n*   **Medium Intent:** \"Watch 3-Minute Demo\", \"See How Travel Management Works\".\r\n*   **Low Intent:** \"Learn How Virtual Cards Work\", \"Browse Success Stories\".\r\n\r\n## 8. VISUAL IDENTITY CONTEXT\r\n*   **Theme:** Dark mode default.\r\n*   **Imagery Narrative:** \"The Professional's Day\" (Real business scenarios, natural lighting, not staged).\r\n*   **Typography:** Outfit font family."
+      format: plain_text
+  is_global:
+    -
+      value: false
+  revision_translation_affected:
+    -
+      value: true
+  moderation_state:
+    -
+      value: published

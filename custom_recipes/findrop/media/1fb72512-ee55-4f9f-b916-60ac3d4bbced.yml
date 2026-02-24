@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 1fb72512-ee55-4f9f-b916-60ac3d4bbced
+  bundle: image
+  default_langcode: en
+  depends:
+    1807ccef-7ada-4683-9166-8365e1ff3f9c: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: findrop-travel-business-traveler-booking.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This is a digital illustration or graphic, not a photograph, with a modern, professional vibe. The background is a deep, dark blue, creating a sleek and tech-driven look. The main subject is a stylized, faceless figure of a business traveler, likely male, sitting and working on a laptop. The person appears to be focused and calm, embodying a productive, purposeful mood. Floating around the figure are infographic-style icons and data panels, including charts, policy checklists, flight bookings, and financial symbols. The primary colors are shades of blue, teal, and white, which enhance the futuristic and business-centric atmosphere. The image strongly emphasizes technology, travel, business booking, and data transparency.'
+  field_media_image:
+    -
+      alt: 'Person with a laptop surrounded by floating digital charts and graphs on a dark background.'
+      title: ''
+      width: 1024
+      height: 1024
+      entity: 1807ccef-7ada-4683-9166-8365e1ff3f9c
