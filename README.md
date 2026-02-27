@@ -13,20 +13,14 @@ Then open `.ddev/.env` and set your OpenAI key in the file.
 ddev demo-setup
 ```
 
-5. Install Canvas dependencies: (Required as we are using the dev release of the module)
-```shell
-cd web/modules/contrib/canvas
-npm install
-```
+## Exporting Content
 
-6. Build the Canvas UI:
-```shell
-cd web/modules/contrib/canvas/ui
-npm run build
-```
+After making changes in Drupal, use these commands to export content back into the recipes:
 
-7. Index all contents in the vector database:
-```shell
-ddev drush sapi-i
-```
+| Command | What it exports |
+|---|---|
+| `ddev export-all-content` | All content entities (canvas pages, nodes, media, menu links, taxonomy terms) |
+| `ddev export-canvas-pages` | Canvas pages only |
+| `ddev export-media` | Media and file entities only |
+| `ddev export-ai-context` | AI Context items and usage records |
 

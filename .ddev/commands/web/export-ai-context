@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-## Description: Export all AI Context entities (items and usage records) into the ai_context_setup recipe.
+## Description: Export all AI Context items and usage records into the ai_context_setup recipe.
 ## Usage: export-ai-context
 ## Example: ddev export-ai-context
 
@@ -14,8 +14,8 @@ rm -rf "${RECIPE_CONTENT_DIR}/ai_context_item"
 echo "==> Clearing existing ai_context_usage exports..."
 rm -rf "${RECIPE_CONTENT_DIR}/ai_context_usage"
 
-echo "==> Exporting all ai_context_item entities with dependencies..."
-${EXPORT_CMD} ai_context_item --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
+echo "==> Exporting all ai_context_item entities..."
+${EXPORT_CMD} ai_context_item --dir="${RECIPE_CONTENT_DIR}"
 
 echo "==> Exporting all ai_context_usage entities..."
 ${EXPORT_CMD} ai_context_usage --dir="${RECIPE_CONTENT_DIR}"
@@ -27,4 +27,4 @@ echo ""
 echo "==> Export complete:"
 echo "    Context items: ${ITEM_COUNT}"
 echo "    Usage records: ${USAGE_COUNT}"
-echo "    Output dir:    ${RECIPE_CONTENT_DIR}"
+echo "    Output:        ${RECIPE_CONTENT_DIR}"

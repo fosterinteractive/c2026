@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+## Description: Export all content entities (canvas pages, nodes, media, files, menu links, taxonomy terms) into the findrop recipe.
+## Usage: export-all-content
+## Example: ddev export-all-content
+
+set -euo pipefail
+
+RECIPE_CONTENT_DIR="custom_recipes/findrop/content"
+EXPORT_CMD="php web/core/scripts/drupal content:export"
+
+echo "==> Clearing entire content directory..."
+rm -rf "${RECIPE_CONTENT_DIR}"
+mkdir -p "${RECIPE_CONTENT_DIR}"
+
+echo "==> Exporting canvas_page entities..."
+${EXPORT_CMD} canvas_page --dir="${RECIPE_CONTENT_DIR}"
+
+echo "==> Exporting node entities with dependencies..."
+${EXPORT_CMD} node --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
+
+echo "==> Exporting media entities with dependencies..."
+${EXPORT_CMD} media --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
+
+echo "==> Exporting menu_link_content entities..."
+${EXPORT_CMD} menu_link_content --dir="${RECIPE_CONTENT_DIR}"
+
+echo "==> Exporting taxonomy_term entities..."
+${EXPORT_CMD} taxonomy_term --dir="${RECIPE_CONTENT_DIR}"
+
+echo "==> Copying binary files from Drupal files directory..."
+FILES_DIR="web/sites/default/files"
+COPIED=0
+MISSING=0
+for yml in "${RECIPE_CONTENT_DIR}"/file/*.yml; do
+  [ -f "$yml" ] || continue
+  relative_path=$(grep "public://" "$yml" | sed "s/.*public:\/\///" | sed "s/'.*//") || continue
+  if [ -n "$relative_path" ] && [ -f "${FILES_DIR}/${relative_path}" ]; then
+    filename=$(basename "$relative_path")
+    cp "${FILES_DIR}/${relative_path}" "${RECIPE_CONTENT_DIR}/file/${filename}"
+    COPIED=$((COPIED + 1))
+  else
+    MISSING=$((MISSING + 1))
+  fi
+done
+echo "    Copied ${COPIED} binary files. (${MISSING} not found on disk)"
+
+CANVAS_COUNT=$(find "${RECIPE_CONTENT_DIR}/canvas_page" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+NODE_COUNT=$(find "${RECIPE_CONTENT_DIR}/node" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+MEDIA_COUNT=$(find "${RECIPE_CONTENT_DIR}/media" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+FILE_COUNT=$(find "${RECIPE_CONTENT_DIR}/file" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+MENU_COUNT=$(find "${RECIPE_CONTENT_DIR}/menu_link_content" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+TERM_COUNT=$(find "${RECIPE_CONTENT_DIR}/taxonomy_term" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+
+echo ""
+echo "==> Export complete:"
+echo "    Canvas pages:  ${CANVAS_COUNT}"
+echo "    Nodes:         ${NODE_COUNT}"
+echo "    Media:         ${MEDIA_COUNT}"
+echo "    Files:         ${FILE_COUNT}"
+echo "    Menu links:    ${MENU_COUNT}"
+echo "    Taxonomy:      ${TERM_COUNT}"
+echo "    Output:        ${RECIPE_CONTENT_DIR}"

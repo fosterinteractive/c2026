@@ -28,5 +28,8 @@ git clone git@git.drupal.org:project/ai_context.git web/modules/contrib/ai_conte
 ddev drush en ai_context -y
 ddev drush recipe ../custom_recipes/ai_context_setup
 
+echo "Indexing all content in the vector database..."
+ddev drush sapi-i
+
 echo "Demo setup complete. You can log in to the Drupal site using the following URL:"
 ddev drush uli
