@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 7468c420-919a-4eef-9900-13907a640e2c
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: travel-hero.jpg
+  uri:
+    -
+      value: 'public://2026-02/travel-hero.jpg'
+  filemime:
+    -
+      value: image/jpeg
+  filesize:
+    -
+      value: 452378
+  status:
+    -
+      value: true

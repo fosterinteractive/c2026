@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: d192a8ad-8efd-4b97-a8f8-d2164667b981
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: 'Screenshot 2026-02-27 at 12.42.31 AM.png'
+  uri:
+    -
+      value: 'public://2026-02/Screenshot%202026-02-27%20at%2012.42.31%E2%80%AFAM.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 359632
+  status:
+    -
+      value: true
