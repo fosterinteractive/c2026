@@ -8,6 +8,11 @@ set -euo pipefail
 RECIPE_CONTENT_DIR="custom_recipes/findrop/content"
 EXPORT_CMD="php web/core/scripts/drupal content:export"
 
+count_yml() { find "$1" -name '*.yml' 2>/dev/null | wc -l | tr -d ' '; }
+
+BEFORE_MEDIA=$(count_yml "${RECIPE_CONTENT_DIR}/media")
+BEFORE_FILE=$(count_yml "${RECIPE_CONTENT_DIR}/file")
+
 echo "==> Clearing existing media exports..."
 rm -rf "${RECIPE_CONTENT_DIR}/media"
 
@@ -34,11 +39,11 @@ for yml in "${RECIPE_CONTENT_DIR}"/file/*.yml; do
 done
 echo "    Copied ${COPIED} binary files. (${MISSING} not found on disk)"
 
-MEDIA_COUNT=$(find "${RECIPE_CONTENT_DIR}/media" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
-FILE_COUNT=$(find "${RECIPE_CONTENT_DIR}/file" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+AFTER_MEDIA=$(count_yml "${RECIPE_CONTENT_DIR}/media")
+AFTER_FILE=$(count_yml "${RECIPE_CONTENT_DIR}/file")
 
 echo ""
-echo "==> Export complete:"
-echo "    Media:  ${MEDIA_COUNT}"
-echo "    Files:  ${FILE_COUNT}"
+echo "==> Export complete (before -> after):"
+echo "    Media:  ${BEFORE_MEDIA} -> ${AFTER_MEDIA}"
+echo "    Files:  ${BEFORE_FILE} -> ${AFTER_FILE}"
 echo "    Output: ${RECIPE_CONTENT_DIR}"

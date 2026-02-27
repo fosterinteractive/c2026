@@ -8,6 +8,15 @@ set -euo pipefail
 RECIPE_CONTENT_DIR="custom_recipes/findrop/content"
 EXPORT_CMD="php web/core/scripts/drupal content:export"
 
+count_yml() { find "$1" -name '*.yml' 2>/dev/null | wc -l | tr -d ' '; }
+
+BEFORE_CANVAS=$(count_yml "${RECIPE_CONTENT_DIR}/canvas_page")
+BEFORE_NODE=$(count_yml "${RECIPE_CONTENT_DIR}/node")
+BEFORE_MEDIA=$(count_yml "${RECIPE_CONTENT_DIR}/media")
+BEFORE_FILE=$(count_yml "${RECIPE_CONTENT_DIR}/file")
+BEFORE_MENU=$(count_yml "${RECIPE_CONTENT_DIR}/menu_link_content")
+BEFORE_TERM=$(count_yml "${RECIPE_CONTENT_DIR}/taxonomy_term")
+
 echo "==> Clearing entire content directory..."
 rm -rf "${RECIPE_CONTENT_DIR}"
 mkdir -p "${RECIPE_CONTENT_DIR}"
@@ -44,19 +53,19 @@ for yml in "${RECIPE_CONTENT_DIR}"/file/*.yml; do
 done
 echo "    Copied ${COPIED} binary files. (${MISSING} not found on disk)"
 
-CANVAS_COUNT=$(find "${RECIPE_CONTENT_DIR}/canvas_page" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
-NODE_COUNT=$(find "${RECIPE_CONTENT_DIR}/node" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
-MEDIA_COUNT=$(find "${RECIPE_CONTENT_DIR}/media" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
-FILE_COUNT=$(find "${RECIPE_CONTENT_DIR}/file" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
-MENU_COUNT=$(find "${RECIPE_CONTENT_DIR}/menu_link_content" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
-TERM_COUNT=$(find "${RECIPE_CONTENT_DIR}/taxonomy_term" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+AFTER_CANVAS=$(count_yml "${RECIPE_CONTENT_DIR}/canvas_page")
+AFTER_NODE=$(count_yml "${RECIPE_CONTENT_DIR}/node")
+AFTER_MEDIA=$(count_yml "${RECIPE_CONTENT_DIR}/media")
+AFTER_FILE=$(count_yml "${RECIPE_CONTENT_DIR}/file")
+AFTER_MENU=$(count_yml "${RECIPE_CONTENT_DIR}/menu_link_content")
+AFTER_TERM=$(count_yml "${RECIPE_CONTENT_DIR}/taxonomy_term")
 
 echo ""
-echo "==> Export complete:"
-echo "    Canvas pages:  ${CANVAS_COUNT}"
-echo "    Nodes:         ${NODE_COUNT}"
-echo "    Media:         ${MEDIA_COUNT}"
-echo "    Files:         ${FILE_COUNT}"
-echo "    Menu links:    ${MENU_COUNT}"
-echo "    Taxonomy:      ${TERM_COUNT}"
+echo "==> Export complete (before -> after):"
+echo "    Canvas pages:  ${BEFORE_CANVAS} -> ${AFTER_CANVAS}"
+echo "    Nodes:         ${BEFORE_NODE} -> ${AFTER_NODE}"
+echo "    Media:         ${BEFORE_MEDIA} -> ${AFTER_MEDIA}"
+echo "    Files:         ${BEFORE_FILE} -> ${AFTER_FILE}"
+echo "    Menu links:    ${BEFORE_MENU} -> ${AFTER_MENU}"
+echo "    Taxonomy:      ${BEFORE_TERM} -> ${AFTER_TERM}"
 echo "    Output:        ${RECIPE_CONTENT_DIR}"

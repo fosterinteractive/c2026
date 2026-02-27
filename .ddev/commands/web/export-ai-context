@@ -8,6 +8,11 @@ set -euo pipefail
 RECIPE_CONTENT_DIR="custom_recipes/ai_context_setup/content"
 EXPORT_CMD="php web/core/scripts/drupal content:export"
 
+count_yml() { find "$1" -name '*.yml' 2>/dev/null | wc -l | tr -d ' '; }
+
+BEFORE_ITEMS=$(count_yml "${RECIPE_CONTENT_DIR}/ai_context_item")
+BEFORE_USAGE=$(count_yml "${RECIPE_CONTENT_DIR}/ai_context_usage")
+
 echo "==> Clearing existing ai_context_item exports..."
 rm -rf "${RECIPE_CONTENT_DIR}/ai_context_item"
 
@@ -20,11 +25,11 @@ ${EXPORT_CMD} ai_context_item --dir="${RECIPE_CONTENT_DIR}"
 echo "==> Exporting all ai_context_usage entities..."
 ${EXPORT_CMD} ai_context_usage --dir="${RECIPE_CONTENT_DIR}"
 
-ITEM_COUNT=$(find "${RECIPE_CONTENT_DIR}/ai_context_item" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
-USAGE_COUNT=$(find "${RECIPE_CONTENT_DIR}/ai_context_usage" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+AFTER_ITEMS=$(count_yml "${RECIPE_CONTENT_DIR}/ai_context_item")
+AFTER_USAGE=$(count_yml "${RECIPE_CONTENT_DIR}/ai_context_usage")
 
 echo ""
-echo "==> Export complete:"
-echo "    Context items: ${ITEM_COUNT}"
-echo "    Usage records: ${USAGE_COUNT}"
+echo "==> Export complete (before -> after):"
+echo "    Context items: ${BEFORE_ITEMS} -> ${AFTER_ITEMS}"
+echo "    Usage records: ${BEFORE_USAGE} -> ${AFTER_USAGE}"
 echo "    Output:        ${RECIPE_CONTENT_DIR}"

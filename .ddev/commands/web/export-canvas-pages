@@ -8,15 +8,19 @@ set -euo pipefail
 RECIPE_CONTENT_DIR="custom_recipes/findrop/content"
 EXPORT_CMD="php web/core/scripts/drupal content:export"
 
+count_yml() { find "$1" -name '*.yml' 2>/dev/null | wc -l | tr -d ' '; }
+
+BEFORE_CANVAS=$(count_yml "${RECIPE_CONTENT_DIR}/canvas_page")
+
 echo "==> Clearing existing canvas_page exports..."
 rm -rf "${RECIPE_CONTENT_DIR}/canvas_page"
 
 echo "==> Exporting all canvas_page entities..."
 ${EXPORT_CMD} canvas_page --dir="${RECIPE_CONTENT_DIR}"
 
-CANVAS_COUNT=$(find "${RECIPE_CONTENT_DIR}/canvas_page" -name '*.yml' 2>/dev/null | wc -l | tr -d ' ')
+AFTER_CANVAS=$(count_yml "${RECIPE_CONTENT_DIR}/canvas_page")
 
 echo ""
 echo "==> Export complete:"
-echo "    Canvas pages: ${CANVAS_COUNT}"
+echo "    Canvas pages: ${BEFORE_CANVAS} -> ${AFTER_CANVAS}"
 echo "    Output:       ${RECIPE_CONTENT_DIR}"

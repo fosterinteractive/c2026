@@ -53,7 +53,7 @@ default:
       uuid: 2747d826-b897-49e9-bcfc-45802d02a185
       component_id: sdc.byte_theme.heading
       inputs:
-        heading_text: 'Take control of your spending'
+        heading_text: 'Take control of your spending !'
         level: 1
         text_size: default
         text_color: default
