@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 8853846d-d303-4cb6-bded-5834e64a952c
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: default-avatar.svg
+  uri:
+    -
+      value: 'public://2026-02/default-avatar.svg'
+  filemime:
+    -
+      value: image/svg+xml
+  filesize:
+    -
+      value: 405
+  status:
+    -
+      value: true

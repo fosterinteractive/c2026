@@ -1,0 +1,30 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: c4d96aa6-382e-41e1-9498-2227e73cdf47
+  bundle: document
+  default_langcode: en
+  depends:
+    e4a95fa0-985b-4f11-8c59-15caa4544ec4: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: press-release-virtualfintechsummit2025.pdf
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  field_media_document:
+    -
+      display: false
+      description: ''
+      entity: e4a95fa0-985b-4f11-8c59-15caa4544ec4

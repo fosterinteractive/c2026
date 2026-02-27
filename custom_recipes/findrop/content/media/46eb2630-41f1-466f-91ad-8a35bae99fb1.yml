@@ -1,0 +1,30 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 46eb2630-41f1-466f-91ad-8a35bae99fb1
+  bundle: document
+  default_langcode: en
+  depends:
+    ef62cb06-c1f7-4341-b1a4-55a8a997ec8e: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: techflow-introduction.pdf
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  field_media_document:
+    -
+      display: false
+      description: ''
+      entity: ef62cb06-c1f7-4341-b1a4-55a8a997ec8e

@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 64cad552-4dd6-4717-ae47-559a843a36c0
+  bundle: image
+  default_langcode: en
+  depends:
+    10be0e34-b1ab-4561-9cb6-3ff4d3408faa: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: login-wallpaper.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a vibrant, abstract graphic design, not a photo or illustration of real-world objects. The background is a dynamic patchwork of navy blue, sky blue, coral red, yellow, light purple, and white rectangles and triangles. There are arch shapes in bright blue and semi-circles that add geometric interest. Yellow curved lines and circles overlay the image, creating a sense of movement and energy. Small clusters of coral dots are scattered for added contrast and playfulness. No people or realistic objects are present. The overall mood is upbeat, modern, and visually stimulating, making it suitable as a login wallpaper for a lively tech or creative platform.'
+  field_media_image:
+    -
+      alt: 'Colorful geometric pattern with circles, squares, and rectangles in blue, yellow, and orange.'
+      title: ''
+      width: 2280
+      height: 2272
+      entity: 10be0e34-b1ab-4561-9cb6-3ff4d3408faa

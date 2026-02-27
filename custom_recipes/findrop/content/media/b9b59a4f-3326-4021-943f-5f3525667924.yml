@@ -1,0 +1,32 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: b9b59a4f-3326-4021-943f-5f3525667924
+  bundle: svg_image
+  default_langcode: en
+  depends:
+    5d260be2-7157-4af0-983c-9d096fbfb047: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: FinDrop_logo-outline.svg
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  field_media_svg_image:
+    -
+      alt: 'FindDrop Logo'
+      title: ''
+      width: 0
+      height: 0
+      entity: 5d260be2-7157-4af0-983c-9d096fbfb047

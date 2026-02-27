@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 5d260be2-7157-4af0-983c-9d096fbfb047
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: FinDrop_logo-outline.svg
+  uri:
+    -
+      value: 'public://2026-02/FinDrop_logo-outline.svg'
+  filemime:
+    -
+      value: image/svg+xml
+  filesize:
+    -
+      value: 3108
+  status:
+    -
+      value: true

@@ -87,3 +87,6 @@ $RECYCLE.BIN/
 /drupal.phar
 /drupal
 /creating_patch_for_canvas/clone_here
+
+# Local backups
+/.backups/

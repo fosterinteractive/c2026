@@ -3,7 +3,7 @@ type: recipe
 description: 'Sets up the latest AI Context module and adds relevant context items.'
 config:
   actions:
-    ai_context.agent_pools:
+    ai_context.agents:
       simpleConfigUpdate:
         agents:
           -
