@@ -1,7 +1,7 @@
 _meta:
   version: '1.0'
   entity_type: file
-  uuid: f762c78b-281b-4bd7-bf61-7d9beeca800e
+  uuid: cd39ac1c-8c42-4b96-ab59-5c083d01fad1
   default_langcode: en
 default:
   uid:
@@ -9,16 +9,16 @@ default:
       target_id: 1
   filename:
     -
-      value: 'Screenshot 2026-02-27 at 12.42.37 AM.png'
+      value: findrop-icon-abstract-orbits.png
   uri:
     -
-      value: 'public://2026-02/Screenshot%25202026-02-27%2520at%252012.42.37%25E2%2580%25AFAM.png'
+      value: 'public://2026-03/findrop-icon-abstract-orbits.png'
   filemime:
     -
       value: image/png
   filesize:
     -
-      value: 608253
+      value: 5024519
   status:
     -
       value: true

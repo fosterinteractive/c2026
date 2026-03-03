@@ -5,7 +5,6 @@ _meta:
   bundle: blog
   default_langcode: en
   depends:
-    29b31c49-a235-4fc3-906a-a501d6306c43: media
     eb00eaac-ad10-4bdb-9a31-7612c47c6484: taxonomy_term
 default:
   revision_uid:
@@ -46,9 +45,6 @@ default:
   field_description:
     -
       value: 'Automated approval workflows eliminate bottlenecks and inconsistencies in expense processing while speeding up reimbursements and providing complete audit trails that manual processes cannot match.'
-  field_featured_image:
-    -
-      entity: 29b31c49-a235-4fc3-906a-a501d6306c43
   field_tags:
     -
       entity: eb00eaac-ad10-4bdb-9a31-7612c47c6484

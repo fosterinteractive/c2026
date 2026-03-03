@@ -6,8 +6,6 @@ _meta:
   depends:
     ec07e5e9-d11e-4550-b528-66dffbc93527: file
     3a63058d-4aa1-4b91-b530-28696677c56e: media
-    bca14119-609d-4148-98fb-cf5bb15349e5: file
-    3d674dc5-5a7a-4886-82d5-a2e579ece4eb: media
 default:
   revision_user:
     -
@@ -100,53 +98,6 @@ default:
       inputs:
         text:
           value: '<p class="text-align-center">We started with a straightforward observation: the tools people use every day weren''t keeping up with how they actually work. So we set out to build something better. Our platform combines intuitive design with powerful functionality, giving teams the freedom to focus on what matters most—their work and their workflows working in harmony.</p>'
-          format: canvas_html_block
-        text_size: normal
-        text_color: default
-    -
-      uuid: b79d5ffc-1eed-46ce-a2f4-f70f1a815e45
-      component_id: sdc.byte_theme.section
-      inputs:
-        width: 50%
-        columns: '100'
-        mobile_columns: '1'
-        margin_block_start: '48'
-        margin_block_end: '48'
-        padding_block_start: '0'
-        padding_block_end: '0'
-        section_header: true
-        section_footer: false
-    -
-      parent_uuid: b79d5ffc-1eed-46ce-a2f4-f70f1a815e45
-      slot: header_slot
-      uuid: eb0daa00-056e-40f0-bfbf-b1f9bf4ac667
-      component_id: sdc.byte_theme.heading
-      inputs:
-        heading_text: 'Meet the team'
-        level: 2
-        text_size: heading-responsive-6xl
-        text_color: default
-        align: center
-    -
-      parent_uuid: b79d5ffc-1eed-46ce-a2f4-f70f1a815e45
-      slot: main_slot
-      uuid: 3832a844-d678-4e83-8547-20adae315893
-      component_id: sdc.byte_theme.image
-      inputs:
-        media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: 3d674dc5-5a7a-4886-82d5-a2e579ece4eb
-            target_type: media
-        size: '2:1'
-        radius: small
-    -
-      parent_uuid: b79d5ffc-1eed-46ce-a2f4-f70f1a815e45
-      slot: main_slot
-      uuid: bc93b9ac-82a8-4298-9dc2-73cac0d5b80e
-      component_id: sdc.byte_theme.text
-      inputs:
-        text:
-          value: "<p class=\"text-align-center\">Our team brings together diverse perspectives from engineering, design, product, and customer success. We're distributed across continents, which gives us firsthand experience with the collaboration challenges we're solving. We're backed by experienced investors who share our vision for sustainable, thoughtful growth.</p>"
           format: canvas_html_block
         text_size: normal
         text_color: default

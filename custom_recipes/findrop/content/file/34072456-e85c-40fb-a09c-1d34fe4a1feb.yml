@@ -1,7 +1,7 @@
 _meta:
   version: '1.0'
   entity_type: file
-  uuid: f762c78b-281b-4bd7-bf61-7d9beeca800e
+  uuid: 34072456-e85c-40fb-a09c-1d34fe4a1feb
   default_langcode: en
 default:
   uid:
@@ -9,16 +9,16 @@ default:
       target_id: 1
   filename:
     -
-      value: 'Screenshot 2026-02-27 at 12.42.37 AM.png'
+      value: laptop-mockup-travel-background.png
   uri:
     -
-      value: 'public://2026-02/Screenshot%25202026-02-27%2520at%252012.42.37%25E2%2580%25AFAM.png'
+      value: 'public://2026-03/laptop-mockup-travel-background.png'
   filemime:
     -
       value: image/png
   filesize:
     -
-      value: 608253
+      value: 20212239
   status:
     -
       value: true

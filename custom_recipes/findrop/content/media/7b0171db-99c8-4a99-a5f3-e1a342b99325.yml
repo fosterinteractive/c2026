@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 7b0171db-99c8-4a99-a5f3-e1a342b99325
+  bundle: image
+  default_langcode: en
+  depends:
+    34072456-e85c-40fb-a09c-1d34fe4a1feb: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: laptop-mockup-travel-background.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a digital graphic mockup featuring a laptop in the foreground with a modern travel expense dashboard displayed on its screen. The background is split into two segments: the left side has a gradient of deep blue merging into gold, while the right side shows a high-end outdoor terrace overlooking a cityscape at sunset, evoking a travel or luxury business vibe. The dashboard on the laptop uses darker tones with green, teal, and blue highlights for data visualization. No people are visible in the scene. The overall mood is sophisticated and professional, hinting at business, travel, and modern finance. Objects of importance include the laptop as the central focus and the luxurious terrace scene in the background, supporting the travel theme. The image is clearly a professional marketing mockup, not a photo or animation.'
+  field_media_image:
+    -
+      alt: 'Laptop displaying financial dashboard, city view terrace in the background at sunset.'
+      title: ''
+      width: 5504
+      height: 3072
+      entity: 34072456-e85c-40fb-a09c-1d34fe4a1feb

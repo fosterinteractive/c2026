@@ -16,7 +16,7 @@ End-to-end page creation from a complete copy deck where the user's prompt provi
 - The AI chat sidebar is empty - no prior conversation
 - The copy deck is raw marketing content - no component names, no layout instructions, no design specs. It arrives as markdown via Google Docs' "Copy as Markdown" feature
 
-![Before State](before.png)
+
 
 ## User Input
 
@@ -24,7 +24,7 @@ Jordan types:
 
 > "I'm building the FinDrop Travel product page. The audience is Travel Managers and Program Administrators, with CFOs and Controllers as a secondary audience. The goal is awareness and evaluation. Let me paste in the copy deck."
 
-Jordan then pastes the full copy deck (see `supporting_content/findrop_travel_copy_deck.md`)
+Jordan then pastes the full copy deck (see `/website_copy/travel-page-with-strategy-specs.md`)
 
 ## Expected AI Behavior
 
@@ -51,6 +51,7 @@ Jordan then pastes the full copy deck (see `supporting_content/findrop_travel_co
 - All copy deck content is placed in appropriate components - nothing dropped
 - The page follows Mercury hierarchy rules (cards in grids, accordions in containers)
 - The AI did not ask clarifying questions
+- The page path should look like `/travel-1-1` (in the database)
 
 ![After State](after.png)
 

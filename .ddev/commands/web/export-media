@@ -13,12 +13,6 @@ count_yml() { find "$1" -name '*.yml' 2>/dev/null | wc -l | tr -d ' '; }
 BEFORE_MEDIA=$(count_yml "${RECIPE_CONTENT_DIR}/media")
 BEFORE_FILE=$(count_yml "${RECIPE_CONTENT_DIR}/file")
 
-echo "==> Clearing existing media exports..."
-rm -rf "${RECIPE_CONTENT_DIR}/media"
-
-echo "==> Clearing existing file exports..."
-rm -rf "${RECIPE_CONTENT_DIR}/file"
-
 echo "==> Exporting all media entities with dependencies (includes files)..."
 ${EXPORT_CMD} media --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
 

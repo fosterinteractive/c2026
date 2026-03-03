@@ -12,11 +12,8 @@ count_yml() { find "${1}" -name '*.yml' 2>/dev/null | wc -l | tr -d ' '; }
 
 BEFORE_ITEMS=$(count_yml "${RECIPE_CONTENT_DIR}/ai_context_item")
 
-echo "==> Clearing existing ai_context_item exports..."
-rm -rf "${RECIPE_CONTENT_DIR}/ai_context_item"
-
-echo "==> Exporting all ai_context_item entities..."
-${EXPORT_CMD} ai_context_item --dir="${RECIPE_CONTENT_DIR}"
+echo "==> Exporting all ai_context_item entities with dependencies..."
+${EXPORT_CMD} ai_context_item --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
 
 AFTER_ITEMS=$(count_yml "${RECIPE_CONTENT_DIR}/ai_context_item")
 

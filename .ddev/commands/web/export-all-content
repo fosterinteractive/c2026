@@ -17,12 +17,8 @@ BEFORE_FILE=$(count_yml "${RECIPE_CONTENT_DIR}/file")
 BEFORE_MENU=$(count_yml "${RECIPE_CONTENT_DIR}/menu_link_content")
 BEFORE_TERM=$(count_yml "${RECIPE_CONTENT_DIR}/taxonomy_term")
 
-echo "==> Clearing entire content directory..."
-rm -rf "${RECIPE_CONTENT_DIR}"
-mkdir -p "${RECIPE_CONTENT_DIR}"
-
-echo "==> Exporting canvas_page entities..."
-${EXPORT_CMD} canvas_page --dir="${RECIPE_CONTENT_DIR}"
+echo "==> Exporting canvas_page entities with dependencies..."
+${EXPORT_CMD} canvas_page --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
 
 echo "==> Exporting node entities with dependencies..."
 ${EXPORT_CMD} node --with-dependencies --dir="${RECIPE_CONTENT_DIR}"

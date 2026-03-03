@@ -1,11 +1,11 @@
 _meta:
   version: '1.0'
   entity_type: canvas_page
-  uuid: dfd72736-9cc0-40ba-9b00-9789835399ef
+  uuid: 4dbb7ab2-c33c-44a9-bcdb-beb3d414a92f
   default_langcode: en
   depends:
-    a434fa52-c6ee-4bde-9a69-e37b9ddd842e: file
-    545fe2b5-1b24-4cc8-bdba-8f8f3c54baa2: media
+    ed34d0e1-6f0f-4771-81d2-4ae0a6604370: file
+    360647ba-9efd-487b-8f3e-18efd0d7fe77: media
     cd39ac1c-8c42-4b96-ab59-5c083d01fad1: file
     99b0f7dc-591c-4781-95ff-24b8705eaa85: media
     49bd225b-1031-4001-8482-afbff25622fb: file
@@ -22,8 +22,8 @@ _meta:
     5005f597-1a87-4847-8d7d-76a9ef868fa2: media
     b38beb47-f637-468a-8385-a206265ed349: file
     0877ac26-4545-4e19-aa1c-c275dc509af2: media
-    34072456-e85c-40fb-a09c-1d34fe4a1feb: file
-    7b0171db-99c8-4a99-a5f3-e1a342b99325: media
+    fb30eb7e-6698-429e-a3b3-9bba46919d7b: file
+    bdc5e5e1-b8d9-411c-abc3-aa06d8ae34a8: media
     590ef2bb-2e2d-4360-9444-ee4e4133e8f4: media
 default:
   revision_user:
@@ -37,7 +37,7 @@ default:
       target_id: 1
   title:
     -
-      value: 'Travel (Before)'
+      value: 'Travel (After)'
   description:
     -
       value: 'Discover how FinDrop automates business travel management with unified booking, instant virtual cards, and expense control for smarter, compliant corporate travel.'
@@ -48,11 +48,11 @@ default:
       inputs:
         height: full
         flex_position: bottom-left
-        overlay_opacity: 40%
+        overlay_opacity: 0%
         object_position: bottom
         media:
           CANVAS_ENTITY_REFERENCE:
-            target_uuid: 545fe2b5-1b24-4cc8-bdba-8f8f3c54baa2
+            target_uuid: 360647ba-9efd-487b-8f3e-18efd0d7fe77
             target_type: media
         overlap_navbar: true
     -
@@ -480,234 +480,6 @@ default:
             target_uuid: 25710933-f157-4ee6-a95c-28a4c256ea96
             target_type: media
     -
-      uuid: 49763462-e9ea-4182-b5bf-6966552b1089
-      component_id: sdc.byte_theme.section
-      inputs:
-        width: 100%
-        columns: 50-50
-        mobile_columns: '1'
-        margin_block_start: '128'
-        margin_block_end: '128'
-        padding_block_start: '0'
-        padding_block_end: '0'
-        section_header: true
-        section_footer: false
-    -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
-      slot: header_slot
-      uuid: dbbbe1f4-202b-40a3-b923-f8baa56304cb
-      component_id: sdc.byte_theme.heading
-      inputs:
-        heading_text: 'Learn How We Make Travel Expense Management Easy'
-        level: 2
-        text_size: heading-responsive-4xl
-        text_color: default
-        align: left
-    -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
-      slot: main_slot
-      uuid: 305e2539-8a39-4489-a091-7e872c9edac0
-      component_id: sdc.byte_theme.group
-      inputs:
-        flex_direction: column
-        flex_gap: md
-        items_align: start
-        flex_align: center
-        radius: sm
-        padding: sm
-    -
-      parent_uuid: 305e2539-8a39-4489-a091-7e872c9edac0
-      slot: group_slot
-      uuid: f2c316a2-aae9-4bed-845b-cb00288d887f
-      component_id: sdc.byte_theme.heading
-      inputs:
-        heading_text: 'Booking flexibility across platforms'
-        level: 3
-        text_size: heading-responsive-3xl
-        text_color: default
-        align: left
-    -
-      parent_uuid: 305e2539-8a39-4489-a091-7e872c9edac0
-      slot: group_slot
-      uuid: 5e5201e6-97d3-43ca-9e56-fa76c82e3ac0
-      component_id: sdc.byte_theme.text
-      inputs:
-        text:
-          value: '<p>FinDrop works with DropPay-connected booking platforms, so employees can keep using familiar tools. Travel policies are enforced at the point of booking—no matter which connected platform they choose.</p>'
-          format: canvas_html_block
-        text_size: text-lg
-        text_color: default
-    -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
-      slot: main_slot
-      uuid: 7ddd65f2-6a15-4972-9151-717285d414ad
-      component_id: sdc.byte_theme.group
-      inputs:
-        flex_direction: column
-        flex_gap: md
-        items_align: start
-        flex_align: center
-        radius: sm
-        padding: sm
-    -
-      parent_uuid: 7ddd65f2-6a15-4972-9151-717285d414ad
-      slot: group_slot
-      uuid: 69c328d2-fda5-4520-acd9-03fad6edb95c
-      component_id: sdc.byte_theme.heading
-      inputs:
-        heading_text: 'Real-time policy enforcement'
-        level: 3
-        text_size: heading-responsive-3xl
-        text_color: default
-        align: left
-    -
-      parent_uuid: 7ddd65f2-6a15-4972-9151-717285d414ad
-      slot: group_slot
-      uuid: 26e9dd3e-bac0-4276-b124-7b610f92f205
-      component_id: sdc.byte_theme.text
-      inputs:
-        text:
-          value: '<p>Travel rules apply automatically during booking and throughout the trip. Hotel caps, flight class limits, meal per diems, and destination-specific requirements are checked instantly, with out-of-policy spend flagged before anything is confirmed.</p>'
-          format: canvas_html_block
-        text_size: text-lg
-        text_color: default
-    -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
-      slot: main_slot
-      uuid: 951a630d-92dc-4852-8bd8-094a4e9b815e
-      component_id: sdc.byte_theme.group
-      inputs:
-        flex_direction: column
-        flex_gap: md
-        items_align: start
-        flex_align: center
-        radius: sm
-        padding: sm
-    -
-      parent_uuid: 951a630d-92dc-4852-8bd8-094a4e9b815e
-      slot: group_slot
-      uuid: 380db530-ff1a-4e76-b02d-93c5338035bf
-      component_id: sdc.byte_theme.heading
-      inputs:
-        heading_text: 'Compatibility with existing booking tools'
-        level: 3
-        text_size: heading-responsive-3xl
-        text_color: default
-        align: left
-    -
-      parent_uuid: 951a630d-92dc-4852-8bd8-094a4e9b815e
-      slot: group_slot
-      uuid: 76a2500d-b861-40b5-8c9e-efa7a692489b
-      component_id: sdc.byte_theme.text
-      inputs:
-        text:
-          value: '<p>FinDrop layers on top of your current travel booking workflow through DropPay integrations. You don’t need to replace tools—FinDrop adds policy controls, receipt capture, and automated expense reporting.</p>'
-          format: canvas_html_block
-        text_size: text-lg
-        text_color: default
-    -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
-      slot: main_slot
-      uuid: c128b4de-2484-455b-829a-879746570b77
-      component_id: sdc.byte_theme.group
-      inputs:
-        flex_direction: column
-        flex_gap: md
-        items_align: start
-        flex_align: center
-        radius: sm
-        padding: sm
-    -
-      parent_uuid: c128b4de-2484-455b-829a-879746570b77
-      slot: group_slot
-      uuid: 86b2e2da-6db3-45ae-a42e-12a31c827be7
-      component_id: sdc.byte_theme.heading
-      inputs:
-        heading_text: 'International travel readiness'
-        level: 3
-        text_size: heading-responsive-3xl
-        text_color: default
-        align: left
-    -
-      parent_uuid: c128b4de-2484-455b-829a-879746570b77
-      slot: group_slot
-      uuid: cd3f5c80-f472-4143-8ec6-2c17566be581
-      component_id: sdc.byte_theme.text
-      inputs:
-        text:
-          value: '<p>Global trips are supported with destination-based policies, local currency reimbursements, and per diem management. Exchange rates lock at the time of purchase to avoid reimbursement discrepancies.</p>'
-          format: canvas_html_block
-        text_size: text-lg
-        text_color: default
-    -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
-      slot: main_slot
-      uuid: eba6ad78-bd4e-45d3-b4b5-87dce17411a5
-      component_id: sdc.byte_theme.group
-      inputs:
-        flex_direction: column
-        flex_gap: md
-        items_align: start
-        flex_align: center
-        radius: sm
-        padding: sm
-    -
-      parent_uuid: eba6ad78-bd4e-45d3-b4b5-87dce17411a5
-      slot: group_slot
-      uuid: 6d969db9-0d8f-43ce-8326-34ecd3074406
-      component_id: sdc.byte_theme.heading
-      inputs:
-        heading_text: 'Automatic trip card closure after travel'
-        level: 3
-        text_size: heading-responsive-3xl
-        text_color: default
-        align: left
-    -
-      parent_uuid: eba6ad78-bd4e-45d3-b4b5-87dce17411a5
-      slot: group_slot
-      uuid: e370852e-120b-4ec9-b93f-845aa6382c1a
-      component_id: sdc.byte_theme.text
-      inputs:
-        text:
-          value: '<p>Trip-specific virtual cards automatically freeze when the trip end date passes. Leftover authorizations are declined, and charges remain tagged and coded to the trip for clean closeout.</p>'
-          format: canvas_html_block
-        text_size: text-lg
-        text_color: default
-    -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
-      slot: main_slot
-      uuid: 4e24c245-87a2-4c48-b096-243ef0252d97
-      component_id: sdc.byte_theme.group
-      inputs:
-        flex_direction: column
-        flex_gap: md
-        items_align: start
-        flex_align: center
-        radius: sm
-        padding: sm
-    -
-      parent_uuid: 4e24c245-87a2-4c48-b096-243ef0252d97
-      slot: group_slot
-      uuid: e6c60477-0784-4e7d-b814-f22a8869d704
-      component_id: sdc.byte_theme.heading
-      inputs:
-        heading_text: 'Unified reporting across FinDrop products'
-        level: 3
-        text_size: heading-responsive-3xl
-        text_color: default
-        align: left
-    -
-      parent_uuid: 4e24c245-87a2-4c48-b096-243ef0252d97
-      slot: group_slot
-      uuid: b82a918c-33bd-4d59-9c26-07023ecd9220
-      component_id: sdc.byte_theme.text
-      inputs:
-        text:
-          value: '<p>Travel spend rolls into the same SmartBudgets™ dashboards and reporting used for virtual cards and expense management. Everything shows up in one view, without a separate travel system to reconcile.</p>'
-          format: canvas_html_block
-        text_size: text-lg
-        text_color: default
-    -
       uuid: 360cbedb-1bad-416c-8c25-c807f3a2bcd4
       component_id: sdc.byte_theme.section
       inputs:
@@ -771,6 +543,156 @@ default:
             target_type: media
         text: 'Two-way sync with QuickBooks, NetSuite, and 50+ ERPs. Travel data flows into the same SmartBudgets™ dashboards as all other FinDrop spend'
         is_text_centered: false
+    -
+      uuid: 83a2337c-d547-4f32-b7a9-b148933a6872
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 75%
+        columns: '100'
+        mobile_columns: '1'
+        margin_block_start: '48'
+        margin_block_end: '48'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: false
+    -
+      parent_uuid: 83a2337c-d547-4f32-b7a9-b148933a6872
+      slot: header_slot
+      uuid: c56f8bb2-4a4c-4324-b42a-cc61c44922c8
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Frequently asked questions'
+        level: 2
+        text_size: heading-responsive-4xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: 83a2337c-d547-4f32-b7a9-b148933a6872
+      slot: main_slot
+      uuid: da887cdb-51a1-4da6-b10c-c2deeebb9402
+      component_id: sdc.byte_theme.accordion-container
+      inputs: {  }
+    -
+      parent_uuid: da887cdb-51a1-4da6-b10c-c2deeebb9402
+      slot: accordion_content
+      uuid: d0584577-f25f-4f2d-8d61-bc47acb7c9a0
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'Can employees book on any travel platform?'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: d0584577-f25f-4f2d-8d61-bc47acb7c9a0
+      slot: accordion_content
+      uuid: 951dcffe-f4d1-4ddb-882b-3516a003fb10
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>FinDrop works with DropPay-connected booking platforms. Employees book through the tools they already use. FinDrop enforces your travel policies at the point of booking, regardless of which platform they choose.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: da887cdb-51a1-4da6-b10c-c2deeebb9402
+      slot: accordion_content
+      uuid: 5b66d957-aac6-43d0-97c1-1fc9d4143682
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'How are travel policies enforced?'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: 5b66d957-aac6-43d0-97c1-1fc9d4143682
+      slot: accordion_content
+      uuid: ee569d8e-a3d0-4220-aac7-c26bc112eb25
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: "<p>Policies are applied in real time at booking and throughout the trip. Hotel rates, flight classes, meal per diems, and destination-specific rules are checked automatically. Out-of-policy items are flagged before they're confirmed, not after the expense report is filed.</p>"
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: da887cdb-51a1-4da6-b10c-c2deeebb9402
+      slot: accordion_content
+      uuid: dc31a14e-35f7-4cc5-874e-9db5fa8d7a4b
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'Do we need to replace our existing booking tools?'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: dc31a14e-35f7-4cc5-874e-9db5fa8d7a4b
+      slot: accordion_content
+      uuid: 0c474544-81dc-4429-8feb-25201e88db26
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>No. FinDrop integrates with your existing travel booking platforms through DropPay. Employees keep using the tools they know. FinDrop handles policy enforcement, receipts, and expense reporting on top of their existing workflow.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: da887cdb-51a1-4da6-b10c-c2deeebb9402
+      slot: accordion_content
+      uuid: 909cd100-5712-4f8e-8104-94aa67607c26
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'How does FinDrop handle international travel?'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: 909cd100-5712-4f8e-8104-94aa67607c26
+      slot: accordion_content
+      uuid: 4afa03f8-7dc2-4f1d-ae05-e6f6687a3bd5
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: "<p>FinDrop supports global travel with destination-specific policies, local currency reimbursements, and international per diem management. Exchange rates are locked at the time of transaction, so there's no variance between what was spent and what's reimbursed.</p>"
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: da887cdb-51a1-4da6-b10c-c2deeebb9402
+      slot: accordion_content
+      uuid: 75744713-a8c7-454f-b678-9372f5e359b9
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'What happens to the trip card after travel is over?'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: 75744713-a8c7-454f-b678-9372f5e359b9
+      slot: accordion_content
+      uuid: c7a6246f-25df-4785-aa70-35d7e206126a
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Trip-specific virtual cards freeze automatically when the trip end date passes. Any lingering authorizations are declined. All charges are already tagged and coded to the trip. Reconciliation is already done.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: da887cdb-51a1-4da6-b10c-c2deeebb9402
+      slot: accordion_content
+      uuid: fcee1757-10d2-473a-80d3-ff25ed3eac26
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'How does travel data connect to our other FinDrop products?'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: fcee1757-10d2-473a-80d3-ff25ed3eac26
+      slot: accordion_content
+      uuid: 7236e0ad-335c-433d-8a2e-c67702c1110c
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Travel spend flows into the same SmartBudgets™ dashboards and reporting as your virtual cards and expense management. One platform, one view of all company spend. No separate travel management system to reconcile.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
     -
       uuid: acbdce81-ace9-4bd9-9f48-0cf21f17eac0
       component_id: sdc.byte_theme.section
@@ -840,7 +762,7 @@ default:
       inputs:
         media:
           CANVAS_ENTITY_REFERENCE:
-            target_uuid: 7b0171db-99c8-4a99-a5f3-e1a342b99325
+            target_uuid: bdc5e5e1-b8d9-411c-abc3-aa06d8ae34a8
             target_type: media
         size: '4:3'
         radius: small
@@ -855,7 +777,7 @@ default:
         text_color: default
   path:
     -
-      alias: /travel-1-1
+      alias: /travel-1-2
       langcode: en
   image:
     -

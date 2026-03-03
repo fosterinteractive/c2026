@@ -12,11 +12,8 @@ count_yml() { find "$1" -name '*.yml' 2>/dev/null | wc -l | tr -d ' '; }
 
 BEFORE_CANVAS=$(count_yml "${RECIPE_CONTENT_DIR}/canvas_page")
 
-echo "==> Clearing existing canvas_page exports..."
-rm -rf "${RECIPE_CONTENT_DIR}/canvas_page"
-
-echo "==> Exporting all canvas_page entities..."
-${EXPORT_CMD} canvas_page --dir="${RECIPE_CONTENT_DIR}"
+echo "==> Exporting all canvas_page entities with dependencies..."
+${EXPORT_CMD} canvas_page --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
 
 AFTER_CANVAS=$(count_yml "${RECIPE_CONTENT_DIR}/canvas_page")
 
