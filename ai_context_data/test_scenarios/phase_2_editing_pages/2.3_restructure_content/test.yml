@@ -1,0 +1,30 @@
+label: 'Test 2.3: Iterative Refinement - FAQ (DEMO 3.4)'
+description: 'DEMO PRIORITY - Validates AI generates new FAQ component but leaves original for comparison (Canvas AI cannot delete).'
+status: 1
+messages:
+  - role: user
+    content: "Too much copy in this section. Turn this into a FAQ block at the bottom."
+triggering_instructions: "Too much copy in this section. Turn this into a FAQ block at the bottom."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::canvas::create_section'
+    label: 'Should create new FAQ section'
+    tool_rules: should_be_run
+    parameters:
+      section_type:
+        type_of_check: equals
+        value: 'faq'
+      position:
+        type_of_check: equals
+        value: 'bottom'
+  rule_2:
+    tool: 'ai_agents::canvas::create_component'
+    label: 'Should create accordion-container with accordion items'
+    tool_rules: should_be_run
+    parameters:
+      component_type:
+        type_of_check: equals
+        value: 'sdc.mercury.accordion-container'
+response_rule: 'AI should remove detailed specs from middle section and create new FAQ section near bottom with accordion-container. Specs should be reformatted as Q&A pairs. No content should be lost.'
+config_reset: '0'

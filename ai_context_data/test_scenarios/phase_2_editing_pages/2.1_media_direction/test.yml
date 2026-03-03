@@ -1,0 +1,28 @@
+label: 'Test 2.1: Media Direction - Switch Image Style'
+description: 'Validates that AI explains image choices made during page generation, offers alternative style, and swaps when user accepts.'
+status: 1
+messages:
+  - role: assistant
+    content: "Page is built. I used the illustration style for imagery based on your brand guidelines - that's the default for product pages. We could go with photography instead if you want a more personal feel. Want me to try a version with photography, or keep illustrations?"
+  - role: user
+    content: "Yeah, let's try photography."
+triggering_instructions: "Yeah, let's try photography."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::canvas::swap_media'
+    label: 'Should swap all illustrations to photography'
+    tool_rules: should_be_run
+    parameters:
+      style:
+        type_of_check: equals
+        value: 'photography'
+      scope:
+        type_of_check: equals
+        value: 'all'
+  rule_2:
+    tool: 'ai_agents::canvas::regenerate_alt_text'
+    label: 'Should regenerate alt text for swapped images'
+    tool_rules: should_be_run
+response_rule: 'AI should swap all illustration assets to photography. Hero, feature cards, CTA should all use photography. Alt text should be regenerated for all swapped images.'
+config_reset: '0'

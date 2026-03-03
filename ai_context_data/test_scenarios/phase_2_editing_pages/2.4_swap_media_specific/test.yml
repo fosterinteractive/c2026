@@ -1,0 +1,32 @@
+label: 'Test 2.4: Choosing Visual Direction (DEMO 3.3)'
+description: 'DEMO PRIORITY - Validates AI can swap specific components (hero + footer) while keeping others (feature cards) unchanged.'
+status: 1
+messages:
+  - role: user
+    content: "Switch the hero and the footer CTA to photography."
+  - role: assistant
+    content: "Done. Hero and footer updated to photography. Feature cards still using illustrations."
+triggering_instructions: "Switch the hero and the footer CTA to photography."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::canvas::swap_media'
+    label: 'Should swap only feature card images'
+    tool_rules: should_be_run
+    parameters:
+      scope:
+        type_of_check: equals
+        value: 'feature_cards'
+      style:
+        type_of_check: equals
+        value: 'illustration'
+  rule_2:
+    tool: 'ai_agents::canvas::swap_media'
+    label: 'Should NOT swap hero or CTA images'
+    tool_rules: should_not_be_run
+    parameters:
+      scope:
+        type_of_check: contains
+        value: 'hero'
+response_rule: 'AI should swap only feature card images to illustrations. Hero and CTA should retain photography. Should note CCC guideline about consistent style but proceed with user direction.'
+config_reset: '0'

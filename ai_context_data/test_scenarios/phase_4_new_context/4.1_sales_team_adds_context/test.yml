@@ -1,0 +1,9 @@
+label: 'Test 4.1: Sales Team Adds Competitive Intelligence to CCC'
+description: 'Validates that new CCC context items can be added after pages are live without automatically changing published content.'
+status: 1
+messages: []
+triggering_instructions: 'N/A - This is a state change test, not an AI interaction test'
+ai_agent: null
+rules: {}
+response_rule: 'New Sales Pitch Deck context item should appear in CCC with metadata. Should NOT auto-modify any live pages. Should be available for future AI sessions.'
+config_reset: '0'

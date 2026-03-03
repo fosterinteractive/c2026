@@ -1,0 +1,10 @@
+label: 'CCC Phase 0: Setup & Routing'
+description: 'Tests that validate the CCC correctly loads, routes, and excludes context items based on page content, user intent, and scope.'
+approval_percentage: 100
+config_reset: '0'
+tests:
+  - 0.1_ccc_items_display
+  - 0.2_intelligent_context_routing
+  - 0.3_sub_context_activation
+  - 0.4_boundary_enforcement
+  - 0.5_required_context_enforcement

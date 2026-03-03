@@ -1,0 +1,25 @@
+label: 'Test 3.1: Cross-Linking with Semantic Search (DEMO 3.5)'
+description: 'DEMO PRIORITY - Validates AI uses semantic/vector search to find and add cross-links to related content.'
+status: 1
+messages:
+  - role: user
+    content: "Add links on the cards to related pages"
+  - role: assistant
+    content: "Found 3 relevant pages across the site. I've added links to the matching cards."
+triggering_instructions: "Add links on the cards to related pages"
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::seo::find_cross_links'
+    label: 'Should identify cross-linking opportunities'
+    tool_rules: should_be_run
+    parameters:
+      scope:
+        type_of_check: equals
+        value: 'selected_cards'
+  rule_2:
+    tool: 'ai_agents::seo::suggest_links'
+    label: 'Should suggest specific pages to link'
+    tool_rules: should_be_run
+response_rule: 'AI should identify 3 related pages for cross-linking. Suggestions should be actionable (accept/reject individually). Should note any keyword overlap concerns.'
+config_reset: '0'

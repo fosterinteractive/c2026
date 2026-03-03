@@ -1,0 +1,10 @@
+label: 'CCC Phase 1: Creating Pages from Copy Deck'
+description: 'Tests covering full page creation flow: pasting content, answering (or skipping) clarifying questions, and generating complete pages with Mercury components.'
+approval_percentage: 100
+config_reset: '0'
+tests:
+  - 1.1_complete_copy_deck
+  - 1.2_copy_deck_without_context
+  - 1.3_user_skips_questions
+  - 1.4_sparse_input
+  - 1.5_content_mismatch

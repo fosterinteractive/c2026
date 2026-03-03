@@ -1,0 +1,26 @@
+label: 'Test 2.2: Generate a New Hero Variant'
+description: 'Validates that AI generates a new variant of an existing section for comparison rather than destructively editing.'
+status: 1
+messages:
+  - role: user
+    content: "Generate a new hero variant - high impact, bolder, main value prop front and center."
+triggering_instructions: "Generate a new hero variant - high impact, bolder, main value prop front and center."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::canvas::generate_component'
+    label: 'Should generate NEW hero component'
+    tool_rules: should_be_run
+    parameters:
+      component_type:
+        type_of_check: equals
+        value: 'sdc.mercury.hero-billboard'
+      action:
+        type_of_check: equals
+        value: 'create_new'
+  rule_2:
+    tool: 'ai_agents::canvas::delete_component'
+    label: 'Should NOT delete original hero'
+    tool_rules: should_not_be_run
+response_rule: 'AI should generate a new Billboard Hero variant below/adjacent to existing. Original hero must remain for comparison. New variant should have punchier headline with adoption stat prominent.'
+config_reset: '0'

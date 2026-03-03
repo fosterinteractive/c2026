@@ -23,4 +23,5 @@ After making changes in Drupal, use these commands to export content back into t
 | `ddev export-canvas-pages` | Canvas pages only |
 | `ddev export-media` | Media and file entities only |
 | `ddev export-ai-context` | AI Context items and usage records |
+| `ddev backup` | Database and files directory snapshot to `.backups/` |
 

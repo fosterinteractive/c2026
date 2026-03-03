@@ -1,0 +1,10 @@
+label: 'CCC Phase 2: Working with an Existing Page'
+description: 'Tests covering post-generation work: selecting imagery, refining content through natural language, restructuring sections, adjusting tone, and making targeted edits.'
+approval_percentage: 100
+config_reset: '0'
+tests:
+  - 2.1_media_direction
+  - 2.2_generate_hero_variant
+  - 2.3_restructure_content
+  - 2.4_swap_media_specific
+  - 2.5_hero_reframe

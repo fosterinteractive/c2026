@@ -1,0 +1,23 @@
+label: 'Test 6.6: AI Catches Competitive Claim User Adds Manually'
+description: 'Validates that governance catch applies to user-written content, not just AI-generated content.'
+status: 1
+messages:
+  - role: user
+    content: "I just added some text to the value prop section. Review it for me."
+triggering_instructions: "I just added some text to the value prop section. Review it for me."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::governance::review_content'
+    label: 'Should review user-written content for violations'
+    tool_rules: should_be_run
+  rule_2:
+    tool: 'ai_agents::governance::flag_violation'
+    label: 'Should flag competitive claim in user text'
+    tool_rules: should_be_run
+    parameters:
+      source:
+        type_of_check: equals
+        value: 'user_written'
+response_rule: 'AI should catch competitive claim (Unlike Brex...) even though human wrote it. Should offer same options: soften or route to legal. Governance should apply equally to human and AI content.'
+config_reset: '0'

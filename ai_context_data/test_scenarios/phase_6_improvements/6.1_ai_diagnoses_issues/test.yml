@@ -1,0 +1,25 @@
+label: 'Test 6.1: AI Discovers New CCC Content (DEMO 4.2a)'
+description: 'DEMO PRIORITY - Validates AI discovers CCC content added after page was published and proposes outcomes-first fix.'
+status: 1
+messages:
+  - role: assistant
+    content: "I found a new positioning statement focused on outcomes to the buyer. Want me to update the hero and value prop to lead with this?"
+  - role: user
+    content: "Yes. Outcomes first, not features."
+triggering_instructions: 'Pre-loaded from agent dashboard with suggestions 1 and 2 selected'
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::diagnosis::cross_reference'
+    label: 'Should cross-reference GA data with CCC context'
+    tool_rules: should_be_run
+    parameters:
+      sources:
+        type_of_check: contains
+        value: 'sales_pitch_deck'
+  rule_2:
+    tool: 'ai_agents::diagnosis::identify_issues'
+    label: 'Should identify search mismatch, missing differentiator, keyword gap'
+    tool_rules: should_be_run
+response_rule: 'AI should provide 3-part diagnosis: search mismatch, missing differentiator (from sales deck), keyword alignment gap. Should note that differentiator came from sales deck Jordan didnt know about. Should offer to fix all three.'
+config_reset: '0'

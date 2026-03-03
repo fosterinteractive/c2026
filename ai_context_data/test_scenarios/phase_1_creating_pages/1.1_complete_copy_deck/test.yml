@@ -1,0 +1,31 @@
+label: 'Test 1.1: Complete Copy Deck with Full Context - AI Builds Immediately'
+description: 'Validates end-to-end page creation from a complete copy deck where the user prompt provides sufficient context (page purpose + audience) for AI to generate a full page without further questions.'
+status: 1
+messages:
+  - role: user
+    content: |
+      I'm building the FinDrop Travel product page. The audience is Travel Managers and Program Administrators, with CFOs and Controllers as a secondary audience. The goal is awareness and evaluation. Let me paste in the copy deck.
+
+      **Hero**
+      Headline: Business Travel Your Employees Love and Your Finance Team Trusts
+      Body: Flights, hotels, and rental cars in one app — with your company's travel policy built in. No calls to a travel agent. No expense reports when you land. Just book, travel, done.
+      CTAs: "Book Your First Trip" (demo request / trial signup), "See How It Works" (product tour / video)
+
+      [Full copy deck content follows - see supporting_content/findrop_travel_copy_deck.md]
+triggering_instructions: "I'm building the FinDrop Travel product page. The audience is Travel Managers and Program Administrators, with CFOs and Controllers as a secondary audience."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::canvas::generate_page'
+    label: 'Should generate full page without asking questions'
+    tool_rules: should_be_run
+    parameters:
+      page_type:
+        type_of_check: equals
+        value: 'product_page'
+  rule_2:
+    tool: 'ai_agents::clarification::ask_question'
+    label: 'Should NOT ask clarifying questions'
+    tool_rules: should_not_be_run
+response_rule: 'AI should generate complete 8-section product page (hero, problem, features, finance section, testimonials, how-it-works, FAQ, CTA) without asking questions. All copy deck content should be placed in appropriate Mercury components.'
+config_reset: '1'

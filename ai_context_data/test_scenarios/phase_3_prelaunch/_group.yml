@@ -1,0 +1,7 @@
+label: 'CCC Phase 3: Pre-launch Checklists'
+description: 'Tests covering pre-publish checks: Schema.org generation, internal cross-link suggestions, and SEO validation.'
+approval_percentage: 100
+config_reset: '0'
+tests:
+  - 3.1_cross_linking
+  - 3.2_schema_generation

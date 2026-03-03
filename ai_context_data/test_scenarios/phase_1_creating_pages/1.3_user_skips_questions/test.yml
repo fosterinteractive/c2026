@@ -1,0 +1,23 @@
+label: 'Test 1.3: User Skips Clarifying Questions - AI Builds with Defaults'
+description: 'Validates graceful handling when user bypasses the question flow. AI should proceed with best-guess defaults and transparently state assumptions.'
+status: 1
+messages:
+  - role: user
+    content: "[Copy deck pasted without context]"
+  - role: assistant
+    content: "Got the copy deck. Two quick questions before I build: 1. Who's the primary audience? 2. What's the main conversion goal?"
+  - role: user
+    content: "Don't worry about that - just build the page."
+triggering_instructions: "Don't worry about that - just build the page."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::canvas::generate_page'
+    label: 'Should proceed with page generation despite skipped questions'
+    tool_rules: should_be_run
+  rule_2:
+    tool: 'ai_agents::clarification::ask_question'
+    label: 'Should NOT ask more questions after user declined'
+    tool_rules: should_not_be_run
+response_rule: 'AI should build page using reasonable defaults inferred from content cues. Must transparently state assumptions made (e.g., "I structured this for travel program managers based on the copy language"). Should offer to adjust.'
+config_reset: '1'

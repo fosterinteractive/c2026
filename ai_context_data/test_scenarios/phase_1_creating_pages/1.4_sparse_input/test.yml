@@ -1,0 +1,32 @@
+label: 'Test 1.4: Sparse Input - AI Identifies Content Gaps'
+description: 'Validates graceful handling of incomplete or sparse content input. AI should identify specific missing content rather than generically asking for "more".'
+status: 1
+messages:
+  - role: user
+    content: |
+      Here are some notes from the product team for our Travel product page:
+
+      - Books business travel in under 3 minutes
+      - Policy enforcement at time of booking
+      - Zero expense reports
+      - 90%+ adoption rate
+      - Integrates with existing accounting software
+
+      The audience is travel program managers. Goal is evaluation.
+triggering_instructions: 'Here are some notes from the product team for our Travel product page'
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::clarification::identify_gaps'
+    label: 'Should identify specific content gaps'
+    tool_rules: should_be_run
+    parameters:
+      gaps:
+        type_of_check: contains
+        value: 'testimonials'
+  rule_2:
+    tool: 'ai_agents::canvas::generate_page'
+    label: 'Should NOT generate full page from sparse input'
+    tool_rules: should_not_be_run
+response_rule: 'AI should acknowledge what is present (feature bullets, adoption stat) and identify specific missing content: testimonials, FAQ, CTA copy, problem narrative. Should offer to draft missing content from CCC value propositions with transparency.'
+config_reset: '0'

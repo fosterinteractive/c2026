@@ -1,0 +1,11 @@
+label: 'Test 0.1: CCC Items Display Correctly in the Interface'
+description: 'Validates that the CCC interface correctly displays all configured context items with metadata, sub-context counts, use case tags, target scopes, and boundary/exclusion counts.'
+status: 1
+messages:
+  - role: user
+    content: '[Jordan navigates to the CCC and visually inspects the item listing]'
+triggering_instructions: 'Visual inspection of CCC interface - no AI prompt required'
+ai_agent: null
+rules: {}
+response_rule: 'N/A - This is a UI display test, not an AI behavior test'
+config_reset: '0'

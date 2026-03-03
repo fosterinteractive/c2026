@@ -1,0 +1,33 @@
+label: 'Test 3.2: AEO Schema & Accessibility (DEMO 3.6)'
+description: 'DEMO PRIORITY - Validates AI generates Schema.org JSON-LD for AEO and performs accessibility checks.'
+status: 1
+messages:
+  - role: user
+    content: "Create an AEO schema for this page."
+  - role: assistant
+    content: "Done. I've generated FAQPage and Product schema based on the page content. It's in the structured data field."
+  - role: user
+    content: "Check accessibility on the page."
+  - role: assistant
+    content: "Heading structure looks good — all levels nest correctly. H1 > H2 > H3 throughout."
+triggering_instructions: "Create an AEO schema for this page."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::seo::generate_schema'
+    label: 'Should generate FAQPage schema from accordions'
+    tool_rules: should_be_run
+    parameters:
+      schema_type:
+        type_of_check: contains
+        value: 'FAQPage'
+  rule_2:
+    tool: 'ai_agents::seo::generate_schema'
+    label: 'Should also generate Product schema'
+    tool_rules: should_be_run
+    parameters:
+      schema_type:
+        type_of_check: contains
+        value: 'Product'
+response_rule: 'AI should generate FAQPage structured data (JSON-LD) from accordion content, plus Product schema from page content. Should offer preview before applying.'
+config_reset: '0'

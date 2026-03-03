@@ -1,0 +1,35 @@
+label: 'Test 1.5: Content Mismatch - Bio Pasted for Product Page Request'
+description: 'Validates that AI detects when pasted content does not match the stated page intent and offers constructive options.'
+status: 1
+messages:
+  - role: user
+    content: |
+      Here's the content for our new FinDrop Travel product page. Build it out for travel program managers.
+
+      **Sarah Chen - VP of Product**
+
+      Sarah Chen leads product strategy at FinDrop, where she oversees the platform's expansion into travel management, corporate cards, and expense automation. Before joining FinDrop, Sarah spent 8 years at Square building payment infrastructure for small businesses, and 3 years at McKinsey advising financial services clients on digital transformation.
+
+      Sarah holds an MBA from Wharton and a BS in Computer Science from MIT. She's a frequent speaker at fintech conferences and was named to Business Insider's "Rising Stars of Fintech" list in 2023.
+
+      When she's not building products, Sarah mentors women in STEM through the Code2040 program and trains for ultramarathons.
+triggering_instructions: "Here's the content for our new FinDrop Travel product page. Build it out for travel program managers."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::content::detect_mismatch'
+    label: 'Should detect content-type vs intent mismatch'
+    tool_rules: should_be_run
+    parameters:
+      detected_type:
+        type_of_check: equals
+        value: 'bio'
+      stated_intent:
+        type_of_check: equals
+        value: 'product_page'
+  rule_2:
+    tool: 'ai_agents::canvas::generate_page'
+    label: 'Should NOT generate product page from bio content'
+    tool_rules: should_not_be_run
+response_rule: 'AI should identify the content as a bio (not just "wrong content") and offer constructive options: build a bio page, paste correct content, or clarify intent. Must NOT attempt to build product page from bio content.'
+config_reset: '0'

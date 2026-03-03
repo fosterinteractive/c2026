@@ -1,0 +1,6 @@
+label: 'CCC Phase 4: Diagnose and Fix a Live Page'
+description: 'Tests covering scenarios where new organizational knowledge is added to the CCC after a page has been published.'
+approval_percentage: 100
+config_reset: '0'
+tests:
+  - 4.1_sales_team_adds_context

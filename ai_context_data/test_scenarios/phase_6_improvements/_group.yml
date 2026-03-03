@@ -1,0 +1,12 @@
+label: 'CCC Phase 6: Working on Improvements'
+description: 'Tests covering the full improvement cycle: diagnosis, content updates, keyword alignment, compliance catches, and publishing.'
+approval_percentage: 100
+config_reset: '0'
+tests:
+  - 6.1_ai_diagnoses_issues
+  - 6.2_diagnosis_without_sales_deck
+  - 6.3_generate_updated_hero
+  - 6.4_iterative_tone_adjustment
+  - 6.5_compliance_catch
+  - 6.6_catches_manual_claim
+  - 6.7_publish_with_attribution

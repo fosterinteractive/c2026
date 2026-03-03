@@ -1,0 +1,19 @@
+label: 'Test 6.2: AI Diagnosis Without Sales Deck - No Hallucination'
+description: 'Validates that AI diagnosis is grounded in actual CCC data and does not hallucinate differentiators or competitive claims when sales deck is absent.'
+status: 1
+messages:
+  - role: user
+    content: "What's going wrong with this page and what should I change?"
+triggering_instructions: "What's going wrong with this page and what should I change?"
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::diagnosis::identify_issues'
+    label: 'Should identify search mismatch from GA data'
+    tool_rules: should_be_run
+  rule_2:
+    tool: 'ai_agents::diagnosis::invent_differentiator'
+    label: 'Should NOT invent competitive differentiators'
+    tool_rules: should_not_be_run
+response_rule: 'AI should diagnose search mismatch and keyword gap only. Must NOT invent competitive differentiators, fabricate benchmark claims, or reference absence of sales deck. Diagnosis should be narrower than 6.1.'
+config_reset: '0'
