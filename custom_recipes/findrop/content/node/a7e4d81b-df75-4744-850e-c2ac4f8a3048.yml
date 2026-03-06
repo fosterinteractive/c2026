@@ -5,7 +5,6 @@ _meta:
   bundle: blog
   default_langcode: en
   depends:
-    0091bba3-b793-402f-9a90-c71b4b83357e: media
     eb00eaac-ad10-4bdb-9a31-7612c47c6484: taxonomy_term
 default:
   revision_uid:
@@ -46,9 +45,6 @@ default:
   field_description:
     -
       value: 'Manual expense processing costs organizations far more than just labor hours when you factor in errors, delays, reduced morale, compliance risks, and limited financial visibility.'
-  field_featured_image:
-    -
-      entity: 0091bba3-b793-402f-9a90-c71b4b83357e
   field_tags:
     -
       entity: eb00eaac-ad10-4bdb-9a31-7612c47c6484

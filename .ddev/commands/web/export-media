@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+## Description: Export all media entities and their associated files into the findrop recipe.
+## Usage: export-media
+## Example: ddev export-media
+
+set -euo pipefail
+
+RECIPE_CONTENT_DIR="custom_recipes/findrop/content"
+EXPORT_CMD="php web/core/scripts/drupal content:export"
+
+count_yml() { find "$1" -name '*.yml' 2>/dev/null | wc -l | tr -d ' '; }
+
+BEFORE_MEDIA=$(count_yml "${RECIPE_CONTENT_DIR}/media")
+BEFORE_FILE=$(count_yml "${RECIPE_CONTENT_DIR}/file")
+
+echo "==> Exporting all media entities with dependencies (includes files)..."
+${EXPORT_CMD} media --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
+
+echo "==> Copying binary files from Drupal files directory..."
+FILES_DIR="web/sites/default/files"
+COPIED=0
+MISSING=0
+for yml in "${RECIPE_CONTENT_DIR}"/file/*.yml; do
+  [ -f "$yml" ] || continue
+  relative_path=$(grep "public://" "$yml" | sed "s/.*public:\/\///" | sed "s/'.*//") || continue
+  if [ -n "$relative_path" ] && [ -f "${FILES_DIR}/${relative_path}" ]; then
+    filename=$(basename "$relative_path")
+    cp "${FILES_DIR}/${relative_path}" "${RECIPE_CONTENT_DIR}/file/${filename}"
+    COPIED=$((COPIED + 1))
+  else
+    MISSING=$((MISSING + 1))
+  fi
+done
+echo "    Copied ${COPIED} binary files. (${MISSING} not found on disk)"
+
+AFTER_MEDIA=$(count_yml "${RECIPE_CONTENT_DIR}/media")
+AFTER_FILE=$(count_yml "${RECIPE_CONTENT_DIR}/file")
+
+echo ""
+echo "==> Export complete (before -> after):"
+echo "    Media:  ${BEFORE_MEDIA} -> ${AFTER_MEDIA}"
+echo "    Files:  ${BEFORE_FILE} -> ${AFTER_FILE}"
+echo "    Output: ${RECIPE_CONTENT_DIR}"

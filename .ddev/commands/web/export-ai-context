@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+## Description: Export all AI Context items into the ai_context_setup recipe.
+## Usage: export-ai-context
+## Example: ddev export-ai-context
+
+set -euo pipefail
+
+RECIPE_CONTENT_DIR="custom_recipes/ai_context_setup/content"
+EXPORT_CMD="php web/core/scripts/drupal content:export"
+
+count_yml() { find "${1}" -name '*.yml' 2>/dev/null | wc -l | tr -d ' '; }
+
+BEFORE_ITEMS=$(count_yml "${RECIPE_CONTENT_DIR}/ai_context_item")
+
+echo "==> Exporting all ai_context_item entities with dependencies..."
+${EXPORT_CMD} ai_context_item --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
+
+AFTER_ITEMS=$(count_yml "${RECIPE_CONTENT_DIR}/ai_context_item")
+
+echo ""
+echo "==> Export complete (before -> after):"
+echo "    Context items: ${BEFORE_ITEMS} -> ${AFTER_ITEMS}"
+echo "    Output:        ${RECIPE_CONTENT_DIR}"

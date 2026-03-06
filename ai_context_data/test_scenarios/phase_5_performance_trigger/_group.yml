@@ -1,0 +1,7 @@
+label: 'CCC Phase 5: Performance Trigger - Background GA Agent'
+description: 'Tests covering background agent monitoring of Google Analytics against CCC-defined benchmarks, notification flow, and handoff to Canvas AI.'
+approval_percentage: 100
+config_reset: '0'
+tests:
+  - 5.1_agent_detects_underperformance
+  - 5.2_agent_flags_limited_data

@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+## Description: Export all content entities (canvas pages, nodes, media, files, menu links, taxonomy terms) into the findrop recipe.
+## Usage: export-all-content
+## Example: ddev export-all-content
+
+set -euo pipefail
+
+RECIPE_CONTENT_DIR="custom_recipes/findrop/content"
+EXPORT_CMD="php web/core/scripts/drupal content:export"
+
+count_yml() { find "$1" -name '*.yml' 2>/dev/null | wc -l | tr -d ' '; }
+
+BEFORE_CANVAS=$(count_yml "${RECIPE_CONTENT_DIR}/canvas_page")
+BEFORE_NODE=$(count_yml "${RECIPE_CONTENT_DIR}/node")
+BEFORE_MEDIA=$(count_yml "${RECIPE_CONTENT_DIR}/media")
+BEFORE_FILE=$(count_yml "${RECIPE_CONTENT_DIR}/file")
+BEFORE_MENU=$(count_yml "${RECIPE_CONTENT_DIR}/menu_link_content")
+BEFORE_TERM=$(count_yml "${RECIPE_CONTENT_DIR}/taxonomy_term")
+
+echo "==> Exporting canvas_page entities with dependencies..."
+${EXPORT_CMD} canvas_page --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
+
+echo "==> Exporting node entities with dependencies..."
+${EXPORT_CMD} node --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
+
+echo "==> Exporting media entities with dependencies..."
+${EXPORT_CMD} media --with-dependencies --dir="${RECIPE_CONTENT_DIR}"
+
+echo "==> Exporting menu_link_content entities..."
+${EXPORT_CMD} menu_link_content --dir="${RECIPE_CONTENT_DIR}"
+
+echo "==> Exporting taxonomy_term entities..."
+${EXPORT_CMD} taxonomy_term --dir="${RECIPE_CONTENT_DIR}"
+
+echo "==> Copying binary files from Drupal files directory..."
+FILES_DIR="web/sites/default/files"
+COPIED=0
+MISSING=0
+for yml in "${RECIPE_CONTENT_DIR}"/file/*.yml; do
+  [ -f "$yml" ] || continue
+  relative_path=$(grep "public://" "$yml" | sed "s/.*public:\/\///" | sed "s/'.*//") || continue
+  if [ -n "$relative_path" ] && [ -f "${FILES_DIR}/${relative_path}" ]; then
+    filename=$(basename "$relative_path")
+    cp "${FILES_DIR}/${relative_path}" "${RECIPE_CONTENT_DIR}/file/${filename}"
+    COPIED=$((COPIED + 1))
+  else
+    MISSING=$((MISSING + 1))
+  fi
+done
+echo "    Copied ${COPIED} binary files. (${MISSING} not found on disk)"
+
+AFTER_CANVAS=$(count_yml "${RECIPE_CONTENT_DIR}/canvas_page")
+AFTER_NODE=$(count_yml "${RECIPE_CONTENT_DIR}/node")
+AFTER_MEDIA=$(count_yml "${RECIPE_CONTENT_DIR}/media")
+AFTER_FILE=$(count_yml "${RECIPE_CONTENT_DIR}/file")
+AFTER_MENU=$(count_yml "${RECIPE_CONTENT_DIR}/menu_link_content")
+AFTER_TERM=$(count_yml "${RECIPE_CONTENT_DIR}/taxonomy_term")
+
+echo ""
+echo "==> Export complete (before -> after):"
+echo "    Canvas pages:  ${BEFORE_CANVAS} -> ${AFTER_CANVAS}"
+echo "    Nodes:         ${BEFORE_NODE} -> ${AFTER_NODE}"
+echo "    Media:         ${BEFORE_MEDIA} -> ${AFTER_MEDIA}"
+echo "    Files:         ${BEFORE_FILE} -> ${AFTER_FILE}"
+echo "    Menu links:    ${BEFORE_MENU} -> ${AFTER_MENU}"
+echo "    Taxonomy:      ${BEFORE_TERM} -> ${AFTER_TERM}"
+echo "    Output:        ${RECIPE_CONTENT_DIR}"

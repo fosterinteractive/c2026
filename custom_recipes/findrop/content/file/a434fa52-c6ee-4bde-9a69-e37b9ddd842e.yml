@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: a434fa52-c6ee-4bde-9a69-e37b9ddd842e
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: findrop-travel-hero-world-lines.png
+  uri:
+    -
+      value: 'public://2026-03/findrop-travel-hero-world-lines.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 18566615
+  status:
+    -
+      value: true

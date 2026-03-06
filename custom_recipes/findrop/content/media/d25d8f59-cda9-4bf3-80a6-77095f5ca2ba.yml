@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: d25d8f59-cda9-4bf3-80a6-77095f5ca2ba
+  bundle: image
+  default_langcode: en
+  depends:
+    4e65148c-1684-4782-8543-725910ae005e: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: findrop-icon-boarding-passess.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a digital graphic with a dark, almost black background. The main focus is a smartphone centered in the composition, displaying the word "FinDrop" with a boarding pass or card icon beneath it in white. Surrounding the phone in a radial pattern are multiple stylized boarding passes or tickets, also outlined in white, creating a dramatic, modern, and technological vibe. No people are present in the image. The colors are minimal and monochrome, mainly blacks and whites, reinforcing a sleek, businesslike, and futuristic mood. The overall scene has a feeling of innovation and efficiency, suggesting digital or mobile boarding pass management. The use of symmetry and glowing outlines gives the design a high-tech, professional appearance.'
+  field_media_image:
+    -
+      alt: 'Smartphone with “FinDrop” on screen, surrounded by radiating black digital card icons.'
+      title: ''
+      width: 2048
+      height: 2048
+      entity: 4e65148c-1684-4782-8543-725910ae005e

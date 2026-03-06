@@ -8,8 +8,6 @@ _meta:
     3a63058d-4aa1-4b91-b530-28696677c56e: media
     4a8af336-e8a7-4e4d-b2b0-cd3d66821ea1: file
     ccb5a8c1-b0e3-432d-b25a-dd89bdcd9fba: media
-    ab27fd5d-14b5-4a84-8822-326fe5ddfa91: file
-    1f41554d-7e67-4404-94f1-57be3c9f2f09: media
     80d12e96-9d37-4751-bfdb-5a8082acd428: file
     e7fd35cf-92d6-49d0-abbf-7c8a4895bb57: media
     34d807cc-dffb-4db2-918d-e88ce9760297: file
@@ -53,7 +51,7 @@ default:
       uuid: 2747d826-b897-49e9-bcfc-45802d02a185
       component_id: sdc.byte_theme.heading
       inputs:
-        heading_text: 'Take control of your spending'
+        heading_text: 'Take control of your spending !'
         level: 1
         text_size: default
         text_color: default
@@ -159,7 +157,7 @@ default:
         url: '#'
         media:
           CANVAS_ENTITY_REFERENCE:
-            target_uuid: 1f41554d-7e67-4404-94f1-57be3c9f2f09
+            target_uuid: e7fd35cf-92d6-49d0-abbf-7c8a4895bb57
             target_type: media
         orientation: vertical
         style: framed

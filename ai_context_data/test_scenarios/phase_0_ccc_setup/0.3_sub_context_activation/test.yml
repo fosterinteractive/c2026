@@ -1,0 +1,42 @@
+label: 'Test 0.3: Sub-Context Activation - Landing Page Funnel Stage Routing'
+description: 'Validates sub-context selection within a parent context item. Bottom of Funnel sub-context should activate based on explicit user intent.'
+status: 1
+messages:
+  - role: user
+    content: |
+      Create a landing page for the Book a Demo landing page based on our LinkedIn Ad. Follow our standard bottom funnel landing page structure. The goal is demo requests from Finance Teams and Financial Controllers.
+
+      Here's the LinkedIn ad copy driving traffic:
+
+      Finance teams are drowning in expense reports The average company wastes $12,000 per employee annually on manual expense processing. See how virtual corporate cards can eliminate 90% of your expense admin
+
+      Headline: Stop Drowning in Manual Expense Processing Description: Live walkthrough with instant ROI calculation Button: Request Demo
+triggering_instructions: 'Create a landing page for the Book a Demo landing page based on our LinkedIn Ad. Follow our standard bottom funnel landing page structure.'
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::ccc::sub_context_loader'
+    label: 'Should activate Bottom of Funnel sub-context'
+    tool_rules: should_be_run
+    parameters:
+      sub_context:
+        type_of_check: equals
+        value: 'bottom_of_funnel'
+  rule_2:
+    tool: 'ai_agents::ccc::sub_context_loader'
+    label: 'Should NOT activate Top of Funnel sub-context'
+    tool_rules: should_not_be_run
+    parameters:
+      sub_context:
+        type_of_check: equals
+        value: 'top_of_funnel'
+  rule_3:
+    tool: 'ai_agents::ccc::sub_context_loader'
+    label: 'Should activate Finance Teams persona'
+    tool_rules: should_be_run
+    parameters:
+      persona:
+        type_of_check: contains
+        value: 'finance'
+response_rule: 'AI should generate a conversion-focused landing page with demo request CTA, maintain message match with LinkedIn ad ($12,000 stat, expense processing pain point), and acknowledge bottom-funnel approach.'
+config_reset: '1'

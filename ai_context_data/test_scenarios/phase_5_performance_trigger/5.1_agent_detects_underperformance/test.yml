@@ -1,0 +1,35 @@
+label: 'Test 5.1: Agent Detects Underperformance (DEMO 4.1)'
+description: 'DEMO PRIORITY - Validates background agent flags underperforming content and provides 3 specific actionable suggestions.'
+status: 1
+messages:
+  - role: assistant
+    content: |
+      Three suggestions:
+      1. Lead with buyer outcomes instead of features in the hero.
+      2. Update competitive positioning using the revised sales deck.
+      3. Strengthen the whitepaper CTA with a specific benefit statement.
+
+      Which would you like to start with?
+  - role: user
+    content: "Start with 1 and 2."
+triggering_instructions: 'Automated trigger - Background agent flags underperforming content'
+ai_agent: ga_background_agent
+rules:
+  rule_1:
+    tool: 'ai_agents::ga::check_benchmarks'
+    label: 'Should compare GA data against CCC benchmarks'
+    tool_rules: should_be_run
+    parameters:
+      metrics:
+        type_of_check: contains
+        value: 'bounce_rate'
+  rule_2:
+    tool: 'ai_agents::notification::send_email'
+    label: 'Should send email notification'
+    tool_rules: should_be_run
+    parameters:
+      subject:
+        type_of_check: contains
+        value: 'Performance alert'
+response_rule: 'Agent should detect 3 benchmark failures (bounce rate, conversion rate, search mismatch). Should send email with summary and link to page. GA data should be available to Canvas AI without re-pasting.'
+config_reset: '0'

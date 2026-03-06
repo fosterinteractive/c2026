@@ -1,0 +1,45 @@
+_meta:
+  version: '1.0'
+  entity_type: ai_context_item
+  uuid: 422b298c-17a4-4de8-96a2-08642615e250
+  bundle: default
+  default_langcode: en
+  depends:
+    0ddd4133-6b3c-4b05-8a59-3b1f45ffa4df: ai_context_item
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  label:
+    -
+      value: 'Test 2'
+  description:
+    -
+      value: sdfsdgf
+      format: plain_text
+  purpose:
+    -
+      value: dsfgdfg
+      format: plain_text
+  content:
+    -
+      value: dfgdfgdf
+      format: plain_text
+  parent:
+    -
+      entity: 0ddd4133-6b3c-4b05-8a59-3b1f45ffa4df
+  subcontext_type:
+    -
+      value: required
+  revision_translation_affected:
+    -
+      value: true
+  moderation_state:
+    -
+      value: published

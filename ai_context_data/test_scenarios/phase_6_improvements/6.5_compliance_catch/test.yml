@@ -1,0 +1,31 @@
+label: 'Test 6.5: Compliance Catch Before Publish (DEMO 4.2b)'
+description: 'DEMO PRIORITY - Validates AI catches brand violation BEFORE publish (not after legal letter) when using sales deck content.'
+status: 1
+messages:
+  - role: assistant
+    content: "The sales deck names a competitor directly. Your brand guidelines require legal approval for competitive claims. Soften it, or will you confirm with legal?"
+  - role: user
+    content: "Can't wait for legal. Rephrase without naming the competitor."
+  - role: assistant
+    content: "OK — updated."
+triggering_instructions: 'AI flags competitive claim after generating hero from sales deck'
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::governance::flag_violation'
+    label: 'Should proactively flag competitive claim'
+    tool_rules: should_be_run
+    parameters:
+      rule:
+        type_of_check: equals
+        value: 'competitive_claims'
+  rule_2:
+    tool: 'ai_agents::canvas::edit_text'
+    label: 'Should rephrase to remove competitor name'
+    tool_rules: should_be_run
+    parameters:
+      new_text:
+        type_of_check: not_contains
+        value: 'Competitor X'
+response_rule: 'AI should flag competitive claim proactively before user spots it. Should offer soften or route-to-legal options. When user chooses soften, should rephrase to remove competitor name while preserving persuasive intent.'
+config_reset: '0'

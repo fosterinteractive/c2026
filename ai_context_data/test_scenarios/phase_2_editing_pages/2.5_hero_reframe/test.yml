@@ -1,0 +1,26 @@
+label: 'Test 2.5: Hero Reframe - Lead with Benefits, Not Features'
+description: 'Validates that AI can restructure hero copy from feature-led to benefit-led using persona context already established in the conversation.'
+status: 1
+messages:
+  - role: user
+    content: "You've led with features in the hero. Lead with the benefit to the buyer instead."
+triggering_instructions: "You've led with features in the hero. Lead with the benefit to the buyer instead."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::canvas::edit_text'
+    label: 'Should rewrite hero heading to benefit-led'
+    tool_rules: should_be_run
+    parameters:
+      component:
+        type_of_check: equals
+        value: 'hero'
+      reframe_type:
+        type_of_check: equals
+        value: 'benefit_led'
+  rule_2:
+    tool: 'ai_agents::ccc::persona_lookup'
+    label: 'Should use Travel Managers persona from conversation context'
+    tool_rules: should_be_run
+response_rule: 'Hero should be rewritten from feature-led ("All-in-One Travel Booking...") to benefit-led ("Business Travel Your Employees Love..."). Benefits should be persona-specific (adoption rates, no expense reports) not generic. Features should remain in card sections below.'
+config_reset: '0'

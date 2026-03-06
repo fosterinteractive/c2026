@@ -1,0 +1,42 @@
+label: 'Test 1.2: AI Asks, Then Builds (DEMO 3.1-3.2)'
+description: 'DEMO PRIORITY - Validates AI asks targeted questions, shows thought chain, then builds with illustrations and offers to swap.'
+status: 1
+messages:
+  - role: user
+    content: |
+      Here's our copy deck for the new FinDrop Travel product page.
+
+      [Full copy deck content - see supporting_content/findrop_travel_copy_deck.md]
+  - role: assistant
+    content: |
+      Who's the target audience? I see personas for Controllers, CFOs, Travel Managers, and Office Managers. And what's the primary goal?
+  - role: user
+    content: 'Travel Managers. And the goal is whitepaper downloads for the new product.'
+  - role: assistant
+    content: |
+      Done. I went with illustrations - they match the technical content. Your visual identity guidelines also include photography. Want me to swap?
+triggering_instructions: "Here's our copy deck for the new FinDrop Travel product page."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::clarification::ask_question'
+    label: 'Should ask about audience (Turn 1)'
+    tool_rules: should_be_run
+    parameters:
+      question_type:
+        type_of_check: contains
+        value: 'audience'
+  rule_2:
+    tool: 'ai_agents::clarification::ask_question'
+    label: 'Should ask about conversion goal (Turn 1)'
+    tool_rules: should_be_run
+    parameters:
+      question_type:
+        type_of_check: contains
+        value: 'goal'
+  rule_3:
+    tool: 'ai_agents::canvas::generate_page'
+    label: 'Should generate page after answers (Turn 2)'
+    tool_rules: should_be_run
+response_rule: 'Turn 1: AI should ask exactly 2 targeted questions (audience, goal) with clear options. Turn 2: After answers, AI should build full page with demo request as primary CTA and guide download as secondary.'
+config_reset: '1'

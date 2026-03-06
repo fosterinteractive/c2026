@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: cd39ac1c-8c42-4b96-ab59-5c083d01fad1
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: findrop-icon-abstract-orbits.png
+  uri:
+    -
+      value: 'public://2026-03/findrop-icon-abstract-orbits.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 5024519
+  status:
+    -
+      value: true

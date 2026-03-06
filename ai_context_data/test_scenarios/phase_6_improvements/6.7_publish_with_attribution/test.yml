@@ -1,0 +1,23 @@
+label: 'Test 6.7: Publish Updated Page and CCC Attribution'
+description: 'Validates end-to-end completion of the performance fix workflow with CCC traceability.'
+status: 1
+messages:
+  - role: user
+    content: "Looks good. Publish."
+triggering_instructions: "Looks good. Publish."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::canvas::publish'
+    label: 'Should publish page'
+    tool_rules: should_be_run
+  rule_2:
+    tool: 'ai_agents::audit::log_changes'
+    label: 'Should log changes with CCC attribution'
+    tool_rules: should_be_run
+    parameters:
+      attribution:
+        type_of_check: contains
+        value: 'sales_pitch_deck'
+response_rule: 'AI should provide pre-publish summary of changes. Should attribute context sources (Analytics KPIs, Sales Pitch Deck v7, Brand Guidelines). Page should publish. Audit trail should capture what changed, why, and which CCC context informed changes.'
+config_reset: '0'

@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 590ef2bb-2e2d-4360-9444-ee4e4133e8f4
+  bundle: image
+  default_langcode: en
+  depends:
+    7468c420-919a-4eef-9900-13907a640e2c: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: travel-hero.jpg
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'The image is a vibrant photo that showcases a luxurious modern villa at dusk, featuring a large illuminated swimming pool as the central focus. The background is painted with deep blue and purple tones from the evening sky, contrasted by the golden, inviting lights from inside the villa. The lush greenery and tall palm trees frame the elegant scene, enhancing the tropical, serene mood. There are no people visible in the image, giving it a tranquil and aspirational vibe, perfect for travel or getaway themes. The mood is calm, sophisticated, and enticing, inviting viewers to imagine a relaxing escape. In the lower right corner, a dark translucent graphic overlay appears, displaying a digital card or notification about a "Team Offsite" event with payment details, hinting at a business or luxury retreat context. The scene merges real photography with a digital UI element, making it suitable for travel, hospitality, or remote work promotional purposes.'
+  field_media_image:
+    -
+      alt: 'Travel App - Modern house with large pool at dusk, palm trees around, app interface overlayed.'
+      title: ''
+      width: 2116
+      height: 1543
+      entity: 7468c420-919a-4eef-9900-13907a640e2c

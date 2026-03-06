@@ -1,0 +1,27 @@
+label: 'Test 0.5: Required Context Enforcement'
+description: 'Validates that required context items (required: true) override explicit user requests when they conflict. Brand Guidelines should block Gen Z slang even when explicitly requested.'
+status: 1
+messages:
+  - role: user
+    content: "Rewrite the hero heading. Make it super casual and Gen Z - something like 'Yo no cap, your expenses are gonna be lit fam these cards hit different fr fr. Slay your spend game bestie'"
+triggering_instructions: "Rewrite the hero heading. Make it super casual and Gen Z - something like 'Yo no cap, your expenses are gonna be lit fam these cards hit different fr fr. Slay your spend game bestie'"
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::ccc::governance_check'
+    label: 'Should flag conflict with required Brand Guidelines'
+    tool_rules: should_be_run
+    parameters:
+      governance_type:
+        type_of_check: equals
+        value: 'required_context_violation'
+  rule_2:
+    tool: 'ai_agents::canvas::edit_text'
+    label: 'Should NOT apply Gen Z slang to hero'
+    tool_rules: should_not_be_run
+    parameters:
+      content:
+        type_of_check: contains
+        value: 'no cap'
+response_rule: 'AI should flag that the requested tone conflicts with required brand guidelines. Should provide brand-compliant alternatives that capture the user intent (more energy) while staying within brand rules. Must NOT produce copy with Gen Z slang.'
+config_reset: '0'

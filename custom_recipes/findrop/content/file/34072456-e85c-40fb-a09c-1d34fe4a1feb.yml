@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 34072456-e85c-40fb-a09c-1d34fe4a1feb
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: laptop-mockup-travel-background.png
+  uri:
+    -
+      value: 'public://2026-03/laptop-mockup-travel-background.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 20212239
+  status:
+    -
+      value: true

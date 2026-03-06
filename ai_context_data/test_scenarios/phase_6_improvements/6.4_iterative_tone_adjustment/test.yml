@@ -1,0 +1,22 @@
+label: 'Test 6.4: Iterative Tone Adjustment on the Fix'
+description: 'Validates multi-turn tone refinement that preserves keyword alignment from previous turns.'
+status: 1
+messages:
+  - role: user
+    content: "Too aggressive. Soften it - confident, not pushy."
+triggering_instructions: "Too aggressive. Soften it - confident, not pushy."
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::canvas::edit_text'
+    label: 'Should adjust tone while preserving keywords'
+    tool_rules: should_be_run
+    parameters:
+      preserve:
+        type_of_check: contains
+        value: 'enterprise security'
+      tone:
+        type_of_check: equals
+        value: 'confident'
+response_rule: 'AI should soften tone while preserving enterprise security keyword in subhead. Should maintain security focus. Incremental change should not undo keyword alignment from previous turn.'
+config_reset: '0'

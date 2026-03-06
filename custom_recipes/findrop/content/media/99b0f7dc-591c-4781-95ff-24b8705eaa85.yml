@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 99b0f7dc-591c-4781-95ff-24b8705eaa85
+  bundle: image
+  default_langcode: en
+  depends:
+    cd39ac1c-8c42-4b96-ab59-5c083d01fad1: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: findrop-icon-abstract-orbits.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a graphic illustration featuring a dark black background with glowing orbits in white and gold surrounding a central smartphone. The smartphone has the word "FinDrop" displayed prominently on its screen along with an icon of a credit card. There are no people present in the image. The overall mood is modern, technological, and abstract, suggesting innovation or fintech themes. The orbits create a dynamic sense of motion and energy around the phone. The main colors are black, white, and gold, which give the composition a sleek and futuristic feel. This image is most suitable as an icon or branding graphic for a financial technology application or platform.'
+  field_media_image:
+    -
+      alt: 'Smartphone with "FinDrop" text, surrounded by glowing curved lines on a dark background.'
+      title: ''
+      width: 2048
+      height: 2048
+      entity: cd39ac1c-8c42-4b96-ab59-5c083d01fad1

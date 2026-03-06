@@ -1,0 +1,19 @@
+label: 'Test 5.2: Agent Flags Page but Jordan Has Limited Data'
+description: 'Validates that AI gracefully handles scenarios where GA agent flags an issue but diagnostic data is sparse.'
+status: 1
+messages:
+  - role: user
+    content: "The agent flagged this page for high bounce rate. What's wrong?"
+triggering_instructions: "The agent flagged this page for high bounce rate. What's wrong?"
+ai_agent: canvas_ai_assistant
+rules:
+  rule_1:
+    tool: 'ai_agents::diagnosis::analyze_page'
+    label: 'Should analyze page content for preliminary hypothesis'
+    tool_rules: should_be_run
+  rule_2:
+    tool: 'ai_agents::clarification::request_data'
+    label: 'Should suggest connecting additional data sources'
+    tool_rules: should_be_run
+response_rule: 'AI should contextualize 68% bounce rate against 45% benchmark. Should note missing data (no search queries, limited conversion data). Should offer preliminary hypothesis from page content review. Should suggest connecting Search Console.'
+config_reset: '0'

@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+## Description: Back up the database and public files directory to .backups/.
+## Usage: backup
+## Example: ddev backup
+
+set -euo pipefail
+
+TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+BACKUP_DIR="${DDEV_APPROOT}/.backups/${TIMESTAMP}"
+
+mkdir -p "${BACKUP_DIR}"
+
+echo "==> Backing up database..."
+ddev export-db --gzip --file="${BACKUP_DIR}/db.sql.gz"
+
+FILES_SRC="${DDEV_APPROOT}/web/sites/default/files"
+if [ -d "${FILES_SRC}" ]; then
+  echo "==> Backing up files directory..."
+  tar -czf "${BACKUP_DIR}/files.tar.gz" -C "${DDEV_APPROOT}/web/sites/default" files
+else
+  echo "    (No files directory found at ${FILES_SRC} — skipping)"
+fi
+
+DB_SIZE=$(du -h "${BACKUP_DIR}/db.sql.gz" | cut -f1)
+if [ -f "${BACKUP_DIR}/files.tar.gz" ]; then
+  FILES_SIZE=$(du -h "${BACKUP_DIR}/files.tar.gz" | cut -f1)
+else
+  FILES_SIZE="n/a"
+fi
+
+echo ""
+echo "==> Backup complete:"
+echo "    Location:  .backups/${TIMESTAMP}/"
+echo "    Database:  db.sql.gz (${DB_SIZE})"
+echo "    Files:     files.tar.gz (${FILES_SIZE})"

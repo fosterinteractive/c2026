@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 49bd225b-1031-4001-8482-afbff25622fb
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: findrop-icon-travel-grid.png
+  uri:
+    -
+      value: 'public://2026-03/findrop-icon-travel-grid.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 6970170
+  status:
+    -
+      value: true

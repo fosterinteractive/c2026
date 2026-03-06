@@ -1,0 +1,38 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 8cdf176d-fa3b-435c-b0ff-70df5206f27f
+  bundle: image
+  default_langcode: en
+  depends:
+    89ce780d-4e9b-4aae-bb4a-30fb0fef7b86: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: expense-dashboard-on-dark.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: 'This image is a sleek, modern graphic dashboard with a dark, gradient background dominated by shades of charcoal and muted blue-gray. The central focus is a transparent data panel labelled “Financial Campaign Management” showcasing rows of campaign information in a stylish, high-contrast table. The colors used in the table include white and yellow text, with status bubbles in vivid green, yellow, and gray. No people or photos appear in this interface; it is purely a graphical UI design. An overlay card on the right features a small world map infographic with orange and white highlights to represent “Geographic Reach.” The overall mood is technological, efficient, and business-oriented, suggesting professionalism and clarity. There are no human expressions or emotions present, emphasizing data and analytics. The use of glowing highlights adds a touch of sophistication and focus.'
+  field_media_image:
+    -
+      alt: 'Financial campaign dashboard with project list and a map showing geographic reach.'
+      title: ''
+      width: 5504
+      height: 3072
+      entity: 89ce780d-4e9b-4aae-bb4a-30fb0fef7b86
