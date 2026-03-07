@@ -11,22 +11,25 @@ config:
             context_items: {  }
             always_include:
               - '1'
-              - '2'
               - '3'
+              - '4'
+            scope_subscriptions: {  }
             excluded_subcontext: {  }
           -
             id: canvas_page_builder_agent
             context_items: {  }
             always_include:
-              - '2'
               - '1'
+              - '3'
+            scope_subscriptions: {  }
             excluded_subcontext: {  }
           -
             id: canvas_ai_orchestrator
             context_items: {  }
             always_include:
-              - '5'
               - '1'
+              - '6'
+            scope_subscriptions: {  }
             excluded_subcontext: {  }
           -
             id: drupal_canvas_seo_agent

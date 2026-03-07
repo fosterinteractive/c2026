@@ -147,7 +147,7 @@ tool_settings:
 orchestration_agent: false
 triage_agent: false
 max_loops: 10
-default_information_tools: |
+default_information_tools: |-
   current_layout:
     label: 'Current layout'
     description: 'The current layout of the page is:'
@@ -158,43 +158,41 @@ default_information_tools: |
     description: 'These are the Components available to use'
     tool: 'canvas_ai:get_component_context'
     parameters: {  }
-  webforms:
-    label: 'Available Webforms'
-    description: 'These are the available webforms, if the end user wants to use webforms, you should use one of these ids.'
-    tool: 'ai_agent:list_config_entities'
-    parameters:
-      entity_type: webform
-      fields:
-        - title
 tool_usage_limits:
   'canvas_ai:set_template_data':
     component_structure:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
   'canvas_ai:get_metadata_of_components':
     component_ids:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
   'ai_search:rag_search':
     index:
       action: force_value
       hide_property: 1
+      not_break: 0
       values:
         - media_image_index_rag
     search_string:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     amount:
       action: force_value
       hide_property: 1
+      not_break: 0
       values:
         - '5'
     min_score:
       action: force_value
       hide_property: 1
+      not_break: 0
       values:
         - '0.2'
 exclude_users_role: false

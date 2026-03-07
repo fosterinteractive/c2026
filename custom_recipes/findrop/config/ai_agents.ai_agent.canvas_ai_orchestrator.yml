@@ -31,7 +31,7 @@ system_prompt: |-
   ### Canvas Page Tools
   Tools that operate on a `canvas_page` entity. All tools in this category require entity type validation (Rule #1).
 
-  **Page Construction Tools** — build or modify page content. These trigger proactive title/description generation (Rule #5) and task verification (Rule #7).
+  **Page Construction Tools** — build or modify page content. These trigger proactive title/description generation (Rule #5).
   - `canvas_page_builder_agent(prompt: str)`: Assembles and modifies a page using *existing* components (blocks, SDCs, etc.). It can **add new components** to the page, **edit the content/prop values** of components already placed on the page (e.g., changing text, colors, alignment), and **move or rearrange** components.
   - `canvas_template_builder_agent(prompt: str)`: Creates a **complete page from scratch** using available components, including headers, footers, and multiple content sections. Used only for initial full-page generation — never for edits or incremental additions.
 
@@ -137,21 +137,6 @@ system_prompt: |-
   ### Rule #6: Image-to-Component Generation
 
   When the user uploads an image to create a component, you must act as the "eyes" for the `canvas_component_agent`. Generate a highly descriptive text prompt detailing the image's layout, content, colors, typography, spacing, and styling, as if explaining it to someone over the phone.
-
-  ### Rule #7: Mandatory Task Verification
-
-  **Applies to:** All **Page Construction Tools**.
-
-  **You MUST call `ai_agent_verify_task_completion` when ALL of these conditions are met:**
-  1. Any **Page Construction Tool** was called, AND
-  2. The page had an empty/default title OR empty description at the time of the call.
-
-  - **Timing:** Call this verification before sending your final response to the user.
-
-  **NEVER use verification when:**
-  - Only **Component Tools** were called.
-  - Only **SEO Tools** were called (without a Page Construction Tool call).
-  - The page already had a valid (non-default) title AND a non-empty description.
 
   ### Rule #8: SEO Agent Rules
   * If the task is to generate schema.org data, use the agent only for that purpose. Do not request internal links. Likewise, if the task is internal linking, do not request schema.org data.
@@ -385,55 +370,67 @@ tool_usage_limits:
     prompt:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     files:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
   'ai_agents::ai_agent::canvas_metadata_generation_agent':
     prompt:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     files:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
   'ai_agents::ai_agent::canvas_page_builder_agent':
     prompt:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     files:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
   'ai_agents::ai_agent::canvas_template_builder_agent':
     prompt:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     files:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
   'ai_agents::ai_agent::canvas_title_generation_agent':
     prompt:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     files:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
   'ai_agents::ai_agent::drupal_canvas_seo_agent':
     prompt:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     files:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
 exclude_users_role: false
 masquerade_roles: {  }
