@@ -1,0 +1,76 @@
+<?php
+
+use Drupal\ai\OperationType\Chat\ChatInput;
+use Drupal\ai\OperationType\Chat\ChatMessage;
+use Drupal\Component\Serialization\Json;
+
+function ai_google_analytics_cron() {
+  $agent = \Drupal::service('plugin.manager.ai_agents')->createInstance('analytics_monitoring_agent');
+
+  // Get page URLs to be monitored.
+  $paths = get_monitored_pages();
+  if (empty($paths)) {
+    $text = 'No URL provided';
+  }
+  else {
+    $text = 'URL: ' . implode(',', $paths);
+  }
+
+  // Set agent inputs.
+  $input = new ChatInput([
+    new ChatMessage('user', $text),
+  ]);
+
+  $agent->setChatInput($input);
+  $agent->determineSolvability();
+  $output = $agent->solve();
+  $data = Json::decode($output);
+
+  if (isset($data['pages'])) {
+    $context_data = [];
+    foreach ($data['pages'] as $page) {
+      if ($page['flag']) {
+        $context_data[] = $page;
+      }
+    }
+    \Drupal::state()->set('ai_google_analytics.context_data', $context_data);
+  }
+}
+
+/**
+ * Helper function to get the path aliases for pages marked for monitoring.
+ */
+function get_monitored_pages() {
+  // Load canvas_page entities where monitor = TRUE.
+  $storage = \Drupal::entityTypeManager()->getStorage('canvas_page');
+  $ids = \Drupal::entityQuery('canvas_page')
+    ->condition('monitor', 1)
+    // Cron / backend context: we want to evaluate all monitored pages.
+    ->accessCheck(FALSE)
+    ->execute();
+
+  if (empty($ids)) {
+    return [];
+  }
+
+  $pages = $storage->loadMultiple($ids);
+
+  /** @var \Drupal\path_alias\AliasManagerInterface $alias_manager */
+  $alias_manager = \Drupal::service('path_alias.manager');
+
+  // Return pathauto aliases (human-friendly) paths like "/contact".
+  $paths = [];
+  foreach ($pages as $page) {
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $page */
+    $internal = $page->toUrl('canonical', ['alias' => FALSE])->toString();
+    $alias = $alias_manager->getAliasByPath($internal);
+
+    // Fallback to internal if no alias exists.
+    $paths[] = ($alias && $alias !== $internal) ? $alias : $internal;
+  }
+
+  // Remove duplicates and normalise array keys.
+  $paths = array_values(array_unique($paths));
+
+  return $paths;
+}

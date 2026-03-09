@@ -1,0 +1,7 @@
+ai_google_analytics.page_review:
+  path: '/admin/content/ga-page-review'
+  defaults:
+    _controller: '\Drupal\ai_google_analytics\Controller\GoogleAnalyticsReviewController::content'
+    _title: 'AI Analytics Review'
+  requirements:
+    _permission: 'administer site configuration'

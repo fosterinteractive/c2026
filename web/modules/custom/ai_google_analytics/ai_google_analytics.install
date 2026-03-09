@@ -1,0 +1,65 @@
+<?php
+
+use Drupal\canvas\Entity\Page;
+
+/**
+ * Install the 'monitor' base field storage for canvas_page.
+ */
+function ai_google_analytics_update_11001() {
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+  $definition_update_manager = \Drupal::service('entity.definition_update_manager');
+
+  $entity_type_id = Page::ENTITY_TYPE_ID;
+
+  // Pull the runtime definition.
+  $field_definitions = $entity_field_manager->getFieldDefinitions($entity_type_id, $entity_type_id);
+
+  if (isset($field_definitions['monitor'])) {
+    $definition_update_manager->installFieldStorageDefinition(
+      'monitor',
+      $entity_type_id,
+      $entity_type_id,
+      $field_definitions['monitor']
+    );
+  }
+}
+
+/**
+ * Install remaining base field storage for canvas_page.
+ */
+function ai_google_analytics_update_11002() {
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+  $definition_update_manager = \Drupal::service('entity.definition_update_manager');
+
+  $entity_type_id = Page::ENTITY_TYPE_ID;
+
+  // Pull the runtime definition.
+  $field_definitions = $entity_field_manager->getFieldDefinitions($entity_type_id, $entity_type_id);
+
+  if (isset($field_definitions['engaged_sessions'])) {
+    $definition_update_manager->installFieldStorageDefinition(
+      'engaged_sessions',
+      $entity_type_id,
+      $entity_type_id,
+      $field_definitions['engaged_sessions']
+    );
+  }
+
+  if (isset($field_definitions['bounce_rate'])) {
+    $definition_update_manager->installFieldStorageDefinition(
+      'bounce_rate',
+      $entity_type_id,
+      $entity_type_id,
+      $field_definitions['bounce_rate']
+    );
+  }
+
+  if (isset($field_definitions['conversion_rate'])) {
+    $definition_update_manager->installFieldStorageDefinition(
+      'conversion_rate',
+      $entity_type_id,
+      $entity_type_id,
+      $field_definitions['conversion_rate']
+    );
+  }
+}
