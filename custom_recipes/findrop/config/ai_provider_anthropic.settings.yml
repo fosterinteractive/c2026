@@ -1,3 +1,3 @@
-api_key: ''
+api_key: antropic_api_key
 openai_moderation: false
 version: '20240229'
