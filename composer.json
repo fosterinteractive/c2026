@@ -19,7 +19,7 @@
         "composer/composer": "^2.8",
         "composer/installers": "^2.3",
         "cweagans/composer-patches": "~2.0",
-        "drupal/ai_agents": "^1.3@beta",
+        "drupal/ai_agents": "^1.2",
         "drupal/ai_context": "1.0.x-dev@dev",
         "drupal/ai_vdb_provider_milvus": "^1.1@beta",
         "drupal/byte": "^1",
@@ -38,9 +38,9 @@
         "drupal/drupal_cms_starter": "^2",
         "drupal/dynamic_entity_reference": "^3.2",
         "drupal/recipe_installer_kit": "^1.0.4",
-        "google/analytics-data": "^0.23.2",
         "drupal/tagify": "^1.2",
-        "drupal/webform": "@beta"
+        "drupal/webform": "@beta",
+        "google/analytics-data": "^0.23.2"
     },
     "require-dev": {
         "drush/drush": "^13.7"
