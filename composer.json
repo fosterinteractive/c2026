@@ -38,8 +38,9 @@
         "drupal/drupal_cms_starter": "^2",
         "drupal/dynamic_entity_reference": "^3.2",
         "drupal/recipe_installer_kit": "^1.0.4",
-        "drupal/webform": "@beta",
-        "google/analytics-data": "^0.23.2"
+        "google/analytics-data": "^0.23.2",
+        "drupal/tagify": "^1.2",
+        "drupal/webform": "@beta"
     },
     "require-dev": {
         "drush/drush": "^13.7"
@@ -61,10 +62,7 @@
         },
         "bin-dir": "vendor/bin",
         "sort-packages": true,
-        "optimize-autoloader": true,
-        "audit": {
-            "ignore": ["SA-CONTRIB-2025-031"]
-        }
+        "optimize-autoloader": true
     },
     "extra": {
         "drupal-scaffold": {
