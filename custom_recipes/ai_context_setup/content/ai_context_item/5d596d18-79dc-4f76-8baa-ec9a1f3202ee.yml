@@ -27,7 +27,7 @@ default:
       format: plain_text
   content:
     -
-      value: "These are the required benchmarks that pages should meet.\r\n * engaged_sessions > 25\r\n * bounce_rate < 1%\r\n * key_event_rate > 10%"
+      value: "These are the required benchmarks that pages should meet.\r\n * engaged_sessions > 100\r\n * bounce_rate < 50%\r\n * key_event_rate > 5%"
       format: plain_text
   subcontext_type:
     -
