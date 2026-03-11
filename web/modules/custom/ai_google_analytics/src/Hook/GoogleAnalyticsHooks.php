@@ -133,9 +133,7 @@ class GoogleAnalyticsHooks
       }
 
       // Update state variable.
-      // Replace and don't append for now, to avoid duplicate entries.
-      // $context_data = \Drupal::state()->get('ai_google_analytics.context_data', []);
-      $context_data = [];
+      $context_data = \Drupal::state()->get('ai_google_analytics.context_data', []);
       $context_data[$entity->id()] = [
         'summary' => $json['summary'],
       ];
