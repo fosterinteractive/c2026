@@ -17,17 +17,29 @@ rm -rf web/modules/contrib/canvas/.git
 ## This recipe was generated with the command  ddev drush site:export --destination=../custom_recipes/findrop
 ddev drush si ../custom_recipes/findrop -y
 
-# AI context module has a dependncy on ECA ^2.0. BUt Drupal CMS 2.0 requires ECA ^3.
-# So clone AI Context module from its repo and setup separately.
-if [ -d "web/modules/contrib/ai_context" ]; then
-  echo "Deleting existing ai_context module from contrib: web/modules/contrib/ai_context"
-  rm -rf web/modules/contrib/ai_context
-fi
-echo "Cloning the latest version of ai_context module into web/modules/contrib/ai_context"
-git clone git@git.drupal.org:project/ai_context.git web/modules/contrib/ai_context
 ddev drush en ai_context -y
 ddev drush recipe ../custom_recipes/ai_context_setup
 
+echo "Building Canvas UI assets..."
+REQUIRED_NODE_MAJOR=20
+REQUIRED_NODE_MINOR=19
+NODE_VERSION=$(node --version 2>/dev/null | sed 's/v//')
+if [ -z "$NODE_VERSION" ]; then
+  echo "Error: Node.js is not installed. Please install Node.js >= ${REQUIRED_NODE_MAJOR}.${REQUIRED_NODE_MINOR}.0 to continue."
+  exit 1
+fi
+NODE_MAJOR=$(echo "$NODE_VERSION" | cut -d. -f1)
+NODE_MINOR=$(echo "$NODE_VERSION" | cut -d. -f2)
+if [ "$NODE_MAJOR" -lt "$REQUIRED_NODE_MAJOR" ] || { [ "$NODE_MAJOR" -eq "$REQUIRED_NODE_MAJOR" ] && [ "$NODE_MINOR" -lt "$REQUIRED_NODE_MINOR" ]; }; then
+  echo "Error: Node.js ${NODE_VERSION} is below the required version ${REQUIRED_NODE_MAJOR}.${REQUIRED_NODE_MINOR}.0."
+  echo "Please update Node.js before running demo-setup."
+  exit 1
+fi
+(cd web/modules/contrib/canvas && npm install)
+(cd web/modules/contrib/canvas/ui && npm run build)
+
+echo "Preparing to index content..."
+sleep 3
 echo "Indexing all content in the vector database..."
 ddev drush sapi-i
 
