@@ -11,8 +11,8 @@ config:
             context_items: {  }
             always_include:
               - '1'
-              - '3'
               - '4'
+              - '5'
             scope_subscriptions: {  }
             excluded_subcontext: {  }
           -
@@ -20,7 +20,7 @@ config:
             context_items: {  }
             always_include:
               - '1'
-              - '3'
+              - '4'
             scope_subscriptions: {  }
             excluded_subcontext: {  }
           -
@@ -28,13 +28,21 @@ config:
             context_items: {  }
             always_include:
               - '1'
-              - '6'
+              - '7'
             scope_subscriptions: {  }
             excluded_subcontext: {  }
           -
             id: drupal_canvas_seo_agent
             context_items: {  }
             always_include: {  }
+          -
+            id: analytics_monitoring_agent
+            context_items: { }
+            always_include:
+              - '2'
+            excluded_subcontext: { }
+            scope_subscriptions: { }
+
     ai_context.settings:
       simpleConfigUpdate:
         max_tokens: 30000

@@ -92,7 +92,7 @@ function ai_google_analytics_cron() {
   // Save data to the entity.
   $page->set('engaged_sessions', $output['engagedSessions']);
   $page->set('bounce_rate', $output['bounceRate']);
-  $page->set('conversion_rate', $output['keyEventRate']);
+  $page->set('key_event_rate', $output['keyEventRate']);
   $page->save();
 }
 

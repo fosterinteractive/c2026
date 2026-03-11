@@ -50,8 +50,8 @@ class GoogleAnalyticsHooks
         ])
         ->setDisplayConfigurable('form', TRUE);
 
-      $fields['conversion_rate'] = BaseFieldDefinition::create('string')
-        ->setLabel(new TranslatableMarkup('Conversion rate'))
+      $fields['key_event_rate'] = BaseFieldDefinition::create('string')
+        ->setLabel(new TranslatableMarkup('Key event rate'))
         ->setSetting('max_length', 255)
         ->setDisplayOptions('form', [
           'type' => 'string_textfield',
@@ -74,7 +74,7 @@ class GoogleAnalyticsHooks
     }
 
     // Define watched fields.
-    $watched = ['engaged_sessions', 'bounce_rate', 'conversion_rate'];
+    $watched = ['engaged_sessions', 'bounce_rate', 'key_event_rate'];
     $changed = FALSE;
 
     foreach ($watched as $field) {
@@ -120,8 +120,8 @@ class GoogleAnalyticsHooks
       $key = 'content_performance_report';
       $to = \Drupal::config('system.site')->get('mail');
       $params['subject'] = 'Underperforming Content Detected';
-      $params['message'] = "<p>Your Analytics Monitoring Agent has identified opportunities to improve your website content.</p>";
-      $params['message'] .= "<p>To view, review and publish suggested changes, please visit the <a href=\"" . \Drupal::request()->getSchemeAndHttpHost() . "/admin/content/ga-page-review\">AI Analytics Review</a> page.</p>";
+      $params['message'] = "<p>Your Analytics Monitoring Agent has identified content that does not meet your analytics goals.</p>";
+      $params['message'] .= "<p>For details, please visit the <a href=\"" . \Drupal::request()->getSchemeAndHttpHost() . "/admin/content/ga-page-review\">AI Analytics Review</a> page.</p>";
       $langcode = \Drupal::currentUser()->getPreferredLangcode();
       $send = TRUE;
       $result = $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
