@@ -5,3 +5,11 @@ ai_google_analytics.page_review:
     _title: 'AI Analytics Review'
   requirements:
     _permission: 'administer site configuration'
+
+ai_google_analytics.settings:
+  path: '/admin/config/services/ai-google-analytics'
+  defaults:
+    _form: '\Drupal\ai_google_analytics\Form\GoogleAnalyticsSettingsForm'
+    _title: 'Google Analytics Settings'
+  requirements:
+    _permission: 'administer site configuration'

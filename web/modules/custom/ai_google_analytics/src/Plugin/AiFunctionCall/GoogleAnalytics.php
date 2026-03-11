@@ -12,11 +12,8 @@ use Google\Analytics\Data\V1beta\DateRange;
 use Google\Analytics\Data\V1beta\Dimension;
 use Google\Analytics\Data\V1beta\Filter;
 use Google\Analytics\Data\V1beta\Filter\InListFilter;
-use Google\Analytics\Data\V1beta\Filter\NumericFilter;
-use Google\Analytics\Data\V1beta\Filter\NumericFilter\Operation;
 use Google\Analytics\Data\V1beta\FilterExpression;
 use Google\Analytics\Data\V1beta\Metric;
-use Google\Analytics\Data\V1beta\NumericValue;
 use Google\Analytics\Data\V1beta\RunReportRequest;
 
 /**
@@ -45,15 +42,10 @@ class GoogleAnalytics extends FunctionCallBase implements ExecutableFunctionCall
   public function execute() : void {
     putenv('GOOGLE_APPLICATION_CREDENTIALS=/var/www/html/web/sites/default/files/ai-integration-480315-c136045bcc0e.json');
 
-//    $filterExpression = new FilterExpression([
-//      'filter' => new Filter([
-//        'field_name' => 'sessionKeyEventRate',
-//        'numeric_filter' => new NumericFilter([
-//          'value' => new NumericValue(['int64_value' => 0]),
-//          'operation' => Operation::GREATER_THAN,
-//        ]),
-//      ])
-//    ]);
+    $config = \Drupal::config('ai_google_analytics.settings');
+    $credentials_uri = $config->get('credentials_uri');
+    $credentials_path = \Drupal::service('file_system')->realpath($credentials_uri);
+    putenv('GOOGLE_APPLICATION_CREDENTIALS=' . $credentials_path);
 
     $filterExpression = new FilterExpression([
       'filter' => new Filter([
@@ -67,11 +59,11 @@ class GoogleAnalytics extends FunctionCallBase implements ExecutableFunctionCall
 
     $gaClient = new BetaAnalyticsDataClient();
     $request = (new RunReportRequest())
-      ->setProperty('properties/259416874')
+      ->setProperty('properties/' . $config->get('property_id'))
       ->setDateRanges([
         new DateRange([
           'start_date' => '2026-01-01',
-          'end_date' => '2026-02-15',
+          'end_date' => '2026-03-09',
         ]),
       ])
       ->setDimensions([
@@ -92,7 +84,7 @@ class GoogleAnalytics extends FunctionCallBase implements ExecutableFunctionCall
           'expression' => 'sessionKeyEventRate*100',
         ]),
       ])
-      ->setMetricFilter($filterExpression);
+      ->setDimensionFilter($filterExpression);
 
     $response = $gaClient->runReport($request);
 

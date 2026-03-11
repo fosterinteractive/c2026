@@ -1,0 +1,6 @@
+ai_google_analytics.settings:
+  title: 'Google Analytics Settings'
+  description: 'Configure Google Analytics credentials and property ID.'
+  route_name: ai_google_analytics.settings
+  parent: system.admin_config_services
+  weight: 10

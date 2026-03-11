@@ -1,46 +1,105 @@
 <?php
 
-use Drupal\ai\OperationType\Chat\ChatInput;
-use Drupal\ai\OperationType\Chat\ChatMessage;
-use Drupal\Component\Serialization\Json;
+use Google\Analytics\Data\V1beta\Client\BetaAnalyticsDataClient;
+use Google\Analytics\Data\V1beta\DateRange;
+use Google\Analytics\Data\V1beta\Dimension;
+use Google\Analytics\Data\V1beta\Filter;
+use Google\Analytics\Data\V1beta\Filter\StringFilter;
+use Google\Analytics\Data\V1beta\Filter\StringFilter\MatchType;
+use Google\Analytics\Data\V1beta\FilterExpression;
+use Google\Analytics\Data\V1beta\Metric;
+use Google\Analytics\Data\V1beta\RunReportRequest;
 
 function ai_google_analytics_cron() {
-  $agent = \Drupal::service('plugin.manager.ai_agents')->createInstance('analytics_monitoring_agent');
-
-  // Get page URLs to be monitored.
-  $paths = get_monitored_pages();
-  if (empty($paths)) {
-    $text = 'No URL provided';
-  }
-  else {
-    $text = 'URL: ' . implode(',', $paths);
+  // Get monitored pages.
+  $pages = get_monitored_pages();
+  if (empty($pages)) {
+    return;
   }
 
-  // Set agent inputs.
-  $input = new ChatInput([
-    new ChatMessage('user', $text),
-  ]);
+  /** @var \Drupal\path_alias\AliasManagerInterface $alias_manager */
+  $alias_manager = \Drupal::service('path_alias.manager');
 
-  $agent->setChatInput($input);
-  $agent->determineSolvability();
-  $output = $agent->solve();
-  $data = Json::decode($output);
+  foreach ($pages as $page) {
+    // For each page, get GA data and save it to the entity.
+    /** @var \Drupal\Core\Entity\ContentEntityInterface $page */
+    $internal = $page->toUrl('canonical', ['alias' => FALSE])->toString();
+    $alias = $alias_manager->getAliasByPath($internal);
+    $path = ($alias && $alias !== $internal) ? $alias : $internal;
 
-  if (isset($data['pages'])) {
-    $context_data = [];
-    foreach ($data['pages'] as $page) {
-      if ($page['flag']) {
-        $context_data[] = $page;
-      }
+    // Authenticate with GA API.
+    $config = \Drupal::config('ai_google_analytics.settings');
+    $credentials_uri = $config->get('credentials_uri');
+    $credentials_path = \Drupal::service('file_system')->realpath($credentials_uri);
+    putenv('GOOGLE_APPLICATION_CREDENTIALS=' . $credentials_path);
+
+    // Build and perform the request.
+    $filterExpression = new FilterExpression([
+      'filter' => new Filter([
+        'field_name' => 'pagePath',
+        'string_filter' => new StringFilter([
+          'value' => $path,
+          'match_type' => MatchType::EXACT,
+        ]),
+      ]),
+    ]);
+
+    $gaClient = new BetaAnalyticsDataClient();
+    $request = (new RunReportRequest())
+      ->setProperty('properties/' . $config->get('property_id'))
+      ->setDateRanges([
+        new DateRange([
+          'start_date' => '2026-01-01',
+          'end_date' => 'today',
+        ]),
+      ])
+      ->setDimensions([
+        new Dimension([
+          'name' => 'pagePath',
+        ]),
+      ])
+      ->setMetrics([
+        new Metric([
+          'name' => 'engagedSessions',
+        ]),
+        new Metric([
+          'name' => 'bounceRatePercentage',
+          'expression' => 'bounceRate*100',
+        ]),
+        new Metric([
+          'name' => 'conversionRatePercentage',
+          'expression' => 'sessionKeyEventRate*100',
+        ]),
+      ])
+      ->setDimensionFilter($filterExpression);
+
+    $response = $gaClient->runReport($request);
+    $rows = $response->getRows();
+    if (empty($rows)) {
+      return;
     }
-    \Drupal::state()->set('ai_google_analytics.context_data', $context_data);
+
+    // Parse the response into an array keyed by URL.
+    foreach ($response->getRows() as $row) {
+      $output = [
+        'engagedSessions' => $row->getMetricValues()[0]->getValue(),
+        'bounceRate' => $row->getMetricValues()[1]->getValue(),
+        'keyEventRate' => $row->getMetricValues()[2]->getValue(),
+      ];
+    }
   }
+
+  // Save data to the entity.
+  $page->set('engaged_sessions', $output['engagedSessions']);
+  $page->set('bounce_rate', $output['bounceRate']);
+  $page->set('conversion_rate', $output['keyEventRate']);
+  $page->save();
 }
 
 /**
  * Helper function to get the path aliases for pages marked for monitoring.
  */
-function get_monitored_pages() {
+function get_monitored_pages():array {
   // Load canvas_page entities where monitor = TRUE.
   $storage = \Drupal::entityTypeManager()->getStorage('canvas_page');
   $ids = \Drupal::entityQuery('canvas_page')
@@ -54,23 +113,17 @@ function get_monitored_pages() {
   }
 
   $pages = $storage->loadMultiple($ids);
+  return $pages;
+}
 
-  /** @var \Drupal\path_alias\AliasManagerInterface $alias_manager */
-  $alias_manager = \Drupal::service('path_alias.manager');
-
-  // Return pathauto aliases (human-friendly) paths like "/contact".
-  $paths = [];
-  foreach ($pages as $page) {
-    /** @var \Drupal\Core\Entity\ContentEntityInterface $page */
-    $internal = $page->toUrl('canonical', ['alias' => FALSE])->toString();
-    $alias = $alias_manager->getAliasByPath($internal);
-
-    // Fallback to internal if no alias exists.
-    $paths[] = ($alias && $alias !== $internal) ? $alias : $internal;
+/**
+ * Implements hook_mail().
+ */
+function ai_google_analytics_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'content_performance_report':
+      $message['subject'] = $params['subject'];
+      $message['body'][] = $params['message'];
+      break;
   }
-
-  // Remove duplicates and normalise array keys.
-  $paths = array_values(array_unique($paths));
-
-  return $paths;
 }
