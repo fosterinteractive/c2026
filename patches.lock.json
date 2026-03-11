@@ -1,5 +1,5 @@
 {
-    "_hash": "9bfc7d4d7ef4e5f7134561bca3bd1c60eb76b2ac8c5a727e32c7973e105db1af",
+    "_hash": "1d454e5db085809875a5abf99f99a1ca035b09684eeba2b9a60365e7775f207b",
     "patches": {
         "drupal/canvas": [
             {
@@ -7,6 +7,16 @@
                 "description": "issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873",
                 "url": "patches/canvas/issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873.patch",
                 "sha256": "5135ef6d3d2f21d35a14eb751c846a6787ef290ff5370d72ffaa727f60fd3309",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "drupal/canvas",
+                "description": "Update AiPanel and AiWizard components",
+                "url": "patches/canvas/canvas-content-performance.patch",
+                "sha256": "bd87ee7dd0cee567667d66b3b7d144545aecb677b290d20bfbab6b8c5405b5d5",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
