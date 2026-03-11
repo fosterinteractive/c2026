@@ -2,6 +2,7 @@ langcode: en
 status: true
 dependencies:
   config:
+    - core.entity_view_mode.node.search_index
     - search_api.server.canvas_page_search
   module:
     - canvas
@@ -22,6 +23,10 @@ field_settings:
         'entity:canvas_page':
           ':default': default
           canvas_page: ':default'
+        'entity:node':
+          ':default': search_index
+          blog: ':default'
+          page: ':default'
   title:
     label: Title
     datasource_id: 'entity:canvas_page'
@@ -30,6 +35,14 @@ field_settings:
     dependencies:
       module:
         - canvas
+  title_1:
+    label: Title
+    datasource_id: 'entity:node'
+    property_path: title
+    type: string
+    dependencies:
+      module:
+        - node
   url:
     label: URI
     property_path: search_api_url
@@ -66,8 +79,8 @@ tracker_settings:
   default:
     indexing_order: fifo
 options:
-  cron_limit: 50
+  cron_limit: 2
   delete_on_fail: true
-  index_directly: true
+  index_directly: false
   track_changes_in_references: true
 server: canvas_page_search

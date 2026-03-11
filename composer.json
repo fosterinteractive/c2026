@@ -19,7 +19,8 @@
         "composer/composer": "^2.8",
         "composer/installers": "^2.3",
         "cweagans/composer-patches": "~2.0",
-        "drupal/ai_agents": "^1.2",
+        "drupal/ai_agents": "^1.3@beta",
+        "drupal/ai_context": "1.0.x-dev@dev",
         "drupal/ai_vdb_provider_milvus": "^1.1@beta",
         "drupal/byte": "^1",
         "drupal/canvas": "1.x-dev@dev",
@@ -37,8 +38,9 @@
         "drupal/drupal_cms_starter": "^2",
         "drupal/dynamic_entity_reference": "^3.2",
         "drupal/recipe_installer_kit": "^1.0.4",
-        "drupal/webform": "@beta",
-        "google/analytics-data": "^0.23.2"
+        "google/analytics-data": "^0.23.2",
+        "drupal/tagify": "^1.2",
+        "drupal/webform": "@beta"
     },
     "require-dev": {
         "drush/drush": "^13.7"
@@ -60,10 +62,7 @@
         },
         "bin-dir": "vendor/bin",
         "sort-packages": true,
-        "optimize-autoloader": true,
-        "audit": {
-            "ignore": ["SA-CONTRIB-2025-031"]
-        }
+        "optimize-autoloader": true
     },
     "extra": {
         "drupal-scaffold": {
@@ -105,10 +104,10 @@
         "drupal-core-vendor-hardening": {
             "composer/composer": false
         },
+        "composer-patches": {
+            "ignore-dependency-patches": ["drupal/ai_context"]
+        },
         "patches": {
-            "drupal/ai_agents": {
-                "MR #236: Fix system prompt handling in AiAgentEntityWrapper": "https://git.drupalcode.org/project/ai_agents/-/merge_requests/236.diff"
-            },
             "drupal/canvas": {
                 "issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873": "patches/canvas/issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873.patch"
             },

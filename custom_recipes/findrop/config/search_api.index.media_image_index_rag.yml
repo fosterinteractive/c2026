@@ -6,7 +6,6 @@ dependencies:
     - field.storage.media.field_media_image
     - search_api.server.media_image_search
   module:
-    - canvas
     - file
     - media
 id: media_image_index_rag
@@ -86,6 +85,6 @@ tracker_settings:
 options:
   cron_limit: 5
   delete_on_fail: true
-  index_directly: true
+  index_directly: false
   track_changes_in_references: true
 server: media_image_search
