@@ -11,38 +11,30 @@ config:
             context_items: {  }
             always_include:
               - '1'
-              - '4'
-              - '5'
-            scope_subscriptions: {  }
+              - '3'
+              - '2'
             excluded_subcontext: {  }
+            scope_subscriptions: {  }
           -
             id: canvas_page_builder_agent
             context_items: {  }
             always_include:
               - '1'
-              - '4'
-            scope_subscriptions: {  }
+              - '2'
             excluded_subcontext: {  }
+            scope_subscriptions: {  }
           -
             id: canvas_ai_orchestrator
             context_items: {  }
             always_include:
               - '1'
-              - '7'
-            scope_subscriptions: {  }
+              - '4'
             excluded_subcontext: {  }
+            scope_subscriptions: {  }
           -
             id: drupal_canvas_seo_agent
             context_items: {  }
             always_include: {  }
-          -
-            id: analytics_monitoring_agent
-            context_items: { }
-            always_include:
-              - '2'
-            excluded_subcontext: { }
-            scope_subscriptions: { }
-
     ai_context.settings:
       simpleConfigUpdate:
         max_tokens: 30000
