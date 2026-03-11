@@ -1,6 +1,6 @@
 component_context:
   block:
-    enabled: true
+    enabled: false
     data: |
       block.admin_menu_links:
         id: block.admin_menu_links
@@ -656,7 +656,7 @@ component_context:
             name: 'Aspect ratio'
             description: 'No description available'
             type: string
-            default: square
+            default: null
             enum:
               - square
               - '4:3'
@@ -1535,8 +1535,8 @@ component_context:
         slots:
           hero_slot:
             name: 'Hero content'
-            description: 'No description available'
-        detailed_description: 'Hero billboard'
+            description: 'Never use Inverted style in text or image components, when placed here.'
+        detailed_description: 'Hero billboard. Never use Inverted style in text or image components. '
       sdc.byte_theme.hero-blog:
         id: sdc.byte_theme.hero-blog
         name: 'Hero blog'
