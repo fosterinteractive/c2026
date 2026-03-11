@@ -1,0 +1,42 @@
+diff --git a/ui/src/components/aiExtension/AiPanel.tsx b/ui/src/components/aiExtension/AiPanel.tsx
+index 27b08c1a..d6a1dd03 100644
+--- a/ui/src/components/aiExtension/AiPanel.tsx
++++ b/ui/src/components/aiExtension/AiPanel.tsx
+@@ -1,7 +1,8 @@
++import { useEffect } from 'react';
+ import { Box } from '@radix-ui/themes';
+ 
+-import { useAppSelector } from '@/app/hooks';
+-import { selectAiPanelOpen } from '@/features/ui/primaryPanelSlice';
++import { useAppDispatch, useAppSelector } from '@/app/hooks';
++import { selectAiPanelOpen, setAiPanelOpen } from '@/features/ui/primaryPanelSlice';
+ 
+ import AiWizard from './AiWizard';
+ 
+@@ -11,6 +12,14 @@ interface AiPanelProps {}
+ 
+ const AiPanel: React.FC<AiPanelProps> = () => {
+   const isOpen = useAppSelector(selectAiPanelOpen);
++  const dispatch = useAppDispatch();
++
++  useEffect(() => {
++    const handler = () => dispatch(setAiPanelOpen());
++    window.addEventListener('canvas:open-ai-panel', handler);
++    return () => window.removeEventListener('canvas:open-ai-panel', handler);
++  }, [dispatch]);
++
+   return (
+     <Box
+       className={styles.aiPanel}
+diff --git a/ui/src/components/aiExtension/AiWizard.tsx b/ui/src/components/aiExtension/AiWizard.tsx
+index 298ea77e..467a1e99 100644
+--- a/ui/src/components/aiExtension/AiWizard.tsx
++++ b/ui/src/components/aiExtension/AiWizard.tsx
+@@ -1009,6 +1009,7 @@ const AiWizard = () => {
+               historyStore.clearHistory();
+               chatElementRef.current.disableSubmitButton();
+               isComponentRendered = true;
++              window.dispatchEvent(new CustomEvent('canvas:ai-ready'));
+             }
+           }}
+           textInput={{

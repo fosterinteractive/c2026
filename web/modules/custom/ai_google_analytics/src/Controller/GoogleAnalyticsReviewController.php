@@ -24,6 +24,9 @@ class GoogleAnalyticsReviewController extends ControllerBase
     foreach ($context_data as $id => $data) {
       $page = Page::load($id);
       if ($page) {
+        $ai_message_prefix = "This page is underperforming against its Google Analytics goals. A summary of the page\'s performance is below.\r\n\r\n";
+        $ai_message_suffix = "\r\n\r\nProvide some suggestions to improve the failing metric(s).";
+
         $rows[] = [
           'title' => Link::fromTextAndUrl($page->label(), $page->toUrl()),
           'summary' => $data['summary'],
@@ -33,7 +36,7 @@ class GoogleAnalyticsReviewController extends ControllerBase
           ],
             [
               'query' => [
-                'ai_message' => $data['summary'],
+                'ai_message' => $ai_message_prefix . $data['summary'] . $ai_message_suffix,
               ],
               'attributes' => [
                 'target' => '_blank',

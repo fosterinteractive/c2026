@@ -1,0 +1,5 @@
+canvas_ai_init:
+  js:
+    js/canvas-ai-init.js: { attributes: { defer: true } }
+  dependencies:
+    - core/drupal
