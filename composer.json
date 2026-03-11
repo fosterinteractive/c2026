@@ -37,7 +37,8 @@
         "drupal/drupal_cms_starter": "^2",
         "drupal/dynamic_entity_reference": "^3.2",
         "drupal/recipe_installer_kit": "^1.0.4",
-        "drupal/webform": "@beta"
+        "drupal/webform": "@beta",
+        "google/analytics-data": "^0.23.2"
     },
     "require-dev": {
         "drush/drush": "^13.7"

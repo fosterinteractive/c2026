@@ -1,0 +1,15 @@
+ai_google_analytics.page_review:
+  path: '/admin/content/ga-page-review'
+  defaults:
+    _controller: '\Drupal\ai_google_analytics\Controller\GoogleAnalyticsReviewController::content'
+    _title: 'AI Analytics Review'
+  requirements:
+    _permission: 'administer site configuration'
+
+ai_google_analytics.settings:
+  path: '/admin/config/services/ai-google-analytics'
+  defaults:
+    _form: '\Drupal\ai_google_analytics\Form\GoogleAnalyticsSettingsForm'
+    _title: 'Google Analytics Settings'
+  requirements:
+    _permission: 'administer site configuration'

@@ -1,0 +1,8 @@
+name: AI Google Analytics
+type: module
+description: GA integration.
+package: AI
+core_version_requirement: ^10.3 || ^11
+dependencies:
+  - ai:ai
+  - ai_agents:ai_agents
