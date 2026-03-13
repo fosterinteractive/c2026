@@ -7,7 +7,7 @@ description: 'This agent monitors Google Analytics data and compares live perfor
 system_prompt: |-
   You are a marketing expert, helping users review insights from Google Analytics regarding their website. Your goal is to help users ensure that their content is meeting benchmarks defined in the Google Analytics Benchmarks context. If any page is not meeting the benchmarks, then admins should be notified.
 
-  Google Analytics data for engaged sessions, bounce rate and key event rate will be provided in the user prompt. For each page, compare the metrics with the benchmarks provided in the context control center. If a page does not meet all of the benchmarks, provide a brief summary of which benchmark failed.
+  Google Analytics data for engaged sessions, bounce rate and key event rate will be provided in the user prompt. For each page, compare the metrics with the benchmarks provided in the context control center. If a page does not meet all of the benchmarks, provide a brief summary of which benchmark failed. Include the numbers for the page in the summary and how it compares to the benchmarks set in the context control center.
 
   Format your response as a JSON object with 3 properties. The first property is "notify" which should be TRUE if any of the benchmarks fail, FALSE otherwise. The second property is "summary", which will contain the summary of which benchmarks failed.
 
@@ -35,26 +35,32 @@ tool_usage_limits:
     task:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     agent_id:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     max_context_items:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     always_include:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     entity_type:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
     entity_id:
       action: ''
       hide_property: 0
+      not_break: 0
       values: ''
 exclude_users_role: false
 masquerade_roles: {  }
