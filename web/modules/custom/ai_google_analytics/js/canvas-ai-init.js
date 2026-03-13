@@ -15,9 +15,24 @@
   // Wait for DeepChat to finish its own initialisation before submitting.
   window.addEventListener('canvas:ai-ready', () => {
     const deepChat = document.querySelector('deep-chat');
-    if (deepChat) {
-      deepChat.disableSubmitButton(false);
-      deepChat.submitUserMessage({ text: aiMessage });
-    }
+    if (!deepChat) return;
+    setTimeout(() => {
+      const input = deepChat.shadowRoot?.getElementById('text-input');
+      if (input) {
+        input.innerText = aiMessage;
+        input.focus();
+
+        // Enable submit button.
+        deepChat.disableSubmitButton(false);
+
+        // Position the cursor at the end to allow users to edit.
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(input);
+        range.collapse(false); // false = collapse to end
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }, 2000);
   }, { once: true });
 }());
