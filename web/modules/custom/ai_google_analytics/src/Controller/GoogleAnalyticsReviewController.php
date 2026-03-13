@@ -4,6 +4,7 @@ namespace Drupal\ai_google_analytics\Controller;
 
 use Drupal\canvas\Entity\Page;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Link;
 
 class GoogleAnalyticsReviewController extends ControllerBase
@@ -27,22 +28,28 @@ class GoogleAnalyticsReviewController extends ControllerBase
         $ai_message_prefix = "This page is underperforming against its Google Analytics goals. A summary of the page\'s performance is below.\r\n\r\n";
         $ai_message_suffix = "\r\n\r\nProvide some suggestions to improve the failing metric(s).";
 
-        $rows[] = [
-          'title' => Link::fromTextAndUrl($page->label(), $page->toUrl()),
-          'summary' => $data['summary'],
-          'link' => Link::createFromRoute($this->t('Work on it'), 'canvas.boot.entity', [
-            'entity_type' => 'canvas_page',
-            'entity' => $page->id(),
-          ],
-            [
-              'query' => [
-                'ai_message' => $ai_message_prefix . $data['summary'] . $ai_message_suffix,
-              ],
-              'attributes' => [
-                'target' => '_blank',
-              ],
-            ])->toString(),
-        ];
+        try {
+          $rows[] = [
+            'title' => Link::fromTextAndUrl($page->label(), $page->toUrl()),
+            'summary' => $data['summary'],
+            'link' => Link::createFromRoute($this->t('Work on it'), 'canvas.boot.entity', [
+              'entity_type' => 'canvas_page',
+              'entity' => $page->id(),
+            ],
+              [
+                'query' => [
+                  'ai_message' => $ai_message_prefix . $data['summary'] . $ai_message_suffix,
+                ],
+                'attributes' => [
+                  'target' => '_blank',
+                ],
+              ])->toString(),
+          ];
+        }
+        catch (EntityMalformedException $e) {
+          \Drupal::logger('ai_google_analytics')->error($e->getMessage());
+          $rows = [];
+        }
       }
     }
 
