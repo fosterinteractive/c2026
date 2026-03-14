@@ -1,0 +1,47 @@
+_meta:
+  version: '1.0'
+  entity_type: ai_context_item
+  uuid: 3fa9e498-b5c1-478c-b698-c4cb6346f672
+  bundle: default
+  default_langcode: en
+  depends:
+    0ddd4133-6b3c-4b05-8a59-3b1f45ffa4df: ai_context_item
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  label:
+    -
+      value: 'Writing Tone & Voice'
+  description:
+    -
+      value: 'Contains brand identity, product naming rules, and competitive positioning policies that apply globally.'
+      format: plain_text
+  purpose:
+    -
+      value: 'Load this context for ANY content task on the FinDrop site. Contains brand identity, product naming rules, and competitive positioning policies that apply globally. Skip only for internal technical documentation or API references.'
+      format: plain_text
+  content:
+    -
+      value: "# Writing Tone & Voice\r\n\r\n## Voice vs. Tone\r\n\r\n**Voice** is who FinDrop is — it stays the same everywhere, across every channel, audience, and content type. Voice is our personality on the page.\r\n\r\n**Tone** shifts depending on context. We adjust tone based on:\r\n\r\n* **Audience** — A CFO gets a more data-driven, strategic tone; an end user gets a friendlier, simpler tone.\r\n* **Content type** — A product page is confident and outcome-focused; a help article is patient and instructional.\r\n* **Funnel stage** — Top of funnel is educational and curiosity-driven; bottom of funnel is proof-heavy and action-oriented.\r\n* **Channel** — A social post is punchier; a whitepaper is more detailed and measured.\r\n\r\nThe voice foundation below never changes. The audience-specific sections later in this document describe how tone flexes while voice holds steady.\r\n\r\n***\r\n\r\n## Voice Foundation\r\n\r\n### Our Voice Is\r\n\r\n* **Expert Without Jargon** — We know our stuff but explain it clearly.\r\n* **Confident Without Arrogance** — We're proud of our solution but respect alternatives.\r\n* **Friendly Without Being Casual** — Professional warmth, not buddy-buddy.\r\n* **Direct Without Being Blunt** — Clear communication with consideration.\r\n* **Data-Confident** — We lead with specific, quantified outcomes, not vague promises.\r\n\r\n### Our Voice Is Not\r\n\r\n* Overly technical or academic\r\n* Condescending or preachy\r\n* Too casual or unprofessional\r\n* Passive or uncertain\r\n* Hyperbolic without proof (\"revolutionary,\" \"game-changing\" without data to back it up)\r\n\r\n***\r\n\r\n## The FinDrop Copy Pattern\r\n\r\nEvery piece of marketing copy follows this hierarchy:\r\n\r\n**Lead with the outcome.** Not the feature. Not the technology. The measurable result.\r\n\r\n**Pattern:** \\[Quantified result] → \\[How we deliver it] → \\[What that means for your day]\r\n\r\nAlways pair a specific number with its human impact. Don't just say \"80% faster\" — say \"80% faster — that's 15 hours back every month.\"\r\n\r\n> **Important:** When using statistics in copy, pull approved numbers from the **Key Facts & Value Propositions** document. The examples below illustrate the pattern and voice — not the canonical stats.\r\n\r\n### Examples\r\n\r\n✅ **Good:** \"Close your books 8x faster with automated expense reconciliation. No more month-end fire drills.\"\r\n\r\n❌ **Bad:** \"Our AI-powered reconciliation engine leverages machine learning to categorize transactions.\"\r\n\r\n✅ **Good:** \"Reduce expense processing time by 80%. That's 15 hours back every month.\"\r\n\r\n❌ **Bad:** \"FinDrop offers a best-in-class expense management solution for modern enterprises.\"\r\n\r\n***\r\n\r\n## Data-Confidence Rules\r\n\r\nFinDrop copy leads with numbers. Specific numbers build more trust than superlatives.\r\n\r\n**Always prefer:**\r\n\r\n* \"80% reduction\" over \"dramatic reduction\"\r\n* \"10-day implementation\" over \"fast implementation\"\r\n* \"15 hours monthly\" over \"significant time savings\"\r\n* \"50+ integrations\" over \"extensive integration ecosystem\"\r\n* \"$12,000 per employee annually\" over \"substantial cost savings\"\r\n\r\n**When using stats:**\r\n\r\n* Round to the nearest impactful whole number.\r\n* Always use numerals for percentages (never spell out).\r\n* Use \"per\" for rates: \"per employee,\" \"per week,\" \"per month.\"\r\n* Pair the number with the human impact.\r\n\r\n***\r\n\r\n## Audience-Specific Tone Adjustments\r\n\r\nThe voice stays the same. What shifts is the lead angle, evidence type, and CTA framing.\r\n\r\n### For Finance Leaders (CFOs, Controllers)\r\n\r\n* **Focus:** ROI, compliance, control, efficiency\r\n* **Tone:** Professional, data-driven, strategic\r\n* **Evidence:** Case studies, metrics, testimonials\r\n* **Lead with:** The business impact number\r\n* **Example:** \"Reduce month-end close from 10 days to 2 with automated reconciliation\"\r\n* **CTA style:** ROI-focused — \"See Your Savings,\" \"Calculate Your ROI\"\r\n\r\n### For Accounting Teams\r\n\r\n* **Focus:** Time savings, accuracy, ease of use\r\n* **Tone:** Helpful, understanding, practical\r\n* **Evidence:** Feature demonstrations, workflow improvements\r\n* **Lead with:** The pain point they'll eliminate\r\n* **Example:** \"No more chasing receipts — everything syncs automatically\"\r\n* **CTA style:** Relief-focused — \"See How It Works,\" \"Watch 3-Minute Demo\"\r\n\r\n### For IT Decision Makers\r\n\r\n* **Focus:** Security, integration, implementation\r\n* **Tone:** Technical but accessible, thorough\r\n* **Evidence:** Specifications, architecture, certifications\r\n* **Lead with:** The compliance credential\r\n* **Example:** \"Bank-level encryption with SOC 2 Type II compliance\"\r\n* **CTA style:** Validation-focused — \"Read Security Whitepaper,\" \"See Integration Docs\"\r\n\r\n### For End Users (Employees Using Cards)\r\n\r\n* **Focus:** Simplicity, speed, convenience\r\n* **Tone:** Friendly, encouraging, clear\r\n* **Evidence:** Simple steps, time comparisons\r\n* **Lead with:** How easy their life just got\r\n* **Example:** \"Create a card in seconds, right from your phone\"\r\n* **CTA style:** Action-focused — \"Get Your Card,\" \"Try It Now\"\r\n\r\n***\r\n\r\n## Examples\r\n\r\n### ✅ Good (Finance Leader audience, product page hero)\r\n\r\n\"Reduce expense processing time by 80%. FinDrop gives your team complete visibility and control — from card creation to month-end close.\"\r\n\r\n### ❌ Bad (same context)\r\n\r\n\"FinDrop is a revolutionary, game-changing platform that leverages cutting-edge AI to seamlessly transform your financial operations with best-in-class automation.\"\r\n\r\n**What's wrong:** \"revolutionary\" and \"game-changing\" (hyperbolic without proof), \"leverages\" (banned word), \"seamlessly\" (banned word), \"best-in-class\" (requires legal review), \"cutting-edge AI\" (jargon), leads with feature instead of outcome.\r\n\r\n***\r\n\r\n## Checklist\r\n\r\n* Copy leads with a quantified outcome, not a feature?\r\n* Follows the \\[Result] → \\[How] → \\[What it means] pattern?\r\n* Stats pulled from Key Facts & Value Propositions (not invented)?\r\n* Audience-appropriate tone applied (while voice stays consistent)?\r\n* No banned words (leverage, utilize, real-time, seamlessly, governance, etc.)?\r\n* No unsupported superlatives (revolutionary, game-changing, best-in-class)?\r\n* Numbers paired with human impact?"
+      format: plain_text
+  parent:
+    -
+      entity: 0ddd4133-6b3c-4b05-8a59-3b1f45ffa4df
+  subcontext_type:
+    -
+      value: required
+  scope:
+    - {  }
+  revision_translation_affected:
+    -
+      value: true
+  moderation_state:
+    -
+      value: published

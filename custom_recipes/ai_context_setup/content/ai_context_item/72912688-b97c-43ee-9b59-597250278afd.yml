@@ -29,6 +29,9 @@ default:
     -
       value: 'Guidelines for creating a press release page.'
       format: plain_text
+  subcontext_type:
+    -
+      value: required
   revision_translation_affected:
     -
       value: true

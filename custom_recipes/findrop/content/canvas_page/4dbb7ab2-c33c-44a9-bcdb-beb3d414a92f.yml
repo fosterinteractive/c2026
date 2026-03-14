@@ -10,8 +10,6 @@ _meta:
     99b0f7dc-591c-4781-95ff-24b8705eaa85: media
     49bd225b-1031-4001-8482-afbff25622fb: file
     92565f8e-d1cb-46e2-a6dc-0084cc6b4c0d: media
-    4e65148c-1684-4782-8543-725910ae005e: file
-    d25d8f59-cda9-4bf3-80a6-77095f5ca2ba: media
     6dd19a5d-fdc9-44d2-8258-1ac26fb9b6d9: file
     61a7dc42-4197-4d76-9170-202ae5915eb9: media
     3324d784-51b7-48f2-a8bf-7fa8dd1c2804: file
@@ -386,9 +384,31 @@ default:
       component_id: sdc.byte_theme.image
       inputs:
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: d25d8f59-cda9-4bf3-80a6-77095f5ca2ba
-            target_type: media
+          sourceType: default-relative-url
+          value:
+            src: assets/pexels-felix-mittermeier-1209650.jpg
+            alt: 'Photo by Felix Mittermeier: https://www.pexels.com/photo/atmospheric-evening-bavaria-beautiful-clouds-1209650/'
+            width: 1920
+            height: 1014
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.image
         radius: extra-large
     -
       parent_uuid: b008a354-2753-4848-a891-b2915c8dcd4e

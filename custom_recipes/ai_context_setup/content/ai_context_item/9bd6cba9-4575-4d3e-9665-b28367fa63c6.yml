@@ -1,0 +1,47 @@
+_meta:
+  version: '1.0'
+  entity_type: ai_context_item
+  uuid: 9bd6cba9-4575-4d3e-9665-b28367fa63c6
+  bundle: default
+  default_langcode: en
+  depends:
+    0ddd4133-6b3c-4b05-8a59-3b1f45ffa4df: ai_context_item
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  label:
+    -
+      value: 'Abbreviations, Spelling, Dates & Formatting'
+  description:
+    -
+      value: 'Enforces grammar, capitalization, number formatting, and approved vocabulary'
+      format: plain_text
+  purpose:
+    -
+      value: 'Load when writing or reviewing ANY text for the FinDrop site. Enforces grammar, capitalization, number formatting, and approved vocabulary. Skip for internal technical docs or API references.'
+      format: plain_text
+  content:
+    -
+      value: "# Abbreviations, Spelling, Dates & Formatting\r\n\r\n## Grammar Standards\r\n\r\n* Always use standard American English spelling (color, organize, center, etc.) and punctuation in all writing.\r\n* Oxford comma: always.\r\n* Active voice: preferred over passive in all marketing copy.\r\n* Present tense: use for describing features and capabilities.\r\n* Sentence case: for UI element labels and button text.\r\n\r\n## Capitalization Rules\r\n\r\n* **Master brand:** FinDrop (one word, capital F and D — always).\r\n* **Product lines:** FinDrop Cards, FinDrop Expense, FinDrop Travel — always capitalized.\r\n* **Features:** lowercase unless trademarked.\r\n* **Job titles:** lowercase unless naming a specific person (e.g., \"the controller\" vs. \"Controller Sarah Mitchell\").\r\n\r\n## Number Formatting\r\n\r\n* Spell out one through nine in body copy.\r\n* Use numerals for 10 and above.\r\n* Always use numerals for percentages (e.g., \"80%\" not \"eighty percent\").\r\n* Comma separator for thousands (e.g., \"$12,000\").\r\n* Use \"x\" for multipliers: \"8x faster,\" not \"eight times faster.\"\r\n* Use \"per\" for rates: \"per employee,\" \"per week,\" \"per month.\"\r\n\r\n## Vocabulary: Words We Use / Words We Don't\r\n\r\n| ✅ Always Use             | ❌ Never Use                     | Notes                                                       |\r\n| ------------------------ | ------------------------------- | ----------------------------------------------------------- |\r\n| \"live\"                   | \"real-time\"                     | For transactions and data visibility                        |\r\n| \"in seconds\"             | \"instantly\" / \"in minutes\"      | For card creation speed                                     |\r\n| \"automate\" / \"automated\" | \"leverage\" / \"utilize\"          |                                                             |\r\n| \"prevent\"                | \"mitigate\"                      |                                                             |\r\n| \"control\"                | \"governance\"                    |                                                             |\r\n| \"visibility\"             | \"transparency\"                  | Too abstract                                                |\r\n| \"works with your stack\"  | \"seamlessly integrates\"         |                                                             |\r\n| \"no expense reports\"     | \"touchless expense automation\"  |                                                             |\r\n| \"virtual cards\"          | \"digital cards\" / \"e-cards\"     | Use \"cards\" first mention, then \"virtual cards\" for clarity |\r\n| \"book in minutes\"        | \"streamlined travel experience\" | For travel booking                                          |\r\n\r\n> **Note:** For approved phrasings of specific statistics (e.g., the exact way to express the 80% processing time reduction), see the **Key Facts & Value Propositions** document. The vocabulary rules above govern general word choice; Key Facts governs stat-specific phrasing.\r\n\r\n## Examples\r\n\r\n### ✅ Good\r\n\r\n\"FinDrop Cards let you create virtual cards in seconds with custom spending limits. All transactions are live — your finance team has complete visibility from the first swipe.\"\r\n\r\n### ❌ Bad\r\n\r\n\"FinDrop cards let you instantly create digital cards. Real-time transaction data seamlessly integrates with your existing governance tools, leveraging automation to mitigate overspending.\"\r\n\r\n**What's wrong:** \"FinDrop cards\" (lowercase c), \"instantly\" (use \"in seconds\"), \"digital cards\" (use \"virtual cards\"), \"Real-time\" (use \"live\"), \"seamlessly integrates\" (use \"works with your stack\"), \"governance\" (use \"control\"), \"leveraging\" (use \"automate\"), \"mitigate\" (use \"prevent\")."
+      format: plain_text
+  parent:
+    -
+      entity: 0ddd4133-6b3c-4b05-8a59-3b1f45ffa4df
+  subcontext_type:
+    -
+      value: required
+  scope:
+    - {  }
+  revision_translation_affected:
+    -
+      value: true
+  moderation_state:
+    -
+      value: published

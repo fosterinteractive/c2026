@@ -10,8 +10,6 @@ _meta:
     99b0f7dc-591c-4781-95ff-24b8705eaa85: media
     49bd225b-1031-4001-8482-afbff25622fb: file
     92565f8e-d1cb-46e2-a6dc-0084cc6b4c0d: media
-    4e65148c-1684-4782-8543-725910ae005e: file
-    d25d8f59-cda9-4bf3-80a6-77095f5ca2ba: media
     6dd19a5d-fdc9-44d2-8258-1ac26fb9b6d9: file
     61a7dc42-4197-4d76-9170-202ae5915eb9: media
     3324d784-51b7-48f2-a8bf-7fa8dd1c2804: file
@@ -133,68 +131,64 @@ default:
       uuid: eb180bea-e3a0-4b03-871f-62a8194ad1ab
       component_id: sdc.byte_theme.card-icon
       inputs:
-        tile_size: square
         border_radius: large
         icon: shield
-        icon_size: large
+        icon_size: extra-large
         icon_align: center
         text: 'Book anywhere, stay in policy'
         description:
           value: '<p>Employees book through preferred platforms with DropPay. Policies are enforced at booking, not three weeks later.</p>'
           format: canvas_html_block
         text_align: center
-        background_color: accent
+        background_color: muted
     -
       parent_uuid: d836d576-4b08-4a83-9b47-ca4e4fc10397
       slot: main_slot
       uuid: 1010f521-07fc-4f4d-a565-8080a100f9a4
       component_id: sdc.byte_theme.card-icon
       inputs:
-        tile_size: square
         border_radius: large
         icon: rocket
-        icon_size: large
+        icon_size: extra-large
         icon_align: center
         text: ' Trip-specific virtual cards'
         description:
           value: '<p>Every trip gets its own card with a pre-set limit. When the trip ends, the card freezes automatically.</p>'
           format: canvas_html_block
         text_align: center
-        background_color: accent
+        background_color: muted
     -
       parent_uuid: d836d576-4b08-4a83-9b47-ca4e4fc10397
       slot: main_slot
       uuid: f921cc40-e16a-44e0-abcb-6e7490800d2a
       component_id: sdc.byte_theme.card-icon
       inputs:
-        tile_size: square
         border_radius: large
         icon: rocket
-        icon_size: large
+        icon_size: extra-large
         icon_align: center
         text: 'Receipts captured on the go'
         description:
           value: '<p>Snap a photo or forward an email. FinDrop matches receipts to transactions automatically. No shoebox after the trip.</p>'
           format: canvas_html_block
         text_align: center
-        background_color: accent
+        background_color: muted
     -
       parent_uuid: d836d576-4b08-4a83-9b47-ca4e4fc10397
       slot: main_slot
       uuid: ea3382c1-daf2-407c-8658-da31175f9457
       component_id: sdc.byte_theme.card-icon
       inputs:
-        tile_size: square
         border_radius: large
         icon: briefcase
-        icon_size: large
+        icon_size: extra-large
         icon_align: center
         text: 'Reimburse employees anywhere, fast'
         description:
           value: '<p>Reimburse in local currencies with exchange rates locked at the time of transaction. No manual conversion.</p>'
           format: canvas_html_block
         text_align: center
-        background_color: accent
+        background_color: muted
     -
       uuid: cbea2776-05a6-4911-9aed-c1ca1b2f215a
       component_id: sdc.byte_theme.section
@@ -382,13 +376,35 @@ default:
     -
       parent_uuid: 4ccf9e43-7c99-4eb7-8991-a8dcd5649087
       slot: group_slot
-      uuid: dd8027a1-8af1-47f8-8f5b-92a79c3d4454
+      uuid: 0f9c5693-71a9-4128-a766-951202f75ad3
       component_id: sdc.byte_theme.image
       inputs:
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: d25d8f59-cda9-4bf3-80a6-77095f5ca2ba
-            target_type: media
+          sourceType: default-relative-url
+          value:
+            src: assets/pexels-felix-mittermeier-1209650.jpg
+            alt: 'Photo by Felix Mittermeier: https://www.pexels.com/photo/atmospheric-evening-bavaria-beautiful-clouds-1209650/'
+            width: 1920
+            height: 1014
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.image
         radius: extra-large
     -
       parent_uuid: b008a354-2753-4848-a891-b2915c8dcd4e
@@ -863,6 +879,9 @@ default:
   revision_translation_affected:
     -
       value: true
+  monitor:
+    -
+      value: false
   metatags:
     -
       value: '{"description":"[canvas_page:description]","title":"[canvas_page:title] | [site:name]"}'
