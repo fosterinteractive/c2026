@@ -1,28 +1,8 @@
 _meta:
   version: '1.0'
   entity_type: canvas_page
-  uuid: dfd72736-9cc0-40ba-9b00-9789835399ef
+  uuid: 78fbbc49-9e27-467c-8ae6-e79e41e10adb
   default_langcode: en
-  depends:
-    a434fa52-c6ee-4bde-9a69-e37b9ddd842e: file
-    545fe2b5-1b24-4cc8-bdba-8f8f3c54baa2: media
-    cd39ac1c-8c42-4b96-ab59-5c083d01fad1: file
-    99b0f7dc-591c-4781-95ff-24b8705eaa85: media
-    49bd225b-1031-4001-8482-afbff25622fb: file
-    92565f8e-d1cb-46e2-a6dc-0084cc6b4c0d: media
-    6dd19a5d-fdc9-44d2-8258-1ac26fb9b6d9: file
-    61a7dc42-4197-4d76-9170-202ae5915eb9: media
-    3324d784-51b7-48f2-a8bf-7fa8dd1c2804: file
-    25710933-f157-4ee6-a95c-28a4c256ea96: media
-    0fc51fec-6815-47f5-a978-df01e771c22a: file
-    bef8f74c-852b-4eed-984e-4bc2a75e8bd3: media
-    d48d3cc5-5ae8-43ff-9742-a2fdcff430d8: file
-    5005f597-1a87-4847-8d7d-76a9ef868fa2: media
-    b38beb47-f637-468a-8385-a206265ed349: file
-    0877ac26-4545-4e19-aa1c-c275dc509af2: media
-    34072456-e85c-40fb-a09c-1d34fe4a1feb: file
-    7b0171db-99c8-4a99-a5f3-e1a342b99325: media
-    590ef2bb-2e2d-4360-9444-ee4e4133e8f4: media
 default:
   revision_user:
     -
@@ -35,13 +15,13 @@ default:
       target_id: 1
   title:
     -
-      value: 'Travel (Before)'
+      value: 'Travel Page (Generated from travel-page-with-strategy-specs-v2.md)'
   description:
     -
-      value: 'Discover how FinDrop automates business travel management with unified booking, instant virtual cards, and expense control for smarter, compliant corporate travel.'
+      value: "Empower travel managers with FinDrop's integrated platform—policy enforcement, virtual cards, receipt capture, multi-currency reimbursements & AI Copilot. Download the whitepaper."
   components:
     -
-      uuid: fca3155b-d696-4024-bd02-e9d3463795c4
+      uuid: a7506870-36b0-4c79-b12f-43c6f7e310c9
       component_id: sdc.byte_theme.hero-billboard
       inputs:
         height: full
@@ -49,37 +29,59 @@ default:
         overlay_opacity: 40%
         object_position: bottom
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: 545fe2b5-1b24-4cc8-bdba-8f8f3c54baa2
-            target_type: media
+          sourceType: default-relative-url
+          value:
+            src: assets/hero-image.jpg
+            alt: 'Blue-green graphic with a gradient effect'
+            width: 1920
+            height: 1056
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.hero-billboard
         overlap_navbar: true
     -
-      parent_uuid: fca3155b-d696-4024-bd02-e9d3463795c4
+      parent_uuid: a7506870-36b0-4c79-b12f-43c6f7e310c9
       slot: hero_slot
-      uuid: 317843ea-7b60-46dd-b5b7-4900bbb030f0
+      uuid: 1fff2f4f-6a79-444d-8123-3c05507f180e
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
-        flex_gap: lg
+        flex_gap: md
         items_align: start
         flex_align: center
-        radius: xl
-        padding: md
+        radius: sm
+        padding: sm
     -
-      parent_uuid: 317843ea-7b60-46dd-b5b7-4900bbb030f0
+      parent_uuid: 1fff2f4f-6a79-444d-8123-3c05507f180e
       slot: group_slot
-      uuid: da216e4c-e60a-45c0-95ea-5611160f6f5c
+      uuid: e345b38d-d53b-4d3c-a7a5-07a402a632f1
       component_id: sdc.byte_theme.heading
       inputs:
         heading_text: 'Integrated Business Travel Management'
         level: 1
-        text_size: heading-responsive-6xl
+        text_size: heading-responsive-7xl
         text_color: default
         align: left
     -
-      parent_uuid: 317843ea-7b60-46dd-b5b7-4900bbb030f0
+      parent_uuid: 1fff2f4f-6a79-444d-8123-3c05507f180e
       slot: group_slot
-      uuid: 046b4e32-1d34-4dfe-87a8-d56ac083276d
+      uuid: acfac769-3f02-43f4-8245-918cf0932431
       component_id: sdc.byte_theme.text
       inputs:
         text:
@@ -88,21 +90,18 @@ default:
         text_size: text-lg
         text_color: default
     -
-      parent_uuid: 317843ea-7b60-46dd-b5b7-4900bbb030f0
+      parent_uuid: 1fff2f4f-6a79-444d-8123-3c05507f180e
       slot: group_slot
-      uuid: 28d4816c-0eb8-4ecd-bc4a-eb6f4cfb8602
+      uuid: 66f25530-1551-4ed1-aa53-0da728aafd5f
       component_id: sdc.byte_theme.button
       inputs:
-        variant: secondary
+        variant: primary
         label: 'Download Travel Guide'
-        size: medium
+        href: 'https://example.com'
+        size: large
         icon: download
-        icon_first: false
-        disabled: false
-        mobile_width: false
-        href: '#'
     -
-      uuid: d836d576-4b08-4a83-9b47-ca4e4fc10397
+      uuid: 21fcdc68-9117-44a9-99a2-5cf93ebb8c60
       component_id: sdc.byte_theme.section
       inputs:
         width: 100%
@@ -115,24 +114,26 @@ default:
         section_header: true
         section_footer: false
     -
-      parent_uuid: d836d576-4b08-4a83-9b47-ca4e4fc10397
+      parent_uuid: 21fcdc68-9117-44a9-99a2-5cf93ebb8c60
       slot: header_slot
-      uuid: e7490369-0e47-435f-86a1-5482489ef614
+      uuid: d3dbc207-2d9a-4bd2-9088-ff13fa853ecc
       component_id: sdc.byte_theme.heading
       inputs:
         heading_text: 'Travel expenses, handled from booking to close'
         level: 2
-        text_size: heading-responsive-4xl
+        text_size: heading-responsive-5xl
         text_color: default
-        align: left
+        align: center
     -
-      parent_uuid: d836d576-4b08-4a83-9b47-ca4e4fc10397
+      parent_uuid: 21fcdc68-9117-44a9-99a2-5cf93ebb8c60
       slot: main_slot
-      uuid: eb180bea-e3a0-4b03-871f-62a8194ad1ab
+      uuid: 190d3ae9-c647-44f7-b07c-7f3b107a0add
       component_id: sdc.byte_theme.card-icon
       inputs:
+        tile_size: square
+        background_color: muted
         border_radius: large
-        icon: shield
+        icon: shield-check
         icon_size: extra-large
         icon_align: center
         text: 'Book anywhere, stay in policy'
@@ -140,31 +141,33 @@ default:
           value: '<p>Employees book through preferred platforms with DropPay. Policies are enforced at booking, not three weeks later.</p>'
           format: canvas_html_block
         text_align: center
-        background_color: muted
     -
-      parent_uuid: d836d576-4b08-4a83-9b47-ca4e4fc10397
+      parent_uuid: 21fcdc68-9117-44a9-99a2-5cf93ebb8c60
       slot: main_slot
-      uuid: 1010f521-07fc-4f4d-a565-8080a100f9a4
+      uuid: 48fb3de8-c4da-44e1-8e3c-e88c386998ac
       component_id: sdc.byte_theme.card-icon
       inputs:
+        tile_size: square
+        background_color: muted
         border_radius: large
-        icon: rocket
+        icon: credit-card
         icon_size: extra-large
         icon_align: center
-        text: ' Trip-specific virtual cards'
+        text: 'Trip-specific virtual cards'
         description:
           value: '<p>Every trip gets its own card with a pre-set limit. When the trip ends, the card freezes automatically.</p>'
           format: canvas_html_block
         text_align: center
-        background_color: muted
     -
-      parent_uuid: d836d576-4b08-4a83-9b47-ca4e4fc10397
+      parent_uuid: 21fcdc68-9117-44a9-99a2-5cf93ebb8c60
       slot: main_slot
-      uuid: f921cc40-e16a-44e0-abcb-6e7490800d2a
+      uuid: 0cff5c73-e0ef-4504-b7d9-07a63d1e778c
       component_id: sdc.byte_theme.card-icon
       inputs:
+        tile_size: square
+        background_color: muted
         border_radius: large
-        icon: rocket
+        icon: receipt
         icon_size: extra-large
         icon_align: center
         text: 'Receipts captured on the go'
@@ -172,15 +175,16 @@ default:
           value: '<p>Snap a photo or forward an email. FinDrop matches receipts to transactions automatically. No shoebox after the trip.</p>'
           format: canvas_html_block
         text_align: center
-        background_color: muted
     -
-      parent_uuid: d836d576-4b08-4a83-9b47-ca4e4fc10397
+      parent_uuid: 21fcdc68-9117-44a9-99a2-5cf93ebb8c60
       slot: main_slot
-      uuid: ea3382c1-daf2-407c-8658-da31175f9457
+      uuid: 2e9811d0-da79-4cfd-b682-22f6e9c1ff5d
       component_id: sdc.byte_theme.card-icon
       inputs:
+        tile_size: square
+        background_color: muted
         border_radius: large
-        icon: briefcase
+        icon: currency-circle-dollar
         icon_size: extra-large
         icon_align: center
         text: 'Reimburse employees anywhere, fast'
@@ -188,172 +192,11 @@ default:
           value: '<p>Reimburse in local currencies with exchange rates locked at the time of transaction. No manual conversion.</p>'
           format: canvas_html_block
         text_align: center
-        background_color: muted
     -
-      uuid: cbea2776-05a6-4911-9aed-c1ca1b2f215a
+      uuid: c6f786fb-66ab-42da-b5ce-e8104ffbcf38
       component_id: sdc.byte_theme.section
       inputs:
-        width: 75%
-        columns: 50-50
-        mobile_columns: '1'
-        margin_block_start: '128'
-        margin_block_end: '96'
-        padding_block_start: '0'
-        padding_block_end: '0'
-        section_header: false
-        section_footer: false
-    -
-      parent_uuid: cbea2776-05a6-4911-9aed-c1ca1b2f215a
-      slot: main_slot
-      uuid: 495b8cf4-e6df-45cc-83e3-88ab511f6bae
-      component_id: sdc.byte_theme.group
-      inputs:
-        flex_direction: column
-        flex_gap: md
-        items_align: start
-        flex_align: center
-        radius: lg
-    -
-      parent_uuid: 495b8cf4-e6df-45cc-83e3-88ab511f6bae
-      slot: group_slot
-      uuid: 8c79178e-9abd-4827-a2d5-3f1b1675a890
-      component_id: sdc.byte_theme.image
-      inputs:
-        media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: 99b0f7dc-591c-4781-95ff-24b8705eaa85
-            target_type: media
-        radius: extra-large
-    -
-      parent_uuid: cbea2776-05a6-4911-9aed-c1ca1b2f215a
-      slot: main_slot
-      uuid: 021015b6-023f-4feb-b21f-43266042bb58
-      component_id: sdc.byte_theme.group
-      inputs:
-        flex_direction: column
-        flex_gap: md
-        items_align: start
-        flex_align: center
-        radius: sm
-        padding: sm
-    -
-      parent_uuid: 021015b6-023f-4feb-b21f-43266042bb58
-      slot: group_slot
-      uuid: fea7f0bb-ed81-4adf-8e25-98fc651e910e
-      component_id: sdc.byte_theme.text
-      inputs:
-        text:
-          value: '<p>POLICY ENFORCEMENT</p>'
-          format: canvas_html_block
-        text_size: text-sm
-        text_color: default
-    -
-      parent_uuid: 021015b6-023f-4feb-b21f-43266042bb58
-      slot: group_slot
-      uuid: e1a389ee-19e6-410c-9a4e-007a69baa743
-      component_id: sdc.byte_theme.heading
-      inputs:
-        heading_text: 'Enforce policies at booking, not after the trip'
-        level: 2
-        text_size: heading-responsive-3xl
-        text_color: default
-        align: left
-    -
-      parent_uuid: 021015b6-023f-4feb-b21f-43266042bb58
-      slot: group_slot
-      uuid: ae6e87cb-f48c-4a45-bec9-9a19e8205cee
-      component_id: sdc.byte_theme.text
-      inputs:
-        text:
-          value: "<p>When an employee books through a DropPay-connected platform, FinDrop checks the booking against your travel policy in real time. Hotel rate exceeds the per-night cap? Flagged before it's confirmed. Policies are configurable by destination, department, seniority, or trip purpose, so a sales team closing a deal has different allowances than an engineering team at a conference.</p>"
-          format: canvas_html_block
-        text_size: normal
-        text_color: default
-    -
-      uuid: 924bbf86-e8c4-4a17-bfe5-d67d797e2a77
-      component_id: sdc.byte_theme.section
-      inputs:
-        width: 75%
-        columns: 50-50
-        mobile_columns: '1'
-        margin_block_start: '96'
-        margin_block_end: '96'
-        padding_block_start: '0'
-        padding_block_end: '0'
-        section_header: false
-        section_footer: false
-    -
-      parent_uuid: 924bbf86-e8c4-4a17-bfe5-d67d797e2a77
-      slot: main_slot
-      uuid: 2f1696d9-f72f-4653-a105-950b57a36b2c
-      component_id: sdc.byte_theme.group
-      inputs:
-        flex_direction: column
-        flex_gap: md
-        items_align: start
-        flex_align: center
-        radius: sm
-        padding: sm
-    -
-      parent_uuid: 2f1696d9-f72f-4653-a105-950b57a36b2c
-      slot: group_slot
-      uuid: 9b17cafe-951f-4f38-bae9-9a5cff61228f
-      component_id: sdc.byte_theme.text
-      inputs:
-        text:
-          value: '<p>VIRTUAL CARDS</p>'
-          format: canvas_html_block
-        text_size: text-sm
-        text_color: default
-    -
-      parent_uuid: 2f1696d9-f72f-4653-a105-950b57a36b2c
-      slot: group_slot
-      uuid: b3261b94-17c5-4fe2-b3d3-827e590cbd7f
-      component_id: sdc.byte_theme.heading
-      inputs:
-        heading_text: 'One card per trip. Zero reconciliation headaches.'
-        level: 2
-        text_size: heading-responsive-3xl
-        text_color: default
-        align: left
-    -
-      parent_uuid: 2f1696d9-f72f-4653-a105-950b57a36b2c
-      slot: group_slot
-      uuid: 73a0632b-934b-4de2-b2aa-121c35a754e6
-      component_id: sdc.byte_theme.text
-      inputs:
-        text:
-          value: '<p>FinDrop issues trip-specific virtual cards with pre-set spending limits. Every charge is automatically tagged to the right trip. When the trip is over, the card freezes. No lingering authorizations, no mystery charges weeks later. Reconciliation is straightforward because every charge on the card belongs to one trip.</p>'
-          format: canvas_html_block
-        text_size: normal
-        text_color: default
-    -
-      parent_uuid: 924bbf86-e8c4-4a17-bfe5-d67d797e2a77
-      slot: main_slot
-      uuid: be99f5ad-c1f4-4124-9605-6105b9194cbb
-      component_id: sdc.byte_theme.group
-      inputs:
-        flex_direction: column
-        flex_gap: md
-        items_align: start
-        flex_align: center
-        radius: lg
-    -
-      parent_uuid: be99f5ad-c1f4-4124-9605-6105b9194cbb
-      slot: group_slot
-      uuid: 132737e6-8084-4883-b5a4-c827c91fc44e
-      component_id: sdc.byte_theme.image
-      inputs:
-        media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: 92565f8e-d1cb-46e2-a6dc-0084cc6b4c0d
-            target_type: media
-        radius: extra-large
-    -
-      uuid: b008a354-2753-4848-a891-b2915c8dcd4e
-      component_id: sdc.byte_theme.section
-      inputs:
-        width: 75%
+        width: 100%
         columns: 50-50
         mobile_columns: '1'
         margin_block_start: '128'
@@ -363,20 +206,21 @@ default:
         section_header: false
         section_footer: false
     -
-      parent_uuid: b008a354-2753-4848-a891-b2915c8dcd4e
+      parent_uuid: c6f786fb-66ab-42da-b5ce-e8104ffbcf38
       slot: main_slot
-      uuid: 4ccf9e43-7c99-4eb7-8991-a8dcd5649087
+      uuid: ae22ca4e-348b-4f2b-9d0d-72bd2b24fa57
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
         flex_gap: md
         items_align: start
         flex_align: center
-        radius: xl
+        radius: lg
+        padding: sm
     -
-      parent_uuid: 4ccf9e43-7c99-4eb7-8991-a8dcd5649087
+      parent_uuid: ae22ca4e-348b-4f2b-9d0d-72bd2b24fa57
       slot: group_slot
-      uuid: 0f9c5693-71a9-4128-a766-951202f75ad3
+      uuid: eef58e56-e722-4a2e-91ee-b902fcacb644
       component_id: sdc.byte_theme.image
       inputs:
         media:
@@ -405,11 +249,12 @@ default:
             required:
               - src
           componentId: sdc.byte_theme.image
-        radius: extra-large
+        size: '4:3'
+        radius: large
     -
-      parent_uuid: b008a354-2753-4848-a891-b2915c8dcd4e
+      parent_uuid: c6f786fb-66ab-42da-b5ce-e8104ffbcf38
       slot: main_slot
-      uuid: 22ddbdb8-fae0-41c1-a3d6-85efc8a00b1c
+      uuid: 263ba3df-a575-4d8a-b581-56cbf51a3e5e
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
@@ -419,40 +264,155 @@ default:
         radius: sm
         padding: sm
     -
-      parent_uuid: 22ddbdb8-fae0-41c1-a3d6-85efc8a00b1c
+      parent_uuid: 263ba3df-a575-4d8a-b581-56cbf51a3e5e
       slot: group_slot
-      uuid: 808838a4-850d-4825-8378-f0ca773e48d6
+      uuid: 157088a9-1cc3-423a-806d-099bae1c3d91
       component_id: sdc.byte_theme.text
       inputs:
         text:
-          value: '<p>COPILOT</p>'
+          value: '<p>POLICY ENFORCEMENT</p>'
           format: canvas_html_block
         text_size: text-sm
-        text_color: default
+        text_color: primary
     -
-      parent_uuid: 22ddbdb8-fae0-41c1-a3d6-85efc8a00b1c
+      parent_uuid: 263ba3df-a575-4d8a-b581-56cbf51a3e5e
       slot: group_slot
-      uuid: d7ee24e6-6b5f-4083-9b15-4a842a4f1bce
+      uuid: 4cabf4b5-39d8-4332-bc7d-e8499183e1b1
       component_id: sdc.byte_theme.heading
       inputs:
-        heading_text: "Your travelers' policy questions, answered instantly"
+        heading_text: 'Enforce policies at booking, not after the trip'
         level: 2
-        text_size: heading-responsive-3xl
+        text_size: heading-responsive-4xl
         text_color: default
         align: left
     -
-      parent_uuid: 22ddbdb8-fae0-41c1-a3d6-85efc8a00b1c
+      parent_uuid: 263ba3df-a575-4d8a-b581-56cbf51a3e5e
       slot: group_slot
-      uuid: a86d8db2-ee75-430d-b1c5-d81598047eee
+      uuid: fb4db42b-8742-43b3-b8dd-55a47beea724
       component_id: sdc.byte_theme.text
       inputs:
         text:
-          value: '<p>FinDrop Copilot handles the busywork so employees don''t have to. "What''s our hotel budget for Chicago?" "Can I upgrade to business class?" Copilot answers in natural language based on your actual policies, not a help article from 2019. Especially valuable for international travel, where per diems and rules vary by destination.</p>'
+          value: "<p>When an employee books through a DropPay-connected platform, FinDrop checks the booking against your travel policy in real time. Hotel rate exceeds the per-night cap? Flagged before it's confirmed. Policies are configurable by destination, department, seniority, or trip purpose, so a sales team closing a deal has different allowances than an engineering team at a conference.</p>"
           format: canvas_html_block
         text_size: normal
         text_color: default
     -
-      uuid: 546fd8e8-d559-4d37-bb59-24cc772bc020
+      uuid: ab1b2a6d-b433-4438-982f-a17d9f76d33a
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 100%
+        columns: 50-50
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: false
+        section_footer: false
+    -
+      parent_uuid: ab1b2a6d-b433-4438-982f-a17d9f76d33a
+      slot: main_slot
+      uuid: 1afd9d82-3130-4c71-a5ba-67b880004832
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: center
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: 1afd9d82-3130-4c71-a5ba-67b880004832
+      slot: group_slot
+      uuid: 13113780-3c8f-4f39-beb6-a5a02d9a94e4
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>VIRTUAL CARDS</p>'
+          format: canvas_html_block
+        text_size: text-sm
+        text_color: primary
+    -
+      parent_uuid: 1afd9d82-3130-4c71-a5ba-67b880004832
+      slot: group_slot
+      uuid: 36958b7a-aa30-4e62-aea7-75848905d77b
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'One card per trip. Zero reconciliation headaches.'
+        level: 2
+        text_size: heading-responsive-4xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: 1afd9d82-3130-4c71-a5ba-67b880004832
+      slot: group_slot
+      uuid: 2b2e1d73-aaf2-486b-9a87-d73240be7526
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>FinDrop issues trip-specific virtual cards with pre-set spending limits. Every charge is automatically tagged to the right trip. When the trip is over, the card freezes. No lingering authorizations, no mystery charges weeks later. Reconciliation is straightforward because every charge on the card belongs to one trip.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 1afd9d82-3130-4c71-a5ba-67b880004832
+      slot: group_slot
+      uuid: 9013abf7-ee07-4ec2-946d-0bb29bfeea1b
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: secondary
+        label: 'Virtual credit cards'
+        href: 'https://example.com'
+        size: medium
+        icon: arrow-right
+    -
+      parent_uuid: ab1b2a6d-b433-4438-982f-a17d9f76d33a
+      slot: main_slot
+      uuid: 8cef2b72-29b4-44c9-8b24-28bc1192cea3
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: center
+        radius: lg
+        padding: sm
+    -
+      parent_uuid: 8cef2b72-29b4-44c9-8b24-28bc1192cea3
+      slot: group_slot
+      uuid: 7bcb7dd7-8880-4f6a-8e41-eaf06bcc90f8
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          sourceType: default-relative-url
+          value:
+            src: assets/pexels-felix-mittermeier-1209650.jpg
+            alt: 'Photo by Felix Mittermeier: https://www.pexels.com/photo/atmospheric-evening-bavaria-beautiful-clouds-1209650/'
+            width: 1920
+            height: 1014
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.image
+        size: '4:3'
+        radius: large
+    -
+      uuid: 60555380-43b2-4f38-bce0-1baec6706187
       component_id: sdc.byte_theme.section
       inputs:
         width: 100%
@@ -462,28 +422,155 @@ default:
         margin_block_end: '128'
         padding_block_start: '64'
         padding_block_end: '64'
+        background_color: accent
         section_header: false
         section_footer: false
-        background_color: muted
     -
-      parent_uuid: 546fd8e8-d559-4d37-bb59-24cc772bc020
+      parent_uuid: 60555380-43b2-4f38-bce0-1baec6706187
       slot: main_slot
-      uuid: 9d3a6e63-622f-420e-8ab6-72678477fe1c
+      uuid: 05003c36-9226-48d1-87ab-3b6b81cef6cf
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: center
+        radius: lg
+        padding: sm
+    -
+      parent_uuid: 05003c36-9226-48d1-87ab-3b6b81cef6cf
+      slot: group_slot
+      uuid: a4231226-465b-43cb-9a08-1bd16d04e7d5
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          sourceType: default-relative-url
+          value:
+            src: assets/pexels-felix-mittermeier-1209650.jpg
+            alt: 'Photo by Felix Mittermeier: https://www.pexels.com/photo/atmospheric-evening-bavaria-beautiful-clouds-1209650/'
+            width: 1920
+            height: 1014
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.image
+        size: '4:3'
+        radius: large
+    -
+      parent_uuid: 60555380-43b2-4f38-bce0-1baec6706187
+      slot: main_slot
+      uuid: a1d283fc-27c6-40c1-8b53-5205b8f7a5db
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: center
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: a1d283fc-27c6-40c1-8b53-5205b8f7a5db
+      slot: group_slot
+      uuid: c6e34ada-1a6a-4286-afbd-0ced8e4e4dd5
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>COPILOT</p>'
+          format: canvas_html_block
+        text_size: text-sm
+        text_color: primary
+    -
+      parent_uuid: a1d283fc-27c6-40c1-8b53-5205b8f7a5db
+      slot: group_slot
+      uuid: 8eef6441-3686-462f-bf06-d6586379e8d4
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: "Your travelers' policy questions, answered instantly"
+        level: 2
+        text_size: heading-responsive-4xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: a1d283fc-27c6-40c1-8b53-5205b8f7a5db
+      slot: group_slot
+      uuid: 31af4e7a-affd-42fe-adeb-dce2152711b3
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>FinDrop Copilot handles the busywork so employees don''t have to. "What''s our hotel budget for Chicago?" "Can I upgrade to business class?" Copilot answers in natural language based on your actual policies, not a help article from 2019. Especially valuable for international travel, where per diems and rules vary by destination.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      uuid: c0edf46c-8eb0-4cf4-912b-2dcce3af1a40
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 100%
+        columns: 50-50
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '64'
+        padding_block_end: '64'
+        background_color: muted
+        section_header: false
+        section_footer: false
+    -
+      parent_uuid: c0edf46c-8eb0-4cf4-912b-2dcce3af1a40
+      slot: main_slot
+      uuid: 46ded162-709a-4e77-976e-4166603ddbd8
       component_id: sdc.byte_theme.card-testimonial
       inputs:
         text: 'We used to find out about out-of-policy bookings when the expense report showed up, weeks after the trip. With FinDrop, the policy is enforced at booking. My team reviews exceptions, not every transaction.'
         cite_name: 'Kathryn Smith'
-        cite_text: 'Director of Travel Operations, Ridgeline Brands'
+        cite_text: 'Director of Travel Operations, Ridgeline'
         align: center
         style: inverted
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: 61a7dc42-4197-4d76-9170-202ae5915eb9
-            target_type: media
+          sourceType: default-relative-url
+          value:
+            src: assets/portrait.png
+            alt: Placeholder
+            width: 100
+            height: 100
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.card-testimonial
     -
-      parent_uuid: 546fd8e8-d559-4d37-bb59-24cc772bc020
+      parent_uuid: c0edf46c-8eb0-4cf4-912b-2dcce3af1a40
       slot: main_slot
-      uuid: 49d919bc-a965-4204-8ceb-6e68a82920e5
+      uuid: 7fd40147-7eb8-4827-9d86-4415634809dd
       component_id: sdc.byte_theme.card-testimonial
       inputs:
         text: "Our team travels across 14 countries. Before FinDrop, international reimbursements took two to three weeks and someone had to manually convert currencies. Now it's automatic. Employees get paid in their local currency within days."
@@ -492,11 +579,33 @@ default:
         align: center
         style: inverted
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: 25710933-f157-4ee6-a95c-28a4c256ea96
-            target_type: media
+          sourceType: default-relative-url
+          value:
+            src: assets/portrait.png
+            alt: Placeholder
+            width: 100
+            height: 100
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.card-testimonial
     -
-      uuid: 49763462-e9ea-4182-b5bf-6966552b1089
+      uuid: 39b6829d-046a-413c-b461-e96b3804138a
       component_id: sdc.byte_theme.section
       inputs:
         width: 100%
@@ -509,20 +618,20 @@ default:
         section_header: true
         section_footer: false
     -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
+      parent_uuid: 39b6829d-046a-413c-b461-e96b3804138a
       slot: header_slot
-      uuid: dbbbe1f4-202b-40a3-b923-f8baa56304cb
+      uuid: fbacf669-9273-4adb-8f61-7e5e8b8c8ab8
       component_id: sdc.byte_theme.heading
       inputs:
         heading_text: 'Learn How We Make Travel Expense Management Easy'
         level: 2
-        text_size: heading-responsive-4xl
+        text_size: heading-responsive-5xl
         text_color: default
-        align: left
+        align: center
     -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
+      parent_uuid: 39b6829d-046a-413c-b461-e96b3804138a
       slot: main_slot
-      uuid: 305e2539-8a39-4489-a091-7e872c9edac0
+      uuid: 67dcae30-6019-4f01-b2af-d30fcd1ecc05
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
@@ -532,9 +641,9 @@ default:
         radius: sm
         padding: sm
     -
-      parent_uuid: 305e2539-8a39-4489-a091-7e872c9edac0
+      parent_uuid: 67dcae30-6019-4f01-b2af-d30fcd1ecc05
       slot: group_slot
-      uuid: f2c316a2-aae9-4bed-845b-cb00288d887f
+      uuid: fca3ee8d-81de-4547-9e1d-f22f0b91e583
       component_id: sdc.byte_theme.heading
       inputs:
         heading_text: 'Booking flexibility across platforms'
@@ -543,20 +652,20 @@ default:
         text_color: default
         align: left
     -
-      parent_uuid: 305e2539-8a39-4489-a091-7e872c9edac0
+      parent_uuid: 67dcae30-6019-4f01-b2af-d30fcd1ecc05
       slot: group_slot
-      uuid: 5e5201e6-97d3-43ca-9e56-fa76c82e3ac0
+      uuid: f13e1323-780a-4cf7-994d-68d83bc933bd
       component_id: sdc.byte_theme.text
       inputs:
         text:
-          value: '<p>FinDrop works with DropPay-connected booking platforms, so employees can keep using familiar tools. Travel policies are enforced at the point of booking—no matter which connected platform they choose.</p>'
+          value: '<p>FinDrop works with DropPay-connected booking platforms, so employees can keep using familiar tools. Travel policies are enforced at the point of booking — no matter which connected platform they choose.</p>'
           format: canvas_html_block
         text_size: text-lg
         text_color: default
     -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
+      parent_uuid: 39b6829d-046a-413c-b461-e96b3804138a
       slot: main_slot
-      uuid: 7ddd65f2-6a15-4972-9151-717285d414ad
+      uuid: 4502eea5-d2d0-41a0-9c6b-5c0dcb163fb1
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
@@ -566,20 +675,20 @@ default:
         radius: sm
         padding: sm
     -
-      parent_uuid: 7ddd65f2-6a15-4972-9151-717285d414ad
+      parent_uuid: 4502eea5-d2d0-41a0-9c6b-5c0dcb163fb1
       slot: group_slot
-      uuid: 69c328d2-fda5-4520-acd9-03fad6edb95c
+      uuid: 724367bd-bc86-4893-a62d-12e3fb7afd1c
       component_id: sdc.byte_theme.heading
       inputs:
-        heading_text: 'Real-time policy enforcement'
+        heading_text: 'Live policy enforcement'
         level: 3
         text_size: heading-responsive-3xl
         text_color: default
         align: left
     -
-      parent_uuid: 7ddd65f2-6a15-4972-9151-717285d414ad
+      parent_uuid: 4502eea5-d2d0-41a0-9c6b-5c0dcb163fb1
       slot: group_slot
-      uuid: 26e9dd3e-bac0-4276-b124-7b610f92f205
+      uuid: d25b9641-305d-479d-9846-4a90810a60d9
       component_id: sdc.byte_theme.text
       inputs:
         text:
@@ -588,9 +697,9 @@ default:
         text_size: text-lg
         text_color: default
     -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
+      parent_uuid: 39b6829d-046a-413c-b461-e96b3804138a
       slot: main_slot
-      uuid: 951a630d-92dc-4852-8bd8-094a4e9b815e
+      uuid: f782e974-3fd2-4d9e-9ec6-4af580fe310b
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
@@ -600,9 +709,9 @@ default:
         radius: sm
         padding: sm
     -
-      parent_uuid: 951a630d-92dc-4852-8bd8-094a4e9b815e
+      parent_uuid: f782e974-3fd2-4d9e-9ec6-4af580fe310b
       slot: group_slot
-      uuid: 380db530-ff1a-4e76-b02d-93c5338035bf
+      uuid: ee869fff-4fbf-407d-8b5b-8bd25ea60859
       component_id: sdc.byte_theme.heading
       inputs:
         heading_text: 'Compatibility with existing booking tools'
@@ -611,20 +720,20 @@ default:
         text_color: default
         align: left
     -
-      parent_uuid: 951a630d-92dc-4852-8bd8-094a4e9b815e
+      parent_uuid: f782e974-3fd2-4d9e-9ec6-4af580fe310b
       slot: group_slot
-      uuid: 76a2500d-b861-40b5-8c9e-efa7a692489b
+      uuid: 6bb6198d-5837-4b80-990d-3ae59018d287
       component_id: sdc.byte_theme.text
       inputs:
         text:
-          value: '<p>FinDrop layers on top of your current travel booking workflow through DropPay integrations. You don’t need to replace tools—FinDrop adds policy controls, receipt capture, and automated expense reporting.</p>'
+          value: "<p>FinDrop layers on top of your current travel booking workflow through DropPay integrations. You don't need to replace tools — FinDrop adds policy controls, receipt capture, and automated expense reporting.</p>"
           format: canvas_html_block
         text_size: text-lg
         text_color: default
     -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
+      parent_uuid: 39b6829d-046a-413c-b461-e96b3804138a
       slot: main_slot
-      uuid: c128b4de-2484-455b-829a-879746570b77
+      uuid: 9b1f3e6f-7a73-4487-88f6-f434e08ed922
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
@@ -634,9 +743,9 @@ default:
         radius: sm
         padding: sm
     -
-      parent_uuid: c128b4de-2484-455b-829a-879746570b77
+      parent_uuid: 9b1f3e6f-7a73-4487-88f6-f434e08ed922
       slot: group_slot
-      uuid: 86b2e2da-6db3-45ae-a42e-12a31c827be7
+      uuid: b91bf010-3f7a-4bf1-9108-fda58addf2b7
       component_id: sdc.byte_theme.heading
       inputs:
         heading_text: 'International travel readiness'
@@ -645,9 +754,9 @@ default:
         text_color: default
         align: left
     -
-      parent_uuid: c128b4de-2484-455b-829a-879746570b77
+      parent_uuid: 9b1f3e6f-7a73-4487-88f6-f434e08ed922
       slot: group_slot
-      uuid: cd3f5c80-f472-4143-8ec6-2c17566be581
+      uuid: 6d153b7a-1378-4fbd-8501-2189bc622d4c
       component_id: sdc.byte_theme.text
       inputs:
         text:
@@ -656,9 +765,9 @@ default:
         text_size: text-lg
         text_color: default
     -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
+      parent_uuid: 39b6829d-046a-413c-b461-e96b3804138a
       slot: main_slot
-      uuid: eba6ad78-bd4e-45d3-b4b5-87dce17411a5
+      uuid: 27dc4ee5-ba82-43be-b5d5-bf600cc9eff5
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
@@ -668,9 +777,9 @@ default:
         radius: sm
         padding: sm
     -
-      parent_uuid: eba6ad78-bd4e-45d3-b4b5-87dce17411a5
+      parent_uuid: 27dc4ee5-ba82-43be-b5d5-bf600cc9eff5
       slot: group_slot
-      uuid: 6d969db9-0d8f-43ce-8326-34ecd3074406
+      uuid: bc32bb8c-1e47-43e9-a9df-4ac8062bf899
       component_id: sdc.byte_theme.heading
       inputs:
         heading_text: 'Automatic trip card closure after travel'
@@ -679,9 +788,9 @@ default:
         text_color: default
         align: left
     -
-      parent_uuid: eba6ad78-bd4e-45d3-b4b5-87dce17411a5
+      parent_uuid: 27dc4ee5-ba82-43be-b5d5-bf600cc9eff5
       slot: group_slot
-      uuid: e370852e-120b-4ec9-b93f-845aa6382c1a
+      uuid: a7febb4c-83e6-4b93-9079-a4c962aae140
       component_id: sdc.byte_theme.text
       inputs:
         text:
@@ -690,9 +799,9 @@ default:
         text_size: text-lg
         text_color: default
     -
-      parent_uuid: 49763462-e9ea-4182-b5bf-6966552b1089
+      parent_uuid: 39b6829d-046a-413c-b461-e96b3804138a
       slot: main_slot
-      uuid: 4e24c245-87a2-4c48-b096-243ef0252d97
+      uuid: 0623da0d-77b1-4faa-91f5-e3aef415b9bb
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
@@ -702,9 +811,9 @@ default:
         radius: sm
         padding: sm
     -
-      parent_uuid: 4e24c245-87a2-4c48-b096-243ef0252d97
+      parent_uuid: 0623da0d-77b1-4faa-91f5-e3aef415b9bb
       slot: group_slot
-      uuid: e6c60477-0784-4e7d-b814-f22a8869d704
+      uuid: 3289fcc1-d3b2-4494-9534-6e939584773d
       component_id: sdc.byte_theme.heading
       inputs:
         heading_text: 'Unified reporting across FinDrop products'
@@ -713,9 +822,9 @@ default:
         text_color: default
         align: left
     -
-      parent_uuid: 4e24c245-87a2-4c48-b096-243ef0252d97
+      parent_uuid: 0623da0d-77b1-4faa-91f5-e3aef415b9bb
       slot: group_slot
-      uuid: b82a918c-33bd-4d59-9c26-07023ecd9220
+      uuid: c8be1b91-afbc-4ad6-8580-a7a0f7aa02ac
       component_id: sdc.byte_theme.text
       inputs:
         text:
@@ -724,7 +833,7 @@ default:
         text_size: text-lg
         text_color: default
     -
-      uuid: 360cbedb-1bad-416c-8c25-c807f3a2bcd4
+      uuid: dce8e888-2f89-46bb-9d3e-18d99cda7b39
       component_id: sdc.byte_theme.section
       inputs:
         width: 100%
@@ -737,9 +846,9 @@ default:
         section_header: false
         section_footer: false
     -
-      parent_uuid: 360cbedb-1bad-416c-8c25-c807f3a2bcd4
+      parent_uuid: dce8e888-2f89-46bb-9d3e-18d99cda7b39
       slot: main_slot
-      uuid: 01369d14-eb03-43aa-adce-2e8f0d463b51
+      uuid: 8a6e19ef-9379-4c96-baa0-595c96584a03
       component_id: sdc.byte_theme.card
       inputs:
         background: default
@@ -747,16 +856,39 @@ default:
         orientation: vertical
         heading_text: 'Virtual credit cards'
         level: 3
+        url: 'https://example.com'
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: bef8f74c-852b-4eed-984e-4bc2a75e8bd3
-            target_type: media
+          sourceType: default-relative-url
+          value:
+            src: assets/jj-ying-8bghKxNU1j0-unsplash.jpg
+            width: 1200
+            height: 900
+            alt: 'Photo by jjying: https://unsplash.com/photos/purple-and-blue-light-digital-wallpaper-8bghKxNU1j0'
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.card
         text: 'Create virtual cards in seconds with custom spending limits for every vendor, project, or subscription. Built-in controls at the card level.'
         is_text_centered: false
     -
-      parent_uuid: 360cbedb-1bad-416c-8c25-c807f3a2bcd4
+      parent_uuid: dce8e888-2f89-46bb-9d3e-18d99cda7b39
       slot: main_slot
-      uuid: 62a42f2b-ea25-42e7-b34d-a12633f56ab5
+      uuid: 7ea7b5de-9107-4fe5-b6c4-89d7ca736237
       component_id: sdc.byte_theme.card
       inputs:
         background: default
@@ -764,16 +896,39 @@ default:
         orientation: vertical
         heading_text: 'Expense management'
         level: 3
+        url: 'https://example.com'
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: 5005f597-1a87-4847-8d7d-76a9ef868fa2
-            target_type: media
+          sourceType: default-relative-url
+          value:
+            src: assets/jj-ying-8bghKxNU1j0-unsplash.jpg
+            width: 1200
+            height: 900
+            alt: 'Photo by jjying: https://unsplash.com/photos/purple-and-blue-light-digital-wallpaper-8bghKxNU1j0'
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.card
         text: 'Automatic receipt capture, policy enforcement, and GL coding. Expense reports do themselves.'
         is_text_centered: false
     -
-      parent_uuid: 360cbedb-1bad-416c-8c25-c807f3a2bcd4
+      parent_uuid: dce8e888-2f89-46bb-9d3e-18d99cda7b39
       slot: main_slot
-      uuid: a7cb7038-eeef-4d61-aadc-2ef36037e040
+      uuid: 7ca1c4c7-5c1c-4b3f-8965-c201dd08f109
       component_id: sdc.byte_theme.card
       inputs:
         background: default
@@ -781,14 +936,37 @@ default:
         orientation: vertical
         heading_text: Integrations
         level: 3
+        url: 'https://example.com'
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: 0877ac26-4545-4e19-aa1c-c275dc509af2
-            target_type: media
-        text: 'Two-way sync with QuickBooks, NetSuite, and 50+ ERPs. Travel data flows into the same SmartBudgets™ dashboards as all other FinDrop spend'
+          sourceType: default-relative-url
+          value:
+            src: assets/jj-ying-8bghKxNU1j0-unsplash.jpg
+            width: 1200
+            height: 900
+            alt: 'Photo by jjying: https://unsplash.com/photos/purple-and-blue-light-digital-wallpaper-8bghKxNU1j0'
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.card
+        text: 'Two-way sync with QuickBooks, NetSuite, and 50+ ERPs. Travel data flows into the same SmartBudgets™ dashboards as all other FinDrop spend.'
         is_text_centered: false
     -
-      uuid: acbdce81-ace9-4bd9-9f48-0cf21f17eac0
+      uuid: b87e3db4-809b-48d4-950a-ac1d46cf31fe
       component_id: sdc.byte_theme.section
       inputs:
         width: 100%
@@ -802,9 +980,9 @@ default:
         section_header: false
         section_footer: false
     -
-      parent_uuid: acbdce81-ace9-4bd9-9f48-0cf21f17eac0
+      parent_uuid: b87e3db4-809b-48d4-950a-ac1d46cf31fe
       slot: main_slot
-      uuid: cbeacb4d-de7a-4cf5-ab4a-8cd7e3d44f15
+      uuid: 42df649a-c141-41bb-83e3-1512de325ca9
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
@@ -814,9 +992,9 @@ default:
         radius: sm
         padding: sm
     -
-      parent_uuid: cbeacb4d-de7a-4cf5-ab4a-8cd7e3d44f15
+      parent_uuid: 42df649a-c141-41bb-83e3-1512de325ca9
       slot: group_slot
-      uuid: 739df8a3-5e20-4dea-9f45-3abb03ed883a
+      uuid: 48c20b7b-ec14-41e4-9fe3-35f976cf87af
       component_id: sdc.byte_theme.heading
       inputs:
         heading_text: 'Take control of travel spend before the next trip'
@@ -825,56 +1003,88 @@ default:
         text_color: default
         align: left
     -
-      parent_uuid: cbeacb4d-de7a-4cf5-ab4a-8cd7e3d44f15
+      parent_uuid: 42df649a-c141-41bb-83e3-1512de325ca9
       slot: group_slot
-      uuid: af44dbe7-043a-4e1a-8d41-362b256c8bd3
+      uuid: 1573a379-7b7e-46ae-bf15-cd0f94f5836a
       component_id: sdc.byte_theme.text
       inputs:
         text:
           value: '<p>See how FinDrop automates travel expense management, from booking to reimbursement, in our latest whitepaper.</p>'
           format: canvas_html_block
-        text_size: normal
+        text_size: text-lg
         text_color: default
     -
-      parent_uuid: cbeacb4d-de7a-4cf5-ab4a-8cd7e3d44f15
+      parent_uuid: 42df649a-c141-41bb-83e3-1512de325ca9
       slot: group_slot
-      uuid: a16b7160-3c62-4309-8f35-ce70ae5de0b5
+      uuid: e2c56c9b-b8dc-4c57-932c-5bf56953fbe8
       component_id: sdc.byte_theme.button
       inputs:
         variant: primary
         label: 'Download the whitepaper'
+        href: 'https://example.com'
         size: medium
         icon: download
         mobile_width: false
         icon_first: false
-        disabled: false
     -
-      parent_uuid: acbdce81-ace9-4bd9-9f48-0cf21f17eac0
+      parent_uuid: b87e3db4-809b-48d4-950a-ac1d46cf31fe
       slot: main_slot
-      uuid: 148a4378-8e69-4e03-9f68-12414c190dc2
+      uuid: 2bbcd498-0cc4-4dfa-bafd-632b4d63591b
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: center
+        radius: lg
+        padding: sm
+    -
+      parent_uuid: 2bbcd498-0cc4-4dfa-bafd-632b4d63591b
+      slot: group_slot
+      uuid: 24572a6f-1000-461e-965c-7a9c973e6bc6
       component_id: sdc.byte_theme.image
       inputs:
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: 7b0171db-99c8-4a99-a5f3-e1a342b99325
-            target_type: media
-        radius: small
+          sourceType: default-relative-url
+          value:
+            src: assets/pexels-felix-mittermeier-1209650.jpg
+            alt: 'Photo by Felix Mittermeier: https://www.pexels.com/photo/atmospheric-evening-bavaria-beautiful-clouds-1209650/'
+            width: 1920
+            height: 1014
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.image
+        size: '4:3'
+        radius: large
     -
-      uuid: 46116ac5-451f-4203-9d98-4cbdc2a086c6
+      uuid: b38f0323-0c3e-4d93-8674-fd4605b5eecc
       component_id: sdc.byte_theme.text
       inputs:
         text:
-          value: '<p class="text-align-center">FinDrop is a financial technology company, not a bank. Banking services provided by Copperbell National Bank, N.A., Member FDIC.</p>'
+          value: '<p>FinDrop is a financial technology company, not a bank. Banking services provided by Copperbell National Bank, N.A., Member FDIC.</p>'
           format: canvas_html_block
         text_size: text-xs
         text_color: default
   path:
     -
-      alias: /travel-1-1
+      alias: /travel-2
       langcode: en
-  image:
-    -
-      entity: 590ef2bb-2e2d-4360-9444-ee4e4133e8f4
   revision_translation_affected:
     -
       value: true

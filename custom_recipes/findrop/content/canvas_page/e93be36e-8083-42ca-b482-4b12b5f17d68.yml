@@ -1,0 +1,770 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: e93be36e-8083-42ca-b482-4b12b5f17d68
+  default_langcode: en
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  owner:
+    -
+      target_id: 1
+  title:
+    -
+      value: Travel-2-1-ugly
+  description:
+    -
+      value: 'Help Travel & Operations Managers take control of travel expenses. Download our free whitepaper for expert strategies to streamline travel expense management.'
+  components:
+    -
+      uuid: 42890b1f-1eec-439b-bd72-60d3a9aaeabb
+      component_id: sdc.byte_theme.hero-side-by-side
+      inputs:
+        hero_flex_gap: large
+        hero_flex_direction_mobile: vertical
+        background: primary
+        padding_block_start: '64'
+        padding_block_end: '64'
+        image_size: '16:9'
+        image_position: right
+        image_radius: large
+        media:
+          sourceType: default-relative-url
+          value:
+            src: assets/hero-image.jpg
+            alt: 'Blue-green graphic with a gradient effect'
+            width: 1920
+            height: 1056
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.hero-side-by-side
+    -
+      parent_uuid: 42890b1f-1eec-439b-bd72-60d3a9aaeabb
+      slot: hero_slot
+      uuid: 53cf7158-3145-4f01-ba88-b3fccc91ce07
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: start
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: 53cf7158-3145-4f01-ba88-b3fccc91ce07
+      slot: group_slot
+      uuid: 3acbf74b-0691-4685-83c0-b8def3cd8420
+      component_id: sdc.byte_theme.badge
+      inputs:
+        label: 'Free Whitepaper'
+        style: secondary
+        icon: download
+        icon_first: true
+    -
+      parent_uuid: 53cf7158-3145-4f01-ba88-b3fccc91ce07
+      slot: group_slot
+      uuid: abc1d1bf-d2ea-4e57-95d6-c38844c5adae
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Stop Losing Money on Business Travel Expenses'
+        level: 1
+        text_size: heading-responsive-5xl
+        text_color: inverted
+        align: left
+    -
+      parent_uuid: 53cf7158-3145-4f01-ba88-b3fccc91ce07
+      slot: group_slot
+      uuid: f040f45c-0d56-4fd9-a222-35dd71cf2f3b
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Travel and Operations Managers spend an average of 18 hours per month chasing receipts and reconciling travel expenses. FinDrop Expense cuts that to under two hours — giving your team live visibility into every trip, every card, every cost.</p>'
+          format: canvas_html_block
+        text_size: text-lg
+        text_color: inverted
+    -
+      parent_uuid: 53cf7158-3145-4f01-ba88-b3fccc91ce07
+      slot: group_slot
+      uuid: 71ad67bb-dda5-4ad9-9510-c5cb7fac180b
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: primary-inverted
+        label: 'Download the Free Whitepaper'
+        href: 'https://example.com'
+        size: large
+        icon: download
+    -
+      uuid: b428357e-82d4-4c76-9b9c-bb4c9974cca1
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 90%
+        columns: 25-25-25-25
+        mobile_columns: '2'
+        margin_block_start: '64'
+        margin_block_end: '48'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: true
+    -
+      parent_uuid: b428357e-82d4-4c76-9b9c-bb4c9974cca1
+      slot: header_slot
+      uuid: cc52185d-a290-4a68-8ea5-89ca5bbbcccd
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'The Hidden Cost of Manual Travel Expense Management'
+        level: 2
+        text_size: heading-responsive-3xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: b428357e-82d4-4c76-9b9c-bb4c9974cca1
+      slot: header_slot
+      uuid: 6a49afe8-1cbf-465c-91f0-78f9a354336c
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Every unmanaged trip is a budget leak. Here is what uncontrolled travel spending costs your organization.</p>'
+          format: canvas_html_block
+        text_size: text-lg
+        text_color: default
+    -
+      parent_uuid: b428357e-82d4-4c76-9b9c-bb4c9974cca1
+      slot: main_slot
+      uuid: a0b76e66-e1ad-4925-8ff7-8865c39d3e84
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        tile_size: '4:3'
+        background_color: muted
+        border_radius: large
+        icon: clock
+        icon_size: large
+        icon_align: center
+        text: '18 Hours Lost Monthly'
+        description:
+          value: '<p>The average Operations Manager spends 18 hours per month on manual expense reconciliation — time that could go toward strategic planning.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: b428357e-82d4-4c76-9b9c-bb4c9974cca1
+      slot: main_slot
+      uuid: 5113de31-01b2-44f7-9d3a-dadec3ddb7f6
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        tile_size: '4:3'
+        background_color: muted
+        border_radius: large
+        icon: receipt
+        icon_size: large
+        icon_align: center
+        text: '32% of Expenses Filed Late'
+        description:
+          value: '<p>Nearly one in three business travel expenses is submitted past deadline, creating cash flow gaps and compliance risks your finance team cannot predict.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: b428357e-82d4-4c76-9b9c-bb4c9974cca1
+      slot: main_slot
+      uuid: da75d579-831f-49f1-8687-810c109c7efe
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        tile_size: '4:3'
+        background_color: muted
+        border_radius: large
+        icon: warning-circle
+        icon_size: large
+        icon_align: center
+        text: 'Out-of-Policy Spend Rises'
+        description:
+          value: '<p>Without live controls on corporate cards, out-of-policy bookings and purchases accumulate undetected until month-end — by which point it is too late to act.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: b428357e-82d4-4c76-9b9c-bb4c9974cca1
+      slot: main_slot
+      uuid: 025a06ac-74c0-40af-8644-6993452edbfe
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        tile_size: '4:3'
+        background_color: muted
+        border_radius: large
+        icon: chart-line-down
+        icon_size: large
+        icon_align: center
+        text: 'No Single Source of Truth'
+        description:
+          value: '<p>Spreadsheets, email threads, and disconnected booking portals mean your travel data is always incomplete — and your forecasts are always wrong.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      uuid: 1c26743b-92b0-4109-b472-d3d4c5bc165c
+      component_id: sdc.byte_theme.hero-side-by-side
+      inputs:
+        hero_flex_gap: large
+        hero_flex_direction_mobile: vertical
+        padding_block_start: '64'
+        padding_block_end: '64'
+        image_size: '4:3'
+        image_position: left
+        image_radius: large
+        media:
+          sourceType: default-relative-url
+          value:
+            src: assets/hero-image.jpg
+            alt: 'Blue-green graphic with a gradient effect'
+            width: 1920
+            height: 1056
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.hero-side-by-side
+    -
+      parent_uuid: 1c26743b-92b0-4109-b472-d3d4c5bc165c
+      slot: hero_slot
+      uuid: 4799f0b6-e391-4bce-a1b2-fbc8e2d6d97a
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: start
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: 4799f0b6-e391-4bce-a1b2-fbc8e2d6d97a
+      slot: group_slot
+      uuid: 3a7de0ad-a4ce-4908-88e8-5971b3b83879
+      component_id: sdc.byte_theme.badge
+      inputs:
+        label: 'FinDrop Expense'
+        style: primary
+        icon: sparkle
+        icon_first: true
+    -
+      parent_uuid: 4799f0b6-e391-4bce-a1b2-fbc8e2d6d97a
+      slot: group_slot
+      uuid: e51b613f-b0cd-4e4f-8337-3160d9b81a1c
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Complete Visibility Over Every Business Trip — From Booking to Close'
+        level: 2
+        text_size: heading-responsive-4xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: 4799f0b6-e391-4bce-a1b2-fbc8e2d6d97a
+      slot: group_slot
+      uuid: 746796c4-b855-4608-97d6-8d3f16b8da64
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>FinDrop Expense connects your corporate cards, travel bookings, and accounting system in one place. Approvals happen in seconds, not days. Receipts are captured automatically. And your month-end close drops from 10 days to under two.</p><p>Travel and Operations Managers get a live dashboard showing every open trip, every outstanding receipt, and every card balance — so nothing falls through the cracks.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 4799f0b6-e391-4bce-a1b2-fbc8e2d6d97a
+      slot: group_slot
+      uuid: 1aca36ca-0f5d-4bfa-9c7f-f7afa8ee4c55
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: primary
+        label: 'Download the Whitepaper'
+        href: 'https://example.com'
+        size: large
+        icon: download
+    -
+      uuid: f49fbd34-38b8-4905-b4e6-87a1b3b3033f
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 90%
+        columns: 33-33-33
+        mobile_columns: '1'
+        margin_block_start: '64'
+        margin_block_end: '64'
+        padding_block_start: '64'
+        padding_block_end: '64'
+        background_color: muted
+        section_header: true
+        section_footer: true
+    -
+      parent_uuid: f49fbd34-38b8-4905-b4e6-87a1b3b3033f
+      slot: header_slot
+      uuid: 7850504f-2765-4154-bba8-014fe655d0c2
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Built for How Travel and Operations Teams Actually Work'
+        level: 2
+        text_size: heading-responsive-3xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: f49fbd34-38b8-4905-b4e6-87a1b3b3033f
+      slot: header_slot
+      uuid: 658f09f6-7bc2-4ce3-a57b-cc51194f4022
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Every feature in FinDrop Expense was designed around the workflows that keep your operations moving — not the other way around.</p>'
+          format: canvas_html_block
+        text_size: text-lg
+        text_color: default
+    -
+      parent_uuid: f49fbd34-38b8-4905-b4e6-87a1b3b3033f
+      slot: main_slot
+      uuid: 2d96ff73-4607-45bf-9d19-39f5716cb0c2
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        tile_size: '16:9'
+        background_color: secondary
+        border_radius: large
+        icon: credit-card
+        icon_size: extra-large
+        icon_align: left
+        text: 'Virtual Cards in Seconds'
+        description:
+          value: '<p>Issue virtual corporate cards for any trip, any team member, any budget — in seconds, with custom spending limits built in from the start. No more shared cards, no more overspend.</p>'
+          format: canvas_html_block
+        text_align: left
+    -
+      parent_uuid: f49fbd34-38b8-4905-b4e6-87a1b3b3033f
+      slot: main_slot
+      uuid: e732400e-da3c-471b-90d9-740caf5dc23b
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        tile_size: '16:9'
+        background_color: secondary
+        border_radius: large
+        icon: receipt
+        icon_size: extra-large
+        icon_align: left
+        text: 'Automated Receipt Capture'
+        description:
+          value: '<p>Employees snap a photo of any receipt on their phone. FinDrop Expense matches it to the transaction automatically — no manual data entry, no chasing teammates for paper slips.</p>'
+          format: canvas_html_block
+        text_align: left
+    -
+      parent_uuid: f49fbd34-38b8-4905-b4e6-87a1b3b3033f
+      slot: main_slot
+      uuid: 7b1c6786-a368-433a-96d7-9ddb7a49576a
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        tile_size: '16:9'
+        background_color: secondary
+        border_radius: large
+        icon: airplane
+        icon_size: extra-large
+        icon_align: left
+        text: 'Book Travel in Minutes'
+        description:
+          value: '<p>Flights, hotels, and car rentals booked inside FinDrop — within your policy, on your preferred suppliers, logged to the right cost center automatically.</p>'
+          format: canvas_html_block
+        text_align: left
+    -
+      parent_uuid: f49fbd34-38b8-4905-b4e6-87a1b3b3033f
+      slot: main_slot
+      uuid: c90fe493-543d-4aeb-9504-3d3ffc2e7857
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        tile_size: '16:9'
+        background_color: secondary
+        border_radius: large
+        icon: check-circle
+        icon_size: extra-large
+        icon_align: left
+        text: 'One-Click Approvals'
+        description:
+          value: '<p>Approval workflows that match how your team is structured. Pre-trip approvals, mid-trip adjustments, and post-trip sign-off — all managed from a single queue, on any device.</p>'
+          format: canvas_html_block
+        text_align: left
+    -
+      parent_uuid: f49fbd34-38b8-4905-b4e6-87a1b3b3033f
+      slot: main_slot
+      uuid: 67c09a85-cc5d-4681-b650-58ad585055ba
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        tile_size: '16:9'
+        background_color: secondary
+        border_radius: large
+        icon: plugs-connected
+        icon_size: extra-large
+        icon_align: left
+        text: 'Works With Your Stack'
+        description:
+          value: '<p>FinDrop Expense connects with 50+ accounting and ERP systems. Data flows automatically — no manual exports, no duplicate entries, no integration headaches.</p>'
+          format: canvas_html_block
+        text_align: left
+    -
+      parent_uuid: f49fbd34-38b8-4905-b4e6-87a1b3b3033f
+      slot: main_slot
+      uuid: 62c9e932-da11-4715-9a83-f2e494999472
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        tile_size: '16:9'
+        background_color: secondary
+        border_radius: large
+        icon: chart-bar
+        icon_size: extra-large
+        icon_align: left
+        text: 'Live Spend Dashboards'
+        description:
+          value: '<p>See every open trip, every pending receipt, and every card balance as it happens. Set alerts for budget thresholds and act before overspend occurs — not after.</p>'
+          format: canvas_html_block
+        text_align: left
+    -
+      uuid: 9792dc90-6988-48cc-9742-288daf620a45
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 90%
+        columns: 33-33-33
+        mobile_columns: '1'
+        margin_block_start: '64'
+        margin_block_end: '64'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: true
+    -
+      parent_uuid: 9792dc90-6988-48cc-9742-288daf620a45
+      slot: header_slot
+      uuid: 56ff6135-a1b5-4d8d-884d-36dc48ad161e
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Trusted by Operations Teams at Growing Companies'
+        level: 2
+        text_size: heading-responsive-3xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: 9792dc90-6988-48cc-9742-288daf620a45
+      slot: header_slot
+      uuid: 0c143345-d7fb-460b-9144-a32e4eaa3485
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Hear from the Travel and Operations Managers who made the switch from manual processes to FinDrop Expense.</p>'
+          format: canvas_html_block
+        text_size: text-lg
+        text_color: default
+    -
+      parent_uuid: 9792dc90-6988-48cc-9742-288daf620a45
+      slot: main_slot
+      uuid: 1989f395-040a-49ef-a05a-6f29987f5e89
+      component_id: sdc.byte_theme.card-testimonial
+      inputs:
+        text: 'Before FinDrop Expense, month-end close meant three days of chasing down receipts from 40 different travelers. Now it takes a morning. The live card controls alone paid for the platform in the first quarter.'
+        cite_name: 'Rachel Torres'
+        cite_text: 'Head of Operations, Meridian Logistics'
+        align: left
+        style: default
+        media:
+          sourceType: default-relative-url
+          value:
+            src: assets/portrait.png
+            alt: Placeholder
+            width: 100
+            height: 100
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.card-testimonial
+    -
+      parent_uuid: 9792dc90-6988-48cc-9742-288daf620a45
+      slot: main_slot
+      uuid: c65b3616-daa4-4041-9dc9-6d128411d1e0
+      component_id: sdc.byte_theme.card-testimonial
+      inputs:
+        text: 'Our finance team flagged out-of-policy hotel bookings in the past. With FinDrop, those bookings cannot happen — the card limits prevent it automatically. We reduced out-of-policy spend by 80% in two months.'
+        cite_name: 'James Okafor'
+        cite_text: 'Travel Manager, Vantage Professional Services'
+        align: left
+        style: default
+        media:
+          sourceType: default-relative-url
+          value:
+            src: assets/portrait.png
+            alt: Placeholder
+            width: 100
+            height: 100
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.card-testimonial
+    -
+      parent_uuid: 9792dc90-6988-48cc-9742-288daf620a45
+      slot: main_slot
+      uuid: 0643e686-0195-4457-8586-11ff6249405c
+      component_id: sdc.byte_theme.card-testimonial
+      inputs:
+        text: 'Implementation took nine days, not months. Our team was up and running before our next major conference cycle. The booking tool alone saved us 15 hours per trip across the planning team.'
+        cite_name: 'Sofia Andersson'
+        cite_text: 'Operations Director, Brightfield Technologies'
+        align: left
+        style: default
+        media:
+          sourceType: default-relative-url
+          value:
+            src: assets/portrait.png
+            alt: Placeholder
+            width: 100
+            height: 100
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.card-testimonial
+    -
+      uuid: e13e8847-7809-4f5f-b8b1-6c846b3c6c0f
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 90%
+        columns: '100'
+        mobile_columns: '1'
+        margin_block_start: '64'
+        margin_block_end: '64'
+        padding_block_start: '64'
+        padding_block_end: '64'
+        background_color: muted
+        section_header: true
+        section_footer: true
+    -
+      parent_uuid: e13e8847-7809-4f5f-b8b1-6c846b3c6c0f
+      slot: header_slot
+      uuid: cddf112d-740e-4993-9680-d939b769748a
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: "What's Inside the Whitepaper?"
+        level: 2
+        text_size: heading-responsive-3xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: e13e8847-7809-4f5f-b8b1-6c846b3c6c0f
+      slot: header_slot
+      uuid: 61694a1f-376f-45f6-8a5f-f72e44351ec5
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>The FinDrop Travel Expense Guide for Operations Teams covers everything you need to build a business case and implement a modern expense management program — fast.</p>'
+          format: canvas_html_block
+        text_size: text-lg
+        text_color: default
+    -
+      parent_uuid: e13e8847-7809-4f5f-b8b1-6c846b3c6c0f
+      slot: main_slot
+      uuid: 3618186d-92b0-43f3-bb61-4ce4ba18969c
+      component_id: sdc.byte_theme.accordion-container
+      inputs: {  }
+    -
+      parent_uuid: 3618186d-92b0-43f3-bb61-4ce4ba18969c
+      slot: accordion_content
+      uuid: d11461d1-939a-4e4f-a39f-9aba38e738bd
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'Chapter 1: The True Cost of Manual Travel Expense Management'
+        heading_level: 3
+        open_by_default: true
+    -
+      parent_uuid: d11461d1-939a-4e4f-a39f-9aba38e738bd
+      slot: accordion_content
+      uuid: 1294dff5-92f9-4514-826e-8035d2364442
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>A detailed breakdown of where time and money are being lost in typical mid-market travel expense workflows. Includes a self-assessment checklist so you can quantify the cost in your own organization before presenting a business case to leadership.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 3618186d-92b0-43f3-bb61-4ce4ba18969c
+      slot: accordion_content
+      uuid: de748656-4e84-4213-b8f1-3697bdce303d
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'Chapter 2: The Modern Expense Management Stack — What Best Looks Like'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: de748656-4e84-4213-b8f1-3697bdce303d
+      slot: accordion_content
+      uuid: 609f8b94-9221-4df2-9756-bff8a399852b
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>An overview of the key capabilities that differentiate modern expense platforms from traditional corporate card programs and legacy travel portals — including virtual card issuance, live transaction visibility, automated reconciliation, and integrated travel booking.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 3618186d-92b0-43f3-bb61-4ce4ba18969c
+      slot: accordion_content
+      uuid: a353218f-a307-478b-a20c-265e0d5cffa3
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'Chapter 3: Building the Business Case for Your Finance Leader'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: a353218f-a307-478b-a20c-265e0d5cffa3
+      slot: accordion_content
+      uuid: 28f95d8a-1f56-4bda-8fe2-ed84219ac88e
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>A step-by-step framework for presenting the ROI of modern expense management to your CFO or Controller. Includes a customizable ROI calculator template, a 30-day implementation roadmap, and talking points tailored to different stakeholder concerns.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 3618186d-92b0-43f3-bb61-4ce4ba18969c
+      slot: accordion_content
+      uuid: c7c82035-677d-4000-bf8f-12cff6178562
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'Chapter 4: Implementation Without Disruption — A 10-Day Playbook'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: c7c82035-677d-4000-bf8f-12cff6178562
+      slot: accordion_content
+      uuid: 9388fcc6-8ff2-46b0-8632-f5afaa327b5c
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>A practical day-by-day guide for rolling out a new expense management platform across your travel and operations team — from stakeholder alignment on day one to full adoption by day 10, with change management tips and adoption benchmarks throughout.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 3618186d-92b0-43f3-bb61-4ce4ba18969c
+      slot: accordion_content
+      uuid: 78dc6f7a-efec-4630-9610-a8f3c70f5ca0
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'Chapter 5: Policy Templates and Controls for Travel Managers'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: 78dc6f7a-efec-4630-9610-a8f3c70f5ca0
+      slot: accordion_content
+      uuid: 4e551831-c7e8-45e9-9b6e-466f3fad2de1
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Ready-to-use policy templates for common travel categories — flights, hotels, ground transport, meals, and incidentals — along with guidance on configuring virtual card controls to enforce policy automatically, before spend happens.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      uuid: a4b77263-cc96-43b3-b599-19afcb73c5d6
+      component_id: sdc.byte_theme.cta
+      inputs:
+        heading_text: 'Get the Travel Expense Management Guide — Free'
+        level: 2
+        text: 'Download the complete FinDrop whitepaper and walk away with a business case, an implementation playbook, and policy templates your team can use on day one. No strings attached.'
+        text_align: center
+        background_color: primary
+    -
+      parent_uuid: a4b77263-cc96-43b3-b599-19afcb73c5d6
+      slot: actions
+      uuid: fab9d70a-bac2-49af-8116-130818e964e4
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: primary-inverted
+        label: 'Download the Free Whitepaper'
+        href: 'https://example.com'
+        size: large
+        icon: download
+        mobile_width: true
+  path:
+    -
+      alias: /travel-2-1-ugly
+      langcode: en
+  revision_translation_affected:
+    -
+      value: true
+  monitor:
+    -
+      value: false
+  metatags:
+    -
+      value: '{"description":"[canvas_page:description]","title":"[canvas_page:title] | [site:name]"}'
