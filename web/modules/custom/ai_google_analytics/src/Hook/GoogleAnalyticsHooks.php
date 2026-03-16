@@ -32,7 +32,9 @@ class GoogleAnalyticsHooks
             'display_label' => TRUE,
           ],
         ])
-        ->setDisplayConfigurable('form', TRUE);
+        ->setDisplayConfigurable('form', TRUE)
+        ->setInternal(TRUE)
+        ->setProvider('ai_google_analytics');
 
       $fields['engaged_sessions'] = BaseFieldDefinition::create('string')
         ->setLabel(new TranslatableMarkup('Engaged sessions'))
@@ -40,7 +42,9 @@ class GoogleAnalyticsHooks
         ->setDisplayOptions('form', [
           'type' => 'string_textfield',
         ])
-        ->setDisplayConfigurable('form', TRUE);
+        ->setDisplayConfigurable('form', TRUE)
+        ->setInternal(TRUE)
+        ->setProvider('ai_google_analytics');
 
       $fields['bounce_rate'] = BaseFieldDefinition::create('string')
         ->setLabel(new TranslatableMarkup('Bounce rate'))
@@ -48,7 +52,9 @@ class GoogleAnalyticsHooks
         ->setDisplayOptions('form', [
           'type' => 'string_textfield',
         ])
-        ->setDisplayConfigurable('form', TRUE);
+        ->setDisplayConfigurable('form', TRUE)
+        ->setInternal(TRUE)
+        ->setProvider('ai_google_analytics');
 
       $fields['key_event_rate'] = BaseFieldDefinition::create('string')
         ->setLabel(new TranslatableMarkup('Key event rate'))
@@ -56,7 +62,9 @@ class GoogleAnalyticsHooks
         ->setDisplayOptions('form', [
           'type' => 'string_textfield',
         ])
-        ->setDisplayConfigurable('form', TRUE);
+        ->setDisplayConfigurable('form', TRUE)
+        ->setInternal(TRUE)
+        ->setProvider('ai_google_analytics');
 
     }
 
