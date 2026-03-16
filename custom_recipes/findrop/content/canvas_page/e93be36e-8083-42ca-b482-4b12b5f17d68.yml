@@ -762,9 +762,6 @@ default:
   revision_translation_affected:
     -
       value: true
-  monitor:
-    -
-      value: false
   metatags:
     -
       value: '{"description":"[canvas_page:description]","title":"[canvas_page:title] | [site:name]"}'
