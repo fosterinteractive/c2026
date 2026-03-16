@@ -176,7 +176,7 @@ A small label element with optional icon and link.
 |------|------|----------|---------------|---------|
 | `label` | string | **yes** | -- | -- |
 | `url` | string | no | -- | -- |
-| `style` | string | **yes** | `primary`, `secondary` | -- |
+| `style` | string | **yes** | `primary` (bg `#155DFC`), `secondary` (bg `#90A1B9`) | -- |
 | `icon` | string | no | Any Phosphor icon ID | `"rocket"` |
 | `icon_first` | boolean | no | -- | `true` |
 
@@ -217,7 +217,7 @@ A clickable button or link styled as a button.
 
 | Prop | Type | Required | Allowed Values | Default |
 |------|------|----------|---------------|---------|
-| `variant` | string | **yes** | `primary`, `secondary`, `primary-inverted`, `secondary-inverted` | -- |
+| `variant` | string | **yes** | `primary` (bg `#155DFC`), `secondary` (bg `#DBEAFE`), `primary-inverted` (bg `#FFFFFF`), `secondary-inverted` (bg `#020618`) | -- |
 | `label` | string | no | -- | `"Button label"` |
 | `href` | string | no | -- | -- |
 | `size` | string | **yes** | `small`, `medium`, `large` | -- |
@@ -247,7 +247,7 @@ A card component with an image, heading, description, and optional link.
 
 | Prop | Type | Required | Allowed Values | Default |
 |------|------|----------|---------------|---------|
-| `background` | string | no | `default`, `accent`, `primary`, `inverted` | -- |
+| `background` | string | no | `default` (`#0F172B`), `accent` (`#DBEAFE`), `primary` (`#155DFC`), `inverted` (`#FFFFFF`) | -- |
 | `style` | string | **yes** | `framed`, `full` | -- |
 | `orientation` | string | **yes** | `vertical`, `horizontal` | -- |
 | `heading_text` | string | **yes** | -- | -- |
@@ -280,7 +280,7 @@ A card featuring an icon, heading, and description text.
 | Prop | Type | Required | Allowed Values | Default |
 |------|------|----------|---------------|---------|
 | `tile_size` | string | no | `square`, `4:3`, `16:9` | -- |
-| `background_color` | string | no | `primary`, `secondary`, `accent`, `muted` | -- |
+| `background_color` | string | no | `primary` (`#155DFC`), `secondary` (`#90A1B9`), `accent` (`#DBEAFE`), `muted` (`#1D293D`) | -- |
 | `border_radius` | string | no | `small`, `medium`, `large` | `"medium"` |
 | `icon` | string | no | Any Phosphor icon ID | `"rocket"` |
 | `icon_size` | string | no | `small`, `medium`, `large`, `extra-large` | -- |
@@ -313,7 +313,7 @@ A component with a logo image and optional background color and link.
 | Prop | Type | Required | Allowed Values | Default |
 |------|------|----------|---------------|---------|
 | `media` | object | no | Image object | -- |
-| `background_color` | string | no | `primary`, `secondary`, `accent`, `muted` | -- |
+| `background_color` | string | no | `primary` (`#155DFC`), `secondary` (`#90A1B9`), `accent` (`#DBEAFE`), `muted` (`#1D293D`) | -- |
 | `border_radius` | string | no | `small`, `medium`, `large` | `"small"` |
 | `url` | string | no | -- | -- |
 
@@ -375,7 +375,7 @@ A card displaying a customer quote with citation and optional headshot.
 | `cite_text` | string | no | -- | -- |
 | `cite_url` | string | no | -- | -- |
 | `align` | string | **yes** | `center`, `left` | `"center"` |
-| `style` | string | **yes** | `default`, `inverted` | `"default"` |
+| `style` | string | **yes** | `default` (bg `#0F172B`), `inverted` (bg `#FFFFFF`) | `"default"` |
 | `media` | object | no | Image object | -- |
 
 #### Slots
@@ -404,7 +404,7 @@ A call-to-action banner with heading, description, optional background, and a sl
 | `level` | number | **yes** | `1`, `2`, `3`, `4`, `5`, `6` | -- |
 | `text` | string | no | -- | -- |
 | `text_align` | string | **yes** | `center`, `left`, `right` | `"center"` |
-| `background_color` | string | no | `primary`, `secondary`, `accent`, `muted`, `inverted` | -- |
+| `background_color` | string | no | `primary` (`#155DFC`), `secondary` (`#90A1B9`), `accent` (`#DBEAFE`), `muted` (`#1D293D`), `inverted` (`#FFFFFF`) | -- |
 | `media` | object | no | Image object (background image) | -- |
 
 #### Slots
@@ -465,7 +465,7 @@ A flex container for bundling related child components together.
 | `flex_align` | string | **yes** | `start`, `center`, `end` | `"center"` |
 | `radius` | string | no | `sm` (Small), `md` (Medium), `lg` (Large), `xl` (Extra-Large) | -- |
 | `padding` | string | no | `sm` (Small), `md` (Medium), `lg` (Large), `xl` (Extra-Large) | -- |
-| `background` | string | no | `primary`, `secondary`, `accent` | -- |
+| `background` | string | no | `primary` (`#155DFC`), `secondary` (`#90A1B9`), `accent` (`#DBEAFE`) | -- |
 
 #### Slots
 
@@ -495,7 +495,7 @@ A heading element with configurable level, size, color, and alignment.
 | `heading_text` | string | **yes** | -- | `"Enter title"` |
 | `level` | number | **yes** | `1`, `2`, `3`, `4`, `5`, `6` | -- |
 | `text_size` | string | **yes** | `default`, `heading-responsive-8xl` (8XL), `heading-responsive-7xl` (7XL), `heading-responsive-6xl` (6XL), `heading-responsive-5xl` (5XL), `heading-responsive-4xl` (4XL), `heading-responsive-3xl` (3XL), `heading-responsive-2xl` (2XL), `heading-responsive-xl` (XL) | -- |
-| `text_color` | string | **yes** | `default` (Default text), `inverted` (Inverted text), `primary` | -- |
+| `text_color` | string | **yes** | `default` (Default text `#FFFFFF`), `inverted` (Inverted text `#020618`), `primary` (`#155DFC`) | -- |
 | `align` | string | **yes** | `left`, `center`, `right` | -- |
 | `url` | string | no | -- | -- |
 
@@ -583,7 +583,7 @@ A hero with an image on one side and a content slot on the other.
 |------|------|----------|---------------|---------|
 | `hero_flex_gap` | string | no | `large` (Normal), `extra-large` | `"large"` |
 | `hero_flex_direction_mobile` | string | no | `vertical`, `vertical-reverse` (Reverse vertical) | `"vertical"` |
-| `background` | string | no | `primary`, `secondary`, `accent` | -- |
+| `background` | string | no | `primary` (`#155DFC`), `secondary` (`#90A1B9`), `accent` (`#DBEAFE`) | -- |
 | `padding_block_start` | string | **yes** | `0`, `16`, `32`, `64` | -- |
 | `padding_block_end` | string | **yes** | `0`, `16`, `32`, `64` | -- |
 | `image_size` | string | no | `2:1`, `16:9`, `3:2`, `4:3`, `1:1` (Square) | `"4:3"` |
@@ -696,7 +696,7 @@ The primary layout wrapper for page content. Provides a CSS grid with header, gr
 | `margin_block_end` | string | **yes** | `0`, `8`, `20`, `32`, `48`, `64`, `96`, `128` | -- |
 | `padding_block_start` | string | **yes** | `0`, `16`, `32`, `64` | -- |
 | `padding_block_end` | string | **yes** | `0`, `16`, `32`, `64` | -- |
-| `background_color` | string | no | `primary`, `secondary`, `accent`, `muted` | -- |
+| `background_color` | string | no | `primary` (`#155DFC`), `secondary` (`#90A1B9`), `accent` (`#DBEAFE`), `muted` (`#1D293D`) | -- |
 | `background_media` | object | no | Image object (background image) | -- |
 | `section_header` | boolean | no | -- | `true` |
 | `section_footer` | boolean | no | -- | `true` |
@@ -733,7 +733,7 @@ A rich text component for paragraphs, lists, and inline formatting.
 |------|------|----------|---------------|---------|
 | `text` | string (HTML) | no | -- | -- |
 | `text_size` | string | **yes** | `text-xs` (12px), `text-sm` (14px), `normal` (16px default), `text-lg` (18px), `text-xl` (20px), `text-2xl` (24px), `text-3xl` (32px) | -- |
-| `text_color` | string | **yes** | `default` (Default text), `inverted` (Inverted text), `primary` | -- |
+| `text_color` | string | **yes** | `default` (Default text `#FFFFFF`), `inverted` (Inverted text `#020618`), `primary` (`#155DFC`) | -- |
 
 #### Slots
 
