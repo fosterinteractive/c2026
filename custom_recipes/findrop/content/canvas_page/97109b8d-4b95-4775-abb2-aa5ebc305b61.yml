@@ -1,0 +1,813 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: 97109b8d-4b95-4775-abb2-aa5ebc305b61
+  default_langcode: en
+  depends:
+    63aafdf0-4ce8-482f-a93d-abb475f7e409: file
+    53362fc8-9277-4a8b-8f94-b54d4f15847c: media
+    4ed9ba30-66a9-4e6e-a432-9a66743f7c30: file
+    b4e0122d-e136-499e-af34-ad39f1c88a12: media
+    596fd6af-df75-4681-bc27-86f59c4a225d: file
+    dd73e867-3d74-43e3-a273-0012b0f10d69: media
+    d48d3cc5-5ae8-43ff-9742-a2fdcff430d8: file
+    5005f597-1a87-4847-8d7d-76a9ef868fa2: media
+    49bd225b-1031-4001-8482-afbff25622fb: file
+    92565f8e-d1cb-46e2-a6dc-0084cc6b4c0d: media
+    0fc51fec-6815-47f5-a978-df01e771c22a: file
+    bef8f74c-852b-4eed-984e-4bc2a75e8bd3: media
+    34d807cc-dffb-4db2-918d-e88ce9760297: file
+    f27e8623-bbc7-43c1-8223-809648bfd188: media
+    38a6be95-32ac-4439-add5-34906e771c51: file
+    be342eb9-55aa-4b1b-bda6-f9ebbefb3f99: media
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  owner:
+    -
+      target_id: 1
+  title:
+    -
+      value: 'Financial & Accounting  Expense Management | Book a Free Demo'
+  description:
+    -
+      value: 'Empower CFOs & accounting teams to cut costs, reduce errors & close books faster. Discover smarter financial software — book a demo today!'
+  components:
+    -
+      uuid: 1782a11a-ed36-4dfd-b314-a239fefe71a9
+      component_id: sdc.byte_theme.hero-billboard
+      inputs:
+        height: full
+        flex_position: bottom-left
+        overlay_opacity: 0%
+        object_position: center
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 53362fc8-9277-4a8b-8f94-b54d4f15847c
+            target_type: media
+        overlap_navbar: true
+    -
+      parent_uuid: 1782a11a-ed36-4dfd-b314-a239fefe71a9
+      slot: hero_slot
+      uuid: df70094a-6a84-452e-b582-94e779297fab
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: center
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: df70094a-6a84-452e-b582-94e779297fab
+      slot: group_slot
+      uuid: 7c16cfc2-d097-49f8-97c6-ab0b5e184339
+      component_id: sdc.byte_theme.badge
+      inputs:
+        label: 'FinDrop Expense'
+        style: primary
+        icon: receipt
+        icon_first: true
+    -
+      parent_uuid: df70094a-6a84-452e-b582-94e779297fab
+      slot: group_slot
+      uuid: 404835c8-afc6-43e4-a6a6-a10995bdf4fb
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Reduce expense processing time by 80%. Close the books in 2 days, not 10.'
+        level: 1
+        text_size: heading-responsive-7xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: df70094a-6a84-452e-b582-94e779297fab
+      slot: group_slot
+      uuid: e0a0800d-ba5b-4210-acdd-4d9858f71f43
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>FinDrop gives finance leaders complete visibility over every dollar — and gives accounting teams zero manual work. One platform for cards, expenses, and reconciliation.</p>'
+          format: canvas_html_block
+        text_size: text-lg
+        text_color: default
+    -
+      parent_uuid: df70094a-6a84-452e-b582-94e779297fab
+      slot: group_slot
+      uuid: 462287ff-2e26-47eb-a74e-f49a9ac37b64
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: row
+        flex_gap: sm
+        items_align: start
+        flex_align: start
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: 462287ff-2e26-47eb-a74e-f49a9ac37b64
+      slot: group_slot
+      uuid: 4e387627-7d57-41e1-9554-1518e3ea6f0c
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: primary
+        label: 'Book a Demo'
+        href: 'https://example.com'
+        size: large
+        icon: arrow-right
+    -
+      parent_uuid: 462287ff-2e26-47eb-a74e-f49a9ac37b64
+      slot: group_slot
+      uuid: 086d3897-9abe-4a45-ba89-26dd438ca821
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: secondary-inverted
+        label: 'Watch 3-Minute Demo'
+        href: 'https://example.com'
+        size: large
+        icon: arrow-right
+    -
+      uuid: b943afc3-2956-40d7-b542-09f449e1d887
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 80%
+        columns: '100'
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: false
+    -
+      parent_uuid: b943afc3-2956-40d7-b542-09f449e1d887
+      slot: header_slot
+      uuid: 00f962bd-cbcc-48dc-8277-e96792588c03
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Finance is still broken for most mid-market companies.'
+        level: 2
+        text_size: heading-responsive-5xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: b943afc3-2956-40d7-b542-09f449e1d887
+      slot: main_slot
+      uuid: 570e0eeb-5f4c-4ca4-9668-3886bfb9aac5
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Finance leaders are flying blind — spend happens before reports catch up. Accounting teams spend 4.2 hours every week chasing receipts, correcting errors, and wrestling data from disconnected systems. Month-end close stretches to 10 days while the business waits for answers.</p>'
+          format: canvas_html_block
+        text_size: text-lg
+        text_color: default
+    -
+      uuid: a2ad2795-a171-4d5b-991c-ebf4fc575f77
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 80%
+        columns: 33-33-33
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: false
+    -
+      parent_uuid: a2ad2795-a171-4d5b-991c-ebf4fc575f77
+      slot: header_slot
+      uuid: 5fb1048d-f874-489b-ad5e-506cdef38811
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Built for finance leaders and accounting teams equally'
+        level: 2
+        text_size: heading-responsive-5xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: a2ad2795-a171-4d5b-991c-ebf4fc575f77
+      slot: main_slot
+      uuid: 28d3c975-3d66-4300-b93f-2185ad3c44c5
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: eye
+        icon_size: extra-large
+        icon_align: center
+        text: 'Live spend visibility'
+        description:
+          value: '<p>See every transaction the moment it happens. No more waiting for month-end reports to understand where company money is going.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: a2ad2795-a171-4d5b-991c-ebf4fc575f77
+      slot: main_slot
+      uuid: d74a28b5-e557-417f-ab2c-00ded78512aa
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: receipt
+        icon_size: extra-large
+        icon_align: center
+        text: 'No expense reports'
+        description:
+          value: '<p>Expenses are categorized and synced automatically when a card is used. Your team never touches a receipt again.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: a2ad2795-a171-4d5b-991c-ebf4fc575f77
+      slot: main_slot
+      uuid: dea2a002-bbf1-4887-a6fa-f2853a585363
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: shield-check
+        icon_size: extra-large
+        icon_align: center
+        text: 'Policy enforced at purchase'
+        description:
+          value: '<p>Out-of-policy spend is blocked before it happens — not discovered weeks later during reconciliation.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      uuid: 9a49d438-4d84-4ce3-b390-abf79a7f81cd
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 80%
+        columns: 50-50
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: false
+        section_footer: false
+    -
+      parent_uuid: 9a49d438-4d84-4ce3-b390-abf79a7f81cd
+      slot: main_slot
+      uuid: a1758ab9-a4b1-408c-b952-62de73e8086c
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: center
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: a1758ab9-a4b1-408c-b952-62de73e8086c
+      slot: group_slot
+      uuid: fd73a03d-2821-49bc-b9e9-8c72a253858a
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>FOR FINANCE LEADERS</p>'
+          format: canvas_html_block
+        text_size: text-sm
+        text_color: default
+    -
+      parent_uuid: a1758ab9-a4b1-408c-b952-62de73e8086c
+      slot: group_slot
+      uuid: 85170c48-d7ca-4c52-a045-0f7ad18fb28e
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Complete control over company spending — before it happens'
+        level: 2
+        text_size: heading-responsive-4xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: a1758ab9-a4b1-408c-b952-62de73e8086c
+      slot: group_slot
+      uuid: bdbef6a0-2291-4be0-b223-8ba1553acf5b
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Create virtual cards in seconds with custom spending limits per project, vendor, or team. Every dollar is tracked live — no surprises at month-end, no fire drills before the board meeting.</p><p>Set budgets that enforce themselves. Get alerts the moment spend approaches a threshold. Close the books in 2 days instead of 10.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: a1758ab9-a4b1-408c-b952-62de73e8086c
+      slot: group_slot
+      uuid: 12347604-8913-4c7d-9e9e-04392e9dd6c2
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: secondary-inverted
+        label: 'See Your ROI Calculator'
+        href: 'https://example.com'
+        size: medium
+        icon: arrow-right
+    -
+      parent_uuid: 9a49d438-4d84-4ce3-b390-abf79a7f81cd
+      slot: main_slot
+      uuid: 64aed7f4-430e-4511-b11c-fabe59e18fec
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: b4e0122d-e136-499e-af34-ad39f1c88a12
+            target_type: media
+        size: '4:3'
+        radius: large
+    -
+      uuid: 556f4347-df3a-41a0-a429-5cb11f1f810a
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 80%
+        columns: 50-50
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: false
+        section_footer: false
+    -
+      parent_uuid: 556f4347-df3a-41a0-a429-5cb11f1f810a
+      slot: main_slot
+      uuid: 7733f7b2-f535-4789-8512-d5322b600476
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: dd73e867-3d74-43e3-a273-0012b0f10d69
+            target_type: media
+        size: '4:3'
+        radius: large
+    -
+      parent_uuid: 556f4347-df3a-41a0-a429-5cb11f1f810a
+      slot: main_slot
+      uuid: 7432bfbd-5ab8-4ac9-897e-fa546d644ef8
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: center
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: 7432bfbd-5ab8-4ac9-897e-fa546d644ef8
+      slot: group_slot
+      uuid: d4419a27-b51a-48c0-a2fd-88828827c980
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>FOR ACCOUNTING TEAMS</p>'
+          format: canvas_html_block
+        text_size: text-sm
+        text_color: default
+    -
+      parent_uuid: 7432bfbd-5ab8-4ac9-897e-fa546d644ef8
+      slot: group_slot
+      uuid: 9f7b114b-de2d-4eaf-a5f3-30d72dc71904
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Zero manual data entry. 67% fewer errors. Done.'
+        level: 2
+        text_size: heading-responsive-4xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: 7432bfbd-5ab8-4ac9-897e-fa546d644ef8
+      slot: group_slot
+      uuid: 7a05dd0d-dab6-4162-b464-5505af386322
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Expenses are categorized and synced to QuickBooks, NetSuite, and 50+ platforms the moment a card is used. Receipts are captured automatically. Reconciliation runs itself.</p><p>Stop spending 4.2 hours every week correcting errors and chasing documentation. FinDrop gives you back 15 hours every month — and a clean audit trail every time.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 7432bfbd-5ab8-4ac9-897e-fa546d644ef8
+      slot: group_slot
+      uuid: 6b561b02-fcb7-4171-86b4-b074e99cb788
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: secondary-inverted
+        label: 'See How It Works'
+        href: 'https://example.com'
+        size: medium
+        icon: arrow-right
+    -
+      uuid: 0ea07a1b-7ae3-4ffe-8161-28a4057fd078
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 80%
+        columns: 33-33-33
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: false
+    -
+      parent_uuid: 0ea07a1b-7ae3-4ffe-8161-28a4057fd078
+      slot: header_slot
+      uuid: f903e600-6834-4513-bfc3-ec63628802d2
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'The numbers behind the platform'
+        level: 2
+        text_size: heading-responsive-5xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: 0ea07a1b-7ae3-4ffe-8161-28a4057fd078
+      slot: main_slot
+      uuid: 6c281952-f123-4699-a75a-f74e335e4656
+      component_id: sdc.byte_theme.card
+      inputs:
+        background: default
+        style: framed
+        orientation: vertical
+        heading_text: 'Reduce expense processing time by 80%'
+        level: 3
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 5005f597-1a87-4847-8d7d-76a9ef868fa2
+            target_type: media
+        text: "That's 15 hours back every month per finance employee — spent on strategic work instead of manual corrections."
+        is_text_centered: false
+    -
+      parent_uuid: 0ea07a1b-7ae3-4ffe-8161-28a4057fd078
+      slot: main_slot
+      uuid: 5b7b2709-201b-485e-be6d-630ceafbd428
+      component_id: sdc.byte_theme.card
+      inputs:
+        background: default
+        style: framed
+        orientation: vertical
+        heading_text: '67% fewer errors in expense reporting'
+        level: 3
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 92565f8e-d1cb-46e2-a6dc-0084cc6b4c0d
+            target_type: media
+        text: 'Automated categorization and policy checks eliminate the mistakes that slow down reconciliation and delay your close.'
+        is_text_centered: false
+    -
+      parent_uuid: 0ea07a1b-7ae3-4ffe-8161-28a4057fd078
+      slot: main_slot
+      uuid: 478fee8f-2c0a-4dee-9372-5d56151c5f32
+      component_id: sdc.byte_theme.card
+      inputs:
+        background: default
+        style: framed
+        orientation: vertical
+        heading_text: 'Go live in 10 business days'
+        level: 3
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: bef8f74c-852b-4eed-984e-4bc2a75e8bd3
+            target_type: media
+        text: 'No complex migrations, no lengthy training. Most mid-size companies are fully live in 4 days — and saving $12,000 per employee annually.'
+        is_text_centered: false
+    -
+      uuid: 7f84b425-24d3-4261-981b-d785464ca4c2
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 50%
+        columns: '100'
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: false
+        section_footer: false
+    -
+      parent_uuid: 7f84b425-24d3-4261-981b-d785464ca4c2
+      slot: main_slot
+      uuid: 4a5c43e9-2902-46f5-9002-c49129386287
+      component_id: sdc.byte_theme.card-testimonial
+      inputs:
+        text: 'We went from spending 3 days on month-end reconciliation to just 2 hours. The ROI was immediate — we saved $180,000 in our first year just from reduced processing costs. Implementation took 4 days.'
+        cite_name: 'Sarah Mitchell'
+        cite_text: 'CFO, TechFlow (500 employees)'
+        align: center
+        style: default
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: f27e8623-bbc7-43c1-8223-809648bfd188
+            target_type: media
+    -
+      uuid: 9ded1802-6cbe-407a-9196-edf52053ec84
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 80%
+        columns: 25-25-25-25
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: false
+    -
+      parent_uuid: 9ded1802-6cbe-407a-9196-edf52053ec84
+      slot: header_slot
+      uuid: f274d148-6524-400a-a3d7-604d9a70e245
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'From first swipe to closed books in 4 steps'
+        level: 2
+        text_size: heading-responsive-5xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: 9ded1802-6cbe-407a-9196-edf52053ec84
+      slot: main_slot
+      uuid: 351d1332-95ea-4ad5-abd3-b8df9a4cc818
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: credit-card
+        icon_size: extra-large
+        icon_align: center
+        text: '1. Create cards in seconds'
+        description:
+          value: '<p>Deploy virtual cards for any team, vendor, or project. Set spending limits before the first purchase.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: 9ded1802-6cbe-407a-9196-edf52053ec84
+      slot: main_slot
+      uuid: 4bac92f1-517a-43d4-8447-793bf244bb6e
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: lightning
+        icon_size: extra-large
+        icon_align: center
+        text: '2. Spend — everything syncs'
+        description:
+          value: '<p>Every transaction is captured live, categorized automatically, and matched to the right GL code instantly.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: 9ded1802-6cbe-407a-9196-edf52053ec84
+      slot: main_slot
+      uuid: b6b3f96b-a407-4d88-8efd-e251d84714db
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: arrows-clockwise
+        icon_size: extra-large
+        icon_align: center
+        text: '3. Reconcile automatically'
+        description:
+          value: '<p>FinDrop syncs with QuickBooks, NetSuite, and 50+ platforms. No imports, no manual matching, no errors.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: 9ded1802-6cbe-407a-9196-edf52053ec84
+      slot: main_slot
+      uuid: 25c14775-577c-4987-91a7-ab6d1b424c46
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: check-circle
+        icon_size: extra-large
+        icon_align: center
+        text: '4. Close the books in 2 days'
+        description:
+          value: '<p>Month-end close goes from 10 days to 2. Your team reviews, approves, and moves on — no fire drills.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      uuid: 27b13d0d-5376-4888-af63-005b8b7f26a0
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 80%
+        columns: '100'
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: false
+    -
+      parent_uuid: 27b13d0d-5376-4888-af63-005b8b7f26a0
+      slot: header_slot
+      uuid: 46d20c1f-33c7-47a6-8f99-1dbc0ee1c27d
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Common questions'
+        level: 2
+        text_size: heading-responsive-5xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: 27b13d0d-5376-4888-af63-005b8b7f26a0
+      slot: main_slot
+      uuid: 891ff20d-3a66-4ebb-b64d-897fe6473d09
+      component_id: sdc.byte_theme.accordion-container
+      inputs: {  }
+    -
+      parent_uuid: 891ff20d-3a66-4ebb-b64d-897fe6473d09
+      slot: accordion_content
+      uuid: c21d66e2-3236-428e-bd4a-dd267bfbcdc4
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'How long does implementation take?'
+        heading_level: 3
+        open_by_default: true
+    -
+      parent_uuid: c21d66e2-3236-428e-bd4a-dd267bfbcdc4
+      slot: accordion_content
+      uuid: a776f2bf-58d2-4203-b12c-d736e16bf604
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Most mid-size companies are fully live in 4 days. Our standard go-live timeline is 10 business days — no complex migrations, no dedicated IT resources required. We handle the setup and connect your existing accounting stack.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 891ff20d-3a66-4ebb-b64d-897fe6473d09
+      slot: accordion_content
+      uuid: f34653b8-998c-4feb-8afd-964eabb76226
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'Which accounting platforms does FinDrop sync with?'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: f34653b8-998c-4feb-8afd-964eabb76226
+      slot: accordion_content
+      uuid: 5a3afc3e-edb4-4181-aa87-08e4c79379ea
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>FinDrop syncs natively with QuickBooks and NetSuite, plus 50+ additional platforms. Two-way sync means every transaction flows automatically — no manual imports, no CSV exports, no reconciliation lag.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 891ff20d-3a66-4ebb-b64d-897fe6473d09
+      slot: accordion_content
+      uuid: 820be957-8f7c-4cab-9ae6-eac329d02b3a
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'How does FinDrop handle spending policy enforcement?'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: 820be957-8f7c-4cab-9ae6-eac329d02b3a
+      slot: accordion_content
+      uuid: 63d394a9-1547-4996-9ff3-d22f034e8bb6
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Policy is enforced at the point of purchase — not discovered weeks later. Each virtual card has configurable spending limits, category restrictions, and merchant controls. Out-of-policy transactions are blocked before they happen. Approvals are required for anything outside the set parameters.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 891ff20d-3a66-4ebb-b64d-897fe6473d09
+      slot: accordion_content
+      uuid: ccb0b69a-ee3c-447d-8621-a525957ca988
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'Is FinDrop secure and compliant?'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: ccb0b69a-ee3c-447d-8621-a525957ca988
+      slot: accordion_content
+      uuid: 0ab14735-8fc2-4888-b5f6-c7347c54c05d
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Yes. FinDrop is SOC 2 Type II certified and uses bank-level 256-bit encryption. Every virtual card has a unique number. Role-based access controls and a full audit trail give your IT and compliance teams everything they need.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      parent_uuid: 891ff20d-3a66-4ebb-b64d-897fe6473d09
+      slot: accordion_content
+      uuid: 83fc42b5-533d-4baf-9932-922de13b3049
+      component_id: sdc.byte_theme.accordion
+      inputs:
+        title: 'What does it cost?'
+        heading_level: 3
+        open_by_default: false
+    -
+      parent_uuid: 83fc42b5-533d-4baf-9932-922de13b3049
+      slot: accordion_content
+      uuid: f508ef42-67f2-4f17-bb9c-766af1bd1d6a
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>FinDrop starts at $8 per user per month for up to 50 users, $12 per user per month for 50–200 users, and custom pricing for 200+ users. Implementation is free with an annual commitment. Most customers save $12,000 per employee annually from reduced processing costs alone.</p>'
+          format: canvas_html_block
+        text_size: normal
+        text_color: default
+    -
+      uuid: e29aeef9-1e71-41f2-ae28-0b553965c200
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 80%
+        columns: 50-50
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '64'
+        padding_block_start: '64'
+        padding_block_end: '64'
+        background_color: muted
+        section_header: false
+        section_footer: false
+    -
+      parent_uuid: e29aeef9-1e71-41f2-ae28-0b553965c200
+      slot: main_slot
+      uuid: 94a01f9c-658e-4ee6-9c03-b7d36fabe1de
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: lg
+        items_align: start
+        flex_align: center
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: 94a01f9c-658e-4ee6-9c03-b7d36fabe1de
+      slot: group_slot
+      uuid: 874be5b0-2ae9-4a84-b259-d88a80c3debe
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'See FinDrop reduce your expense processing time by 80% — live.'
+        level: 2
+        text_size: heading-responsive-4xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: 94a01f9c-658e-4ee6-9c03-b7d36fabe1de
+      slot: group_slot
+      uuid: 75b66346-a344-4631-bfea-d3ca403a0489
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: "<p>Book a personalized demo and we'll show you exactly how FinDrop works for your team</p>"
+          format: canvas_html_block
+        text_size: text-lg
+        text_color: default
+    -
+      parent_uuid: 94a01f9c-658e-4ee6-9c03-b7d36fabe1de
+      slot: group_slot
+      uuid: 97c49c8f-8ab8-4ebd-a95e-4c1cbbfb67c3
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: primary
+        label: 'Book a Demo'
+        href: 'https://example.com'
+        size: medium
+        icon: arrow-right
+    -
+      parent_uuid: e29aeef9-1e71-41f2-ae28-0b553965c200
+      slot: main_slot
+      uuid: a387576b-a783-46ec-b55e-75dbd7606bdd
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: be342eb9-55aa-4b1b-bda6-f9ebbefb3f99
+            target_type: media
+        size: '4:3'
+        radius: large
+    -
+      uuid: 24eecd36-8cb8-429d-847e-040781e765ac
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p class="text-align-center">We respect your privacy. Your information will never be shared with third parties.</p>'
+          format: canvas_html_block
+        text_size: text-sm
+        text_color: default
+  path:
+    -
+      alias: /expense-management
+      langcode: en
+  revision_translation_affected:
+    -
+      value: true
+  monitor:
+    -
+      value: false
+  metatags:
+    -
+      value: '{"description":"[canvas_page:description]","title":"[canvas_page:title] | [site:name]"}'

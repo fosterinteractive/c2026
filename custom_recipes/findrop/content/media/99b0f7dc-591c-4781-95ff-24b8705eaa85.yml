@@ -7,6 +7,9 @@ _meta:
   depends:
     cd39ac1c-8c42-4b96-ab59-5c083d01fad1: file
 default:
+  revision_user:
+    -
+      target_id: 1
   status:
     -
       value: true
@@ -28,7 +31,7 @@ default:
       value: finished
   field_image_description:
     -
-      value: 'This image is a graphic illustration featuring a dark black background with glowing orbits in white and gold surrounding a central smartphone. The smartphone has the word "FinDrop" displayed prominently on its screen along with an icon of a credit card. There are no people present in the image. The overall mood is modern, technological, and abstract, suggesting innovation or fintech themes. The orbits create a dynamic sense of motion and energy around the phone. The main colors are black, white, and gold, which give the composition a sleek and futuristic feel. This image is most suitable as an icon or branding graphic for a financial technology application or platform.'
+      value: "FinDrop Travel Product Illustration on theme of \"realtime\"\r\n\r\n\r\nThis image is a graphic illustration featuring a dark black background with glowing orbits in white and gold surrounding a central smartphone. The smartphone has the word \"FinDrop\" displayed prominently on its screen along with an icon of a credit card. There are no people present in the image. The overall mood is modern, technological, and abstract, suggesting innovation or fintech themes. The orbits create a dynamic sense of motion and energy around the phone. The main colors are black, white, and gold, which give the composition a sleek and futuristic feel. This image is most suitable as an icon or branding graphic for a financial technology application or platform."
   field_media_image:
     -
       alt: 'Smartphone with "FinDrop" text, surrounded by glowing curved lines on a dark background.'

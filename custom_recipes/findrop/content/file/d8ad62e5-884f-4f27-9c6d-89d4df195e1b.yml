@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: d8ad62e5-884f-4f27-9c6d-89d4df195e1b
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: Findrop_illustration_hero-3.jpg
+  uri:
+    -
+      value: 'public://2026-03/Findrop_illustration_hero-3.jpg'
+  filemime:
+    -
+      value: image/jpeg
+  filesize:
+    -
+      value: 865915
+  status:
+    -
+      value: true

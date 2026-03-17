@@ -1,0 +1,41 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 7be0d827-bef8-4b8c-94c5-3a392d04ed52
+  bundle: image
+  default_langcode: en
+  depends:
+    7cad57d1-bdb3-4d4d-94f4-eb850069f0fa: file
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: findrop-phone-expense-categorization.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: "FinDrop Travel feature illustration on the theme of automatic expense categroization\r\n\r\nA dark, minimalist graphic illustration shows a smartphone centered on a nearly black background with soft white glowing outlines.  \r\nThe phone screen displays the word “FinDrop” and a small credit card icon, while luminous connector lines link the phone to labeled expense categories.  \r\nOn the right, glowing pill-shaped labels read “Meals,” “GL 671,” and “Approved,” emphasizing automated phone expense categorization.  \r\nOn the left, a faint stylized receipt or expense document appears in gray-black tones with subtle cyan highlights, reinforcing the financial workflow theme.  \r\nThis is a polished digital UI/tech graphic rather than a photo, with a sleek fintech presentation style.  \r\nThere are no people in the image.  \r\nThe mood is futuristic, clean, intelligent, and efficient, with black, charcoal, white, and pale cyan as the dominant colors."
+  field_media_image:
+    -
+      alt: 'Graphic of a FlipDrop phone connecting to Mouths, GL 671, and Approved labels'
+      title: ''
+      width: 2048
+      height: 2048
+      entity: 7cad57d1-bdb3-4d4d-94f4-eb850069f0fa

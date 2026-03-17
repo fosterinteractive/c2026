@@ -1,0 +1,41 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 53362fc8-9277-4a8b-8f94-b54d4f15847c
+  bundle: image
+  default_langcode: en
+  depends:
+    63aafdf0-4ce8-482f-a93d-abb475f7e409: file
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: hero-gold-vertical-lines-grad.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: "Findrop expense management illustration intended for the hero area.\r\n\r\n This is a sleek digital graphic illustration, not a photo, with a deep black background and luminous gold linework.  \r\nAt the center is a dark, rectangular smartphone-like device with rounded corners, accented by a subtle gold emblem near the top and the “FileDrop” label in the middle.  \r\nThin metallic gold vertical lines stream downward from the device, while elegant swirling gold arcs and loops radiate upward, creating a flowing, futuristic energy pattern.  \r\nThe main colors are matte black, charcoal gray, and warm metallic gold, giving the image a premium and luxurious feel.  \r\nThere is no person in the image.  \r\nThe mood is modern, sophisticated, high-tech, and minimalistic, with a polished hero-banner aesthetic.  \r\nImportant objects include the central mobile device and the abstract gold light trails, which suggest connectivity, data transfer, or digital motion."
+  field_media_image:
+    -
+      alt: 'Black charging adapter with glowing abstract energy lines above it.'
+      title: ''
+      width: 1376
+      height: 768
+      entity: 63aafdf0-4ce8-482f-a93d-abb475f7e409

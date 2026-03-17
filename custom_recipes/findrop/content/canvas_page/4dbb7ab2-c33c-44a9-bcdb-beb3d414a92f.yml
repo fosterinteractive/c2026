@@ -46,7 +46,7 @@ default:
       inputs:
         height: full
         flex_position: bottom-left
-        overlay_opacity: 0%
+        overlay_opacity: 60%
         object_position: bottom
         media:
           CANVAS_ENTITY_REFERENCE:
@@ -71,9 +71,9 @@ default:
       uuid: da216e4c-e60a-45c0-95ea-5611160f6f5c
       component_id: sdc.byte_theme.heading
       inputs:
-        heading_text: 'Business Travel Your Employees Love and Your Finance Team Trusts'
+        heading_text: '90%+ Traveler Adoption in the First Month'
         level: 1
-        text_size: heading-responsive-6xl
+        text_size: heading-responsive-7xl
         text_color: default
         align: left
     -
@@ -83,17 +83,31 @@ default:
       component_id: sdc.byte_theme.text
       inputs:
         text:
-          value: '<p>From booking to reimbursement, FinDrop automates travel expense management. Policies enforced at the point of purchase, receipts captured on the go, and reimbursements in any currency.</p>'
+          value: '<p>Give your team a travel booking experience they actually use — flights, hotels, and rental cars booked in under 3 minutes, with zero expense reports after every trip.</p>'
           format: canvas_html_block
         text_size: text-lg
         text_color: default
     -
       parent_uuid: 317843ea-7b60-46dd-b5b7-4900bbb030f0
       slot: group_slot
+      uuid: 70599e29-0f18-4554-8be3-51457952f6a3
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: primary
+        label: 'See FinDrop Travel in Action'
+        href: 'https://example.com'
+        size: large
+        icon: arrow-right
+        mobile_width: false
+        icon_first: false
+        disabled: false
+    -
+      parent_uuid: 317843ea-7b60-46dd-b5b7-4900bbb030f0
+      slot: group_slot
       uuid: 28d4816c-0eb8-4ecd-bc4a-eb6f4cfb8602
       component_id: sdc.byte_theme.button
       inputs:
-        variant: secondary
+        variant: secondary-inverted
         label: 'Download Travel Guide'
         size: medium
         icon: download

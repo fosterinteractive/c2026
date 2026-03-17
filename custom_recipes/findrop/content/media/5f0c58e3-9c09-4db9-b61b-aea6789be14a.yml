@@ -1,0 +1,41 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 5f0c58e3-9c09-4db9-b61b-aea6789be14a
+  bundle: image
+  default_langcode: en
+  depends:
+    04cf39f3-aa16-48c7-beb2-934d49e218d1: file
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: man-hands-airport.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: "Travel Theme photographic illustration. Works well in CTAs. Not for heroes.\r\n\r\nThis is a warm, sunlit photo taken inside an airport, with bright golden light, soft beige and white highlights, and a blurred runway scene in the background.  \r\nA hand is holding a modern smartphone in the foreground, making the device the clear focal point of the image.  \r\nThe phone screen shows a digital payment or wallet interface with a credit card labeled “FinDrop” and an Apple Pay prompt, suggesting travel finance or mobile payment technology.  \r\nIn the background, a commercial airplane is visible through large airport terminal windows, slightly out of focus, reinforcing the airport setting.  \r\nThe person is not fully visible, but the image shows an adult hand with a calm, steady pose, likely representing a traveler.  \r\nThe mood feels sleek, modern, convenient, and optimistic, enhanced by the bright lens flare and sunrise or sunset glow.  \r\nThe image is a realistic commercial-style photograph with shallow depth of field, emphasizing mobile banking, contactless payment, and air travel."
+  field_media_image:
+    -
+      alt: 'Hand holding a smartphone with the FinDrop app at an airport window.'
+      title: ''
+      width: 1024
+      height: 1024
+      entity: 04cf39f3-aa16-48c7-beb2-934d49e218d1

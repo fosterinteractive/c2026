@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 7cad57d1-bdb3-4d4d-94f4-eb850069f0fa
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: findrop-phone-expense-categorization.png
+  uri:
+    -
+      value: 'public://2026-03/findrop-phone-expense-categorization.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 3871987
+  status:
+    -
+      value: true

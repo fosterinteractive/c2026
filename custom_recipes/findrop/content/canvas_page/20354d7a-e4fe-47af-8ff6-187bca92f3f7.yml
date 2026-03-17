@@ -6,10 +6,6 @@ _meta:
   depends:
     ec07e5e9-d11e-4550-b528-66dffbc93527: file
     3a63058d-4aa1-4b91-b530-28696677c56e: media
-    4a8af336-e8a7-4e4d-b2b0-cd3d66821ea1: file
-    ccb5a8c1-b0e3-432d-b25a-dd89bdcd9fba: media
-    80d12e96-9d37-4751-bfdb-5a8082acd428: file
-    e7fd35cf-92d6-49d0-abbf-7c8a4895bb57: media
     34d807cc-dffb-4db2-918d-e88ce9760297: file
     f27e8623-bbc7-43c1-8223-809648bfd188: media
     3324d784-51b7-48f2-a8bf-7fa8dd1c2804: file
@@ -30,7 +26,7 @@ default:
       target_id: 1
   title:
     -
-      value: Home
+      value: 'Home (old version)'
   components:
     -
       uuid: b07be0c8-e499-4d66-8bfe-a4af0166453a
@@ -51,7 +47,7 @@ default:
       uuid: 2747d826-b897-49e9-bcfc-45802d02a185
       component_id: sdc.byte_theme.heading
       inputs:
-        heading_text: 'Take control of your spending !'
+        heading_text: 'Take control of your spending'
         level: 1
         text_size: default
         text_color: default
@@ -139,9 +135,31 @@ default:
         level: 3
         url: '#'
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: ccb5a8c1-b0e3-432d-b25a-dd89bdcd9fba
-            target_type: media
+          sourceType: default-relative-url
+          value:
+            src: assets/jj-ying-8bghKxNU1j0-unsplash.jpg
+            width: 1200
+            height: 900
+            alt: 'Photo by jjying: https://unsplash.com/photos/purple-and-blue-light-digital-wallpaper-8bghKxNU1j0'
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.card
         orientation: vertical
         style: framed
         text: "Software only works if people use it, and we've designed our tools to ensure users can find what they need, and do exactly what they want to do, quickly."
@@ -156,9 +174,31 @@ default:
         level: 3
         url: '#'
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: e7fd35cf-92d6-49d0-abbf-7c8a4895bb57
-            target_type: media
+          sourceType: default-relative-url
+          value:
+            src: assets/jj-ying-8bghKxNU1j0-unsplash.jpg
+            width: 1200
+            height: 900
+            alt: 'Photo by jjying: https://unsplash.com/photos/purple-and-blue-light-digital-wallpaper-8bghKxNU1j0'
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.card
         orientation: vertical
         style: framed
         text: 'Automation streamlines repetitive tasks and workflows, freeing your team to focus on strategic initiatives that drive business growth.'
@@ -173,9 +213,31 @@ default:
         level: 3
         url: '#'
         media:
-          CANVAS_ENTITY_REFERENCE:
-            target_uuid: e7fd35cf-92d6-49d0-abbf-7c8a4895bb57
-            target_type: media
+          sourceType: default-relative-url
+          value:
+            src: assets/jj-ying-8bghKxNU1j0-unsplash.jpg
+            width: 1200
+            height: 900
+            alt: 'Photo by jjying: https://unsplash.com/photos/purple-and-blue-light-digital-wallpaper-8bghKxNU1j0'
+          jsonSchema:
+            type: object
+            properties:
+              src:
+                type: string
+                contentMediaType: 'image/*'
+                format: uri-reference
+                x-allowed-schemes:
+                  - http
+                  - https
+              alt:
+                type: string
+              width:
+                type: integer
+              height:
+                type: integer
+            required:
+              - src
+          componentId: sdc.byte_theme.card
         orientation: vertical
         style: framed
         text: "Don't wait until the end of the month. View spending patterns and financial data instantly with customizable dashboards."
@@ -535,6 +597,9 @@ default:
   revision_translation_affected:
     -
       value: true
+  monitor:
+    -
+      value: false
   metatags:
     -
       value: '{"description":"[canvas_page:description]","title":"[canvas_page:title] | [site:name]"}'

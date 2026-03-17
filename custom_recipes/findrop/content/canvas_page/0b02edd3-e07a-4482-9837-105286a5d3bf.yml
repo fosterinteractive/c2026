@@ -1,0 +1,254 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: 0b02edd3-e07a-4482-9837-105286a5d3bf
+  default_langcode: en
+  depends:
+    63aafdf0-4ce8-482f-a93d-abb475f7e409: file
+    53362fc8-9277-4a8b-8f94-b54d4f15847c: media
+    33569b41-5f3b-43cc-8273-d6d8bfb7eef7: file
+    09aeaea2-f126-4f9e-8352-a9147ac2aaf0: media
+    3330bc8d-204d-4e28-b887-04ff60aec5a1: file
+    67bd4495-f0f1-4ce1-b72d-08cbd19c958a: media
+    7cad57d1-bdb3-4d4d-94f4-eb850069f0fa: file
+    7be0d827-bef8-4b8c-94c5-3a392d04ed52: media
+    d8ad62e5-884f-4f27-9c6d-89d4df195e1b: file
+    c770d89a-45dc-4ed8-a088-324a5e83c11f: media
+    04cf39f3-aa16-48c7-beb2-934d49e218d1: file
+    5f0c58e3-9c09-4db9-b61b-aea6789be14a: media
+    cd39ac1c-8c42-4b96-ab59-5c083d01fad1: file
+    99b0f7dc-591c-4781-95ff-24b8705eaa85: media
+    4e65148c-1684-4782-8543-725910ae005e: file
+    d25d8f59-cda9-4bf3-80a6-77095f5ca2ba: media
+    a434fa52-c6ee-4bde-9a69-e37b9ddd842e: file
+    545fe2b5-1b24-4cc8-bdba-8f8f3c54baa2: media
+    34072456-e85c-40fb-a09c-1d34fe4a1feb: file
+    7b0171db-99c8-4a99-a5f3-e1a342b99325: media
+    0fc51fec-6815-47f5-a978-df01e771c22a: file
+    bef8f74c-852b-4eed-984e-4bc2a75e8bd3: media
+    38a6be95-32ac-4439-add5-34906e771c51: file
+    be342eb9-55aa-4b1b-bda6-f9ebbefb3f99: media
+    1da4e9bd-ce4a-442d-9e14-98e69bf4f15b: file
+    f4bf4e5a-32c3-440c-818b-369bc2bbbd41: media
+    fb30eb7e-6698-429e-a3b3-9bba46919d7b: file
+    bdc5e5e1-b8d9-411c-abc3-aa06d8ae34a8: media
+    ed34d0e1-6f0f-4771-81d2-4ae0a6604370: file
+    360647ba-9efd-487b-8f3e-18efd0d7fe77: media
+    6db5169c-efd1-454b-b7ba-3b45a9eb59fd: file
+    47bc6eb6-6472-4f61-97d9-f3ee6287cbf3: media
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  owner:
+    -
+      target_id: 1
+  title:
+    -
+      value: Images
+  components:
+    -
+      uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 100%
+        columns: 25-25-25-25
+        mobile_columns: '1'
+        margin_block_start: '48'
+        margin_block_end: '48'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: true
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: 8807f88c-d811-4b5c-8685-e04a331fcbc9
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 53362fc8-9277-4a8b-8f94-b54d4f15847c
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: 4508d8a3-a0bf-4d8f-9a0a-75281baade36
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 09aeaea2-f126-4f9e-8352-a9147ac2aaf0
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: 66ed1d46-d55b-47bd-94ac-ce0953eaf85f
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 67bd4495-f0f1-4ce1-b72d-08cbd19c958a
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: 421adf3b-abc3-4b4a-87dc-0a8fac3e56a2
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 7be0d827-bef8-4b8c-94c5-3a392d04ed52
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: ac86601e-70ec-421a-ae82-ae0c07c92f6d
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: c770d89a-45dc-4ed8-a088-324a5e83c11f
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: 943eadc2-63d9-4d92-92af-258d52814db8
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 5f0c58e3-9c09-4db9-b61b-aea6789be14a
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: f41472a3-cb16-4418-91d0-5c408eb3c226
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 99b0f7dc-591c-4781-95ff-24b8705eaa85
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: cd70a8dc-e6ae-46a5-94b6-9d4ed9a56914
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: d25d8f59-cda9-4bf3-80a6-77095f5ca2ba
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: 968951a7-6324-4369-a407-61b036248d95
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 545fe2b5-1b24-4cc8-bdba-8f8f3c54baa2
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: f11a04be-37a9-48e0-8820-277877d80ecb
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 7b0171db-99c8-4a99-a5f3-e1a342b99325
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: 441f5784-555b-4a8e-960d-c6d31e19f062
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: bef8f74c-852b-4eed-984e-4bc2a75e8bd3
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: 48c02830-8d12-4cfa-9fe4-f0911693b21d
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: be342eb9-55aa-4b1b-bda6-f9ebbefb3f99
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: ebd5f480-f1ea-4218-9e90-d0d2eb279296
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: f4bf4e5a-32c3-440c-818b-369bc2bbbd41
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: 53d0d33b-03fd-4dfa-8b20-b5d24e210f1e
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: bdc5e5e1-b8d9-411c-abc3-aa06d8ae34a8
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: 419ad9b3-e171-4c40-b8c1-076fe435fd41
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 360647ba-9efd-487b-8f3e-18efd0d7fe77
+            target_type: media
+        radius: small
+    -
+      parent_uuid: a3ead810-9399-4d0c-ac99-397d406b58d4
+      slot: main_slot
+      uuid: afd64c3d-c4b1-4f2f-b37a-b4c362e880dd
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 47bc6eb6-6472-4f61-97d9-f3ee6287cbf3
+            target_type: media
+        radius: small
+  path:
+    -
+      alias: /images
+      langcode: en
+  revision_translation_affected:
+    -
+      value: true
+  monitor:
+    -
+      value: false
+  metatags:
+    -
+      value: '{"description":"[canvas_page:description]","title":"[canvas_page:title] | [site:name]"}'

@@ -7,6 +7,9 @@ _meta:
   depends:
     6dd19a5d-fdc9-44d2-8258-1ac26fb9b6d9: file
 default:
+  revision_user:
+    -
+      target_id: 1
   status:
     -
       value: true
@@ -28,7 +31,7 @@ default:
       value: finished
   field_image_description:
     -
-      value: "This is a photo of a smiling woman with light brown skin and curly brown hair, appearing to be in her 30s or 40s. She is wearing a black and white striped blazer over a black top, accessorized with a gold necklace. The background consists of frosted glass panels with small white square decals, featuring cool blue and gray tones. The lighting is bright and soft, contributing to a professional and welcoming mood. The woman's confident expression and direct gaze suggest approachability and positivity. This image is well-suited for business, professional, or corporate contexts. The main focus of the image is the woman, with no significant objects in the foreground."
+      value: "This is a photo of a smiling woman with light brown skin and curly brown hair, appearing to be in her 30s or 40s. She is wearing a black and white striped blazer over a black top, accessorized with a gold necklace. The background consists of frosted glass panels with small white square decals, featuring cool blue and gray tones. \r\n\r\nKathryn Smith, Director of Travel Operations, Ridgeline for use in testimonials"
   field_media_image:
     -
       alt: 'Headshot of a professional-looking woman in an office.'

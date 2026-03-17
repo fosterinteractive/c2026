@@ -1,0 +1,44 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: c770d89a-45dc-4ed8-a088-324a5e83c11f
+  bundle: image
+  default_langcode: en
+  depends:
+    d8ad62e5-884f-4f27-9c6d-89d4df195e1b: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: Findrop_illustration_hero-3.jpg
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: |-
+        This is a minimalist digital illustration on a pure black background, dominated by thin white line art and a dark gray central device.  
+        At the center is a sleek rectangular box labeled “Findrop,” with a small card-like icon near the bottom, suggesting fintech, payments, or digital transactions.  
+        Above the device, intricate white looping lines and circular nodes burst outward like flowing data streams, electrical currents, or network connections.  
+        Below it, several straight vertical lines extend downward, reinforcing a sense of signal transmission and technological infrastructure.  
+        There is no person in the image; the focus is entirely on the abstract technology object and its surrounding motion graphics.  
+        The overall mood is futuristic, intelligent, and high-tech, with a clean, premium, and slightly mysterious visual style.
+  field_media_image:
+    -
+      alt: 'Black charging cable with tangled white lines above on a dark background'
+      title: ''
+      width: 3000
+      height: 1833
+      entity: d8ad62e5-884f-4f27-9c6d-89d4df195e1b
