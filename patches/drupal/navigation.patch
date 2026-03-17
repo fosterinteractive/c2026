@@ -1,0 +1,27 @@
+diff --git a/core/modules/navigation/src/EntityRouteHelper.php b/core/modules/navigation/src/EntityRouteHelper.php
+index 104e08b7fcf..66aa56f1b80 100644
+--- a/core/modules/navigation/src/EntityRouteHelper.php
++++ b/core/modules/navigation/src/EntityRouteHelper.php
+@@ -51,11 +51,20 @@ public function __construct(
+    *   TRUE if the content entity route condition is met, FALSE otherwise.
+    */
+   public function isContentEntityRoute(): bool {
+-    return array_key_exists($this->routeMatch->getRouteObject()->getPath(), $this->getContentEntityPaths());
++    $route = $this->routeMatch->getRouteObject();
++    if (!$route) {
++      return FALSE;
++    }
++    return array_key_exists($route->getPath(), $this->getContentEntityPaths());
+   }
+ 
+   public function getContentEntityFromRoute(): ?ContentEntityInterface {
+-    $path = $this->routeMatch->getRouteObject()->getPath();
++    $route = $this->routeMatch->getRouteObject();
++    if (!$route) {
++      return NULL;
++    }
++
++    $path = $route->getPath();
+     if (!$entity_type = $this->getContentEntityPaths()[$path] ?? NULL) {
+       return NULL;
+     }

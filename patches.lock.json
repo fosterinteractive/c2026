@@ -1,6 +1,18 @@
 {
-    "_hash": "1d454e5db085809875a5abf99f99a1ca035b09684eeba2b9a60365e7775f207b",
+    "_hash": "6b66ad77ca41e067300a3d8ff20a65c362f4db609409b7367e3478d3201bff9a",
     "patches": {
+        "drupal/core": [
+            {
+                "package": "drupal/core",
+                "description": "Navigation fatal error on 404 pages (3565886)",
+                "url": "patches/drupal/navigation.patch",
+                "sha256": "fd658373f930f7cf72e5285e70588e4a699fc4658f12433db417635bf50aef98",
+                "depth": 2,
+                "extra": {
+                    "provenance": "root"
+                }
+            }
+        ],
         "drupal/canvas": [
             {
                 "package": "drupal/canvas",
