@@ -39,7 +39,7 @@ config:
             id: analytics_monitoring_agent
             context_items: {  }
             always_include:
-              - '2'
+              - '9'
             excluded_subcontext: { }
             scope_subscriptions: { }
     ai_context.settings:
