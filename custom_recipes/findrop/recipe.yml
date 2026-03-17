@@ -137,6 +137,7 @@ install:
   - byte_theme
   - easy_email_theme
   - gin
+  - ai_google_analytics
 recipes:
   - core/recipes/user_picture
 config:

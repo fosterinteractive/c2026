@@ -43,9 +43,5 @@ sleep 3
 echo "Indexing all content in the vector database..."
 ddev drush sapi-i
 
-# Install ai_google_analytics module.
-echo "Installing content performance modules..."
-ddev drush en ai_google_analytics -y
-
 echo "Demo setup complete. You can log in to the Drupal site using the following URL:"
 ddev drush uli
