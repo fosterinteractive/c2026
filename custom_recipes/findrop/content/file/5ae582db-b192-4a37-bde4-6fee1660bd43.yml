@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 5ae582db-b192-4a37-bde4-6fee1660bd43
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: FinDrop_logo-dark.svg
+  uri:
+    -
+      value: 'public://2026-03/FinDrop_logo-dark.svg'
+  filemime:
+    -
+      value: image/svg+xml
+  filesize:
+    -
+      value: 3096
+  status:
+    -
+      value: true
