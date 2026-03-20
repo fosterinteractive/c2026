@@ -30,7 +30,7 @@ default:
       target_id: 1
   title:
     -
-      value: 'Home v2'
+      value: Home
   description:
     -
       value: 'FinDrop offers corporate cards & expense management with built-in controls & automation—cutting processing time by 80%. Built for CFOs, Controllers & AP teams.'
@@ -916,7 +916,7 @@ default:
         text_color: default
   path:
     -
-      alias: /home-v2
+      alias: /home
       langcode: en
   revision_translation_affected:
     -

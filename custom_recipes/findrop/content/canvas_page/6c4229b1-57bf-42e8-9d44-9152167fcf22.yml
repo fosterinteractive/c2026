@@ -6,6 +6,24 @@ _meta:
   depends:
     a434fa52-c6ee-4bde-9a69-e37b9ddd842e: file
     545fe2b5-1b24-4cc8-bdba-8f8f3c54baa2: media
+    7cad57d1-bdb3-4d4d-94f4-eb850069f0fa: file
+    7be0d827-bef8-4b8c-94c5-3a392d04ed52: media
+    3330bc8d-204d-4e28-b887-04ff60aec5a1: file
+    67bd4495-f0f1-4ce1-b72d-08cbd19c958a: media
+    4e65148c-1684-4782-8543-725910ae005e: file
+    d25d8f59-cda9-4bf3-80a6-77095f5ca2ba: media
+    6dd19a5d-fdc9-44d2-8258-1ac26fb9b6d9: file
+    61a7dc42-4197-4d76-9170-202ae5915eb9: media
+    3324d784-51b7-48f2-a8bf-7fa8dd1c2804: file
+    25710933-f157-4ee6-a95c-28a4c256ea96: media
+    0fc51fec-6815-47f5-a978-df01e771c22a: file
+    bef8f74c-852b-4eed-984e-4bc2a75e8bd3: media
+    d48d3cc5-5ae8-43ff-9742-a2fdcff430d8: file
+    5005f597-1a87-4847-8d7d-76a9ef868fa2: media
+    b38beb47-f637-468a-8385-a206265ed349: file
+    0877ac26-4545-4e19-aa1c-c275dc509af2: media
+    34072456-e85c-40fb-a09c-1d34fe4a1feb: file
+    7b0171db-99c8-4a99-a5f3-e1a342b99325: media
 default:
   revision_user:
     -
@@ -18,7 +36,7 @@ default:
       target_id: 1
   title:
     -
-      value: 'FinDrop | Travel '
+      value: 'FinDrop Travel | All-in-one travel platform for business'
   description:
     -
       value: "Empower travel managers with FinDrop's all-in-one platform—enforce travel policies, issue trip virtual cards, auto-capture receipts & simplify multi-currency reimbursements."
@@ -43,7 +61,7 @@ default:
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
-        flex_gap: md
+        flex_gap: lg
         items_align: start
         flex_align: center
         radius: sm
@@ -73,6 +91,17 @@ default:
     -
       parent_uuid: 49fb2236-0f46-4364-a0ce-2cd12c85b353
       slot: group_slot
+      uuid: 251fda3b-978d-4f8d-a79e-6d87bdf7874e
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: row
+        flex_gap: md
+        items_align: start
+        flex_align: start
+        radius: sm
+    -
+      parent_uuid: 251fda3b-978d-4f8d-a79e-6d87bdf7874e
+      slot: group_slot
       uuid: ed794b53-87bb-45a8-a668-ccf1f928bdbd
       component_id: sdc.byte_theme.button
       inputs:
@@ -82,7 +111,7 @@ default:
         size: large
         icon: download
     -
-      parent_uuid: 49fb2236-0f46-4364-a0ce-2cd12c85b353
+      parent_uuid: 251fda3b-978d-4f8d-a79e-6d87bdf7874e
       slot: group_slot
       uuid: 53aeedc1-594f-474a-b6dd-e5d2e8585ccd
       component_id: sdc.byte_theme.button
@@ -261,32 +290,9 @@ default:
       component_id: sdc.byte_theme.image
       inputs:
         media:
-          sourceType: default-relative-url
-          value:
-            src: assets/pexels-felix-mittermeier-1209650.jpg
-            alt: 'Photo by Felix Mittermeier: https://www.pexels.com/photo/atmospheric-evening-bavaria-beautiful-clouds-1209650/'
-            width: 1920
-            height: 1014
-          jsonSchema:
-            type: object
-            properties:
-              src:
-                type: string
-                contentMediaType: 'image/*'
-                format: uri-reference
-                x-allowed-schemes:
-                  - http
-                  - https
-              alt:
-                type: string
-              width:
-                type: integer
-              height:
-                type: integer
-            required:
-              - src
-          componentId: sdc.byte_theme.image
-        size: '4:3'
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 7be0d827-bef8-4b8c-94c5-3a392d04ed52
+            target_type: media
         radius: large
     -
       uuid: 3b1f1bb6-2742-431f-8f6e-081b04ba6c9e
@@ -299,7 +305,6 @@ default:
         margin_block_end: '128'
         padding_block_start: '64'
         padding_block_end: '64'
-        background_color: accent
         section_header: false
         section_footer: false
     -
@@ -321,32 +326,9 @@ default:
       component_id: sdc.byte_theme.image
       inputs:
         media:
-          sourceType: default-relative-url
-          value:
-            src: assets/pexels-felix-mittermeier-1209650.jpg
-            alt: 'Photo by Felix Mittermeier: https://www.pexels.com/photo/atmospheric-evening-bavaria-beautiful-clouds-1209650/'
-            width: 1920
-            height: 1014
-          jsonSchema:
-            type: object
-            properties:
-              src:
-                type: string
-                contentMediaType: 'image/*'
-                format: uri-reference
-                x-allowed-schemes:
-                  - http
-                  - https
-              alt:
-                type: string
-              width:
-                type: integer
-              height:
-                type: integer
-            required:
-              - src
-          componentId: sdc.byte_theme.image
-        size: '4:3'
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 67bd4495-f0f1-4ce1-b72d-08cbd19c958a
+            target_type: media
         radius: large
     -
       parent_uuid: 3b1f1bb6-2742-431f-8f6e-081b04ba6c9e
@@ -370,7 +352,7 @@ default:
           value: '<p>VIRTUAL CARDS</p>'
           format: canvas_html_block
         text_size: text-sm
-        text_color: inverted
+        text_color: default
     -
       parent_uuid: 9d6d240e-bf5b-4bd5-a713-5a9374166f57
       slot: group_slot
@@ -392,7 +374,7 @@ default:
           value: '<p>FinDrop issues trip-specific virtual cards with pre-set spending limits. Every charge is automatically tagged to the right trip. When the trip is over, the card freezes. No lingering authorizations, no mystery charges weeks later. Reconciliation is straightforward because every charge on the card belongs to one trip.</p>'
           format: canvas_html_block
         text_size: normal
-        text_color: inverted
+        text_color: default
     -
       parent_uuid: 9d6d240e-bf5b-4bd5-a713-5a9374166f57
       slot: group_slot
@@ -481,32 +463,9 @@ default:
       component_id: sdc.byte_theme.image
       inputs:
         media:
-          sourceType: default-relative-url
-          value:
-            src: assets/pexels-felix-mittermeier-1209650.jpg
-            alt: 'Photo by Felix Mittermeier: https://www.pexels.com/photo/atmospheric-evening-bavaria-beautiful-clouds-1209650/'
-            width: 1920
-            height: 1014
-          jsonSchema:
-            type: object
-            properties:
-              src:
-                type: string
-                contentMediaType: 'image/*'
-                format: uri-reference
-                x-allowed-schemes:
-                  - http
-                  - https
-              alt:
-                type: string
-              width:
-                type: integer
-              height:
-                type: integer
-            required:
-              - src
-          componentId: sdc.byte_theme.image
-        size: '4:3'
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: d25d8f59-cda9-4bf3-80a6-77095f5ca2ba
+            target_type: media
         radius: large
     -
       uuid: 1c738201-875b-4c7e-8e06-0ac18c74a33b
@@ -534,31 +493,9 @@ default:
         align: center
         style: inverted
         media:
-          sourceType: default-relative-url
-          value:
-            src: assets/portrait.png
-            alt: Placeholder
-            width: 100
-            height: 100
-          jsonSchema:
-            type: object
-            properties:
-              src:
-                type: string
-                contentMediaType: 'image/*'
-                format: uri-reference
-                x-allowed-schemes:
-                  - http
-                  - https
-              alt:
-                type: string
-              width:
-                type: integer
-              height:
-                type: integer
-            required:
-              - src
-          componentId: sdc.byte_theme.card-testimonial
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 61a7dc42-4197-4d76-9170-202ae5915eb9
+            target_type: media
     -
       parent_uuid: 1c738201-875b-4c7e-8e06-0ac18c74a33b
       slot: main_slot
@@ -571,31 +508,9 @@ default:
         align: center
         style: inverted
         media:
-          sourceType: default-relative-url
-          value:
-            src: assets/portrait.png
-            alt: Placeholder
-            width: 100
-            height: 100
-          jsonSchema:
-            type: object
-            properties:
-              src:
-                type: string
-                contentMediaType: 'image/*'
-                format: uri-reference
-                x-allowed-schemes:
-                  - http
-                  - https
-              alt:
-                type: string
-              width:
-                type: integer
-              height:
-                type: integer
-            required:
-              - src
-          componentId: sdc.byte_theme.card-testimonial
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 25710933-f157-4ee6-a95c-28a4c256ea96
+            target_type: media
     -
       uuid: c6653f1d-6c58-443a-b5b2-3bccc1365407
       component_id: sdc.byte_theme.section
@@ -811,33 +726,10 @@ default:
         orientation: vertical
         heading_text: 'Virtual credit cards'
         level: 3
-        url: 'https://example.com'
         media:
-          sourceType: default-relative-url
-          value:
-            src: assets/jj-ying-8bghKxNU1j0-unsplash.jpg
-            width: 1200
-            height: 900
-            alt: 'Photo by jjying: https://unsplash.com/photos/purple-and-blue-light-digital-wallpaper-8bghKxNU1j0'
-          jsonSchema:
-            type: object
-            properties:
-              src:
-                type: string
-                contentMediaType: 'image/*'
-                format: uri-reference
-                x-allowed-schemes:
-                  - http
-                  - https
-              alt:
-                type: string
-              width:
-                type: integer
-              height:
-                type: integer
-            required:
-              - src
-          componentId: sdc.byte_theme.card
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: bef8f74c-852b-4eed-984e-4bc2a75e8bd3
+            target_type: media
         text: 'Create virtual cards in seconds with custom spending limits for every vendor, project, or subscription. Built-in controls at the card level.'
         is_text_centered: false
     -
@@ -851,33 +743,10 @@ default:
         orientation: vertical
         heading_text: 'Expense management'
         level: 3
-        url: 'https://example.com'
         media:
-          sourceType: default-relative-url
-          value:
-            src: assets/jj-ying-8bghKxNU1j0-unsplash.jpg
-            width: 1200
-            height: 900
-            alt: 'Photo by jjying: https://unsplash.com/photos/purple-and-blue-light-digital-wallpaper-8bghKxNU1j0'
-          jsonSchema:
-            type: object
-            properties:
-              src:
-                type: string
-                contentMediaType: 'image/*'
-                format: uri-reference
-                x-allowed-schemes:
-                  - http
-                  - https
-              alt:
-                type: string
-              width:
-                type: integer
-              height:
-                type: integer
-            required:
-              - src
-          componentId: sdc.byte_theme.card
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 5005f597-1a87-4847-8d7d-76a9ef868fa2
+            target_type: media
         text: 'Automatic receipt capture, policy enforcement, and GL coding. Expense reports do themselves.'
         is_text_centered: false
     -
@@ -891,33 +760,10 @@ default:
         orientation: vertical
         heading_text: Integrations
         level: 3
-        url: 'https://example.com'
         media:
-          sourceType: default-relative-url
-          value:
-            src: assets/jj-ying-8bghKxNU1j0-unsplash.jpg
-            width: 1200
-            height: 900
-            alt: 'Photo by jjying: https://unsplash.com/photos/purple-and-blue-light-digital-wallpaper-8bghKxNU1j0'
-          jsonSchema:
-            type: object
-            properties:
-              src:
-                type: string
-                contentMediaType: 'image/*'
-                format: uri-reference
-                x-allowed-schemes:
-                  - http
-                  - https
-              alt:
-                type: string
-              width:
-                type: integer
-              height:
-                type: integer
-            required:
-              - src
-          componentId: sdc.byte_theme.card
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 0877ac26-4545-4e19-aa1c-c275dc509af2
+            target_type: media
         text: 'Two-way sync with QuickBooks, NetSuite, and 50+ ERPs. Travel data flows into the same SmartBudgets™ dashboards as all other FinDrop spend.'
         is_text_centered: false
     -
@@ -941,7 +787,7 @@ default:
       component_id: sdc.byte_theme.group
       inputs:
         flex_direction: column
-        flex_gap: md
+        flex_gap: lg
         items_align: start
         flex_align: center
         radius: sm
@@ -998,32 +844,9 @@ default:
       component_id: sdc.byte_theme.image
       inputs:
         media:
-          sourceType: default-relative-url
-          value:
-            src: assets/pexels-felix-mittermeier-1209650.jpg
-            alt: 'Photo by Felix Mittermeier: https://www.pexels.com/photo/atmospheric-evening-bavaria-beautiful-clouds-1209650/'
-            width: 1920
-            height: 1014
-          jsonSchema:
-            type: object
-            properties:
-              src:
-                type: string
-                contentMediaType: 'image/*'
-                format: uri-reference
-                x-allowed-schemes:
-                  - http
-                  - https
-              alt:
-                type: string
-              width:
-                type: integer
-              height:
-                type: integer
-            required:
-              - src
-          componentId: sdc.byte_theme.image
-        size: '4:3'
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 7b0171db-99c8-4a99-a5f3-e1a342b99325
+            target_type: media
         radius: large
     -
       uuid: 3250f71d-c892-4322-b3c6-97a537be2139
