@@ -18,7 +18,7 @@ default:
       target_id: 1
   title:
     -
-      value: 'FinDrop | Travel 2-2'
+      value: 'FinDrop | Travel '
   description:
     -
       value: "Empower travel managers with FinDrop's all-in-one platform—enforce travel policies, issue trip virtual cards, auto-capture receipts & simplify multi-currency reimbursements."

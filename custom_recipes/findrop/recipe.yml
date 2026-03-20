@@ -347,7 +347,7 @@ config:
         page:
           403: /user/login
           404: /404
-          front: /page/7
+          front: /page/13
         admin_compact_mode: false
         weight_select_max: 100
         default_langcode: en

@@ -63,4 +63,18 @@ config:
 
     ai_context.settings:
       simpleConfigUpdate:
-        max_tokens: 30000
+        strategy: keyword
+        max_context_items: 10
+        max_global_items: 3
+        max_tokens: 200000
+        show_overview_page: true
+        context_prefix: 'The following site-specific context applies to this task. Use it strictly when relevant; do not override user intent.'
+        target_entity_types:
+          - node
+          - taxonomy_term
+          - canvas_page
+          - media
+        usage_tracking_enabled: true
+        usage_max_records: 10000
+        usage_max_age: 31536000
+        debug_logging: false
