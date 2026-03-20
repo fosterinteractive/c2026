@@ -1,0 +1,22 @@
+diff --git a/src/Plugin/Field/FieldTypeOverride/StringLongItemOverride.php b/src/Plugin/Field/FieldTypeOverride/StringLongItemOverride.php
+index d2b9a11d..2f391c0d 100644
+--- a/src/Plugin/Field/FieldTypeOverride/StringLongItemOverride.php
++++ b/src/Plugin/Field/FieldTypeOverride/StringLongItemOverride.php
+@@ -21,9 +21,14 @@ class StringLongItemOverride extends StringLongItem {
+     $properties['value']->addConstraint('StringSemantics', [
+       'semantic' => StringSemanticsConstraint::PROSE,
+     ]);
+-    $properties['value']->addConstraint('Regex', [
+-      'pattern' => '/(.|\r?\n)*/',
+-    ]);
++    // canvas_ai_seo's schema_jsonld fields store large JSON-LD strings; the /(.|\r?\n)*/
++    // regex exceeds pcre.backtrack_limit on large inputs, so the constraint is skipped for
++    // those fields. getProvider() is used instead of getName() to avoid "Undefined array key" warnings.
++    if ($field_definition->getProvider() !== 'canvas_ai_seo') {
++      $properties['value']->addConstraint('Regex', [
++        'pattern' => '/(.|\r?\n)*/',
++      ]);
++    }
+     return $properties;
+   }
+ 
