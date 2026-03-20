@@ -1,35 +1,37 @@
 _meta:
   version: '1.0'
   entity_type: menu_link_content
-  uuid: a46bbd2b-96ab-4c8a-b5ce-e19797d8f9b0
+  uuid: ff82709a-b158-4eb4-b81e-4fa3d79cbb30
   bundle: menu_link_content
   default_langcode: en
   depends:
-    ae1dee6e-ca38-49c5-aa37-9f2a8ec9af15: canvas_page
+    f08a25c6-4d5a-4789-9890-9f63331baa61: canvas_page
 default:
   enabled:
     -
       value: true
   title:
     -
-      value: Pricing
+      value: 'Virtual Cards'
   menu_name:
     -
       value: main
   link:
     -
       title: ''
-      options: {  }
-      target_uuid: ae1dee6e-ca38-49c5-aa37-9f2a8ec9af15
+      options:
+        icon: null
+        icon_display: icon_only
+      target_uuid: f08a25c6-4d5a-4789-9890-9f63331baa61
   external:
     -
       value: false
   rediscover:
     -
-      value: false
+      value: true
   weight:
     -
-      value: -49
+      value: -50
   expanded:
     -
       value: false

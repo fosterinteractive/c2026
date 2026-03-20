@@ -1,35 +1,37 @@
 _meta:
   version: '1.0'
   entity_type: menu_link_content
-  uuid: ee6cb133-8b56-490c-8ab9-5e004b7772d0
+  uuid: b6cf52d0-62ef-48a5-95f5-d71829ba95ca
   bundle: menu_link_content
   default_langcode: en
   depends:
-    715b996b-bbc2-4fa7-aa34-97a4cdd53022: canvas_page
+    97109b8d-4b95-4775-abb2-aa5ebc305b61: canvas_page
 default:
   enabled:
     -
       value: true
   title:
     -
-      value: Features
+      value: 'Expense Management'
   menu_name:
     -
       value: main
   link:
     -
       title: ''
-      options: {  }
-      target_uuid: 715b996b-bbc2-4fa7-aa34-97a4cdd53022
+      options:
+        icon: null
+        icon_display: icon_only
+      target_uuid: 97109b8d-4b95-4775-abb2-aa5ebc305b61
   external:
     -
       value: false
   rediscover:
     -
-      value: false
+      value: true
   weight:
     -
-      value: -50
+      value: -49
   expanded:
     -
       value: false
