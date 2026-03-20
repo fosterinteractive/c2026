@@ -1,5 +1,5 @@
 {
-    "_hash": "6b66ad77ca41e067300a3d8ff20a65c362f4db609409b7367e3478d3201bff9a",
+    "_hash": "72f3c8891a8540c533fc9d1ef1c8409b2ad8e68edb45a60a428d742b7d86ac28",
     "patches": {
         "drupal/core": [
             {
@@ -29,6 +29,16 @@
                 "description": "Update AiPanel and AiWizard components",
                 "url": "patches/canvas/canvas-content-performance.patch",
                 "sha256": "bd87ee7dd0cee567667d66b3b7d144545aecb677b290d20bfbab6b8c5405b5d5",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "drupal/canvas",
+                "description": "Unable to publish content with a large JSON in the schema_jsonld field",
+                "url": "patches/canvas/fix-long-json-in-schema_jsonld-field-blocks-page-publishing.patch",
+                "sha256": "20f8e86ca50830e3a2179b9db3303158a0e361746a602b37efb7923b84011ab0",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

@@ -1,0 +1,5 @@
+services:
+  canvas_ai_seo.layout_response_subscriber:
+    class: Drupal\canvas_ai_seo\EventSubscriber\LayoutResponseSubscriber
+    tags:
+      - { name: event_subscriber }
