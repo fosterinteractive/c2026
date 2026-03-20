@@ -10,7 +10,7 @@ default:
       value: true
   title:
     -
-      value: Blog
+      value: Articles
   menu_name:
     -
       value: main
