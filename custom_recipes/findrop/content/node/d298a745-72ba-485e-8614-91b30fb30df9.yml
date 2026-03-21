@@ -5,6 +5,7 @@ _meta:
   bundle: blog
   default_langcode: en
   depends:
+    29b31c49-a235-4fc3-906a-a501d6306c43: media
     eb00eaac-ad10-4bdb-9a31-7612c47c6484: taxonomy_term
 default:
   revision_uid:
@@ -33,8 +34,11 @@ default:
       value: published
   path:
     -
-      alias: /blog/2026-02/how-automated-approvals-transform-expense-management
+      alias: /blog/2026-03/how-automated-approvals-transform-expense-management
       langcode: en
+  sae_exclude:
+    -
+      value: false
   field_blog__byline:
     -
       value: 'Omer Potter'
@@ -45,6 +49,15 @@ default:
   field_description:
     -
       value: 'Automated approval workflows eliminate bottlenecks and inconsistencies in expense processing while speeding up reimbursements and providing complete audit trails that manual processes cannot match.'
+  field_featured_image:
+    -
+      entity: 29b31c49-a235-4fc3-906a-a501d6306c43
+  field_seo_analysis:
+    -
+      status: '0'
+      focus_keyword: ''
+      title: ''
+      description: ''
   field_tags:
     -
       entity: eb00eaac-ad10-4bdb-9a31-7612c47c6484

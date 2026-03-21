@@ -5,6 +5,7 @@ _meta:
   bundle: blog
   default_langcode: en
   depends:
+    590ef2bb-2e2d-4360-9444-ee4e4133e8f4: media
     eb00eaac-ad10-4bdb-9a31-7612c47c6484: taxonomy_term
 default:
   revision_uid:
@@ -33,8 +34,11 @@ default:
       value: published
   path:
     -
-      alias: /blog/2026-02/hidden-costs-manual-expense-processing
+      alias: /blog/2026-03/hidden-costs-manual-expense-processing
       langcode: en
+  sae_exclude:
+    -
+      value: false
   field_blog__byline:
     -
       value: 'Maia Hardy'
@@ -45,6 +49,15 @@ default:
   field_description:
     -
       value: 'Manual expense processing costs organizations far more than just labor hours when you factor in errors, delays, reduced morale, compliance risks, and limited financial visibility.'
+  field_featured_image:
+    -
+      entity: 590ef2bb-2e2d-4360-9444-ee4e4133e8f4
+  field_seo_analysis:
+    -
+      status: '0'
+      focus_keyword: ''
+      title: ''
+      description: ''
   field_tags:
     -
       entity: eb00eaac-ad10-4bdb-9a31-7612c47c6484

@@ -37,8 +37,6 @@ default:
   subcontext_type:
     -
       value: required
-  scope:
-    - {  }
   revision_translation_affected:
     -
       value: true
