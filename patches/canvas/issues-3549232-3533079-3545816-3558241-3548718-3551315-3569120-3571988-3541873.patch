@@ -2136,7 +2136,7 @@ index a8efc073..c35269e6 100644
 +
  }
 diff --git a/modules/canvas_ai/src/Controller/CanvasBuilder.php b/modules/canvas_ai/src/Controller/CanvasBuilder.php
-index 690a875c..be745336 100644
+index 690a875c..81b04852 100644
 --- a/modules/canvas_ai/src/Controller/CanvasBuilder.php
 +++ b/modules/canvas_ai/src/Controller/CanvasBuilder.php
 @@ -10,6 +10,8 @@ use Drupal\ai\OperationType\GenericType\ImageFile;
@@ -2157,7 +2157,17 @@ index 690a875c..be745336 100644
      $token = $request->headers->get('X-CSRF-Token') ?? '';
      if (!$this->csrfTokenGenerator->validate($token, 'canvas_ai.canvas_builder')) {
        throw new AccessDeniedHttpException('Invalid CSRF token');
-@@ -231,6 +235,14 @@ final class CanvasBuilder extends ControllerBase {
+@@ -150,6 +154,9 @@ final class CanvasBuilder extends ControllerBase {
+       ]);
+     }
+     $task_message = array_pop($prompt['messages']);
++    if (!empty($prompt['active_component_uuid']) && $prompt['active_component_uuid'] !== 'None') {
++      $task_message['text'] = "The following message was made after selecting the component with uuid " . $prompt['active_component_uuid'] . " in the current page\n" . $task_message['text'];
++    }
+     $agent->setChatInput(new ChatInput([
+       new ChatMessage($task_message['role'], $task_message['text'], $image_files),
+     ]));
+@@ -231,6 +238,14 @@ final class CanvasBuilder extends ControllerBase {
        'verbose_context_for_orchestrator' => $this->canvasAiPageBuilderHelper->generateVerboseContextForOrchestrator($prompt),
        'custom_libraries' => $this->getSupportedLibraries(),
      ]);
@@ -2172,7 +2182,7 @@ index 690a875c..be745336 100644
      try {
        $solvability = $agent->determineSolvability();
      }
-@@ -256,18 +268,39 @@ final class CanvasBuilder extends ControllerBase {
+@@ -256,18 +271,39 @@ final class CanvasBuilder extends ControllerBase {
      elseif ($solvability == AiAgentInterface::JOB_SOLVABLE) {
        $response['status'] = TRUE;
        $tools = $agent->getToolResults(TRUE);
@@ -2213,7 +2223,7 @@ index 690a875c..be745336 100644
        return new JsonResponse(
          $response,
        );
-@@ -468,12 +501,6 @@ final class CanvasBuilder extends ControllerBase {
+@@ -468,12 +504,6 @@ final class CanvasBuilder extends ControllerBase {
          "description" => "A utility function to efficiently merge Tailwind CSS classes in JS without style conflicts.",
          "code" => "```js\nimport { twMerge } from 'tailwind-merge';\n\ntwMerge('px-2 py-1 bg-red hover:bg-dark-red', 'p-3 bg-[#B91C1C]');\n// → 'hover:bg-dark-red p-3 bg-[#B91C1C]'\n```",
        ],

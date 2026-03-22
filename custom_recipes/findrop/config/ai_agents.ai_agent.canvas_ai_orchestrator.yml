@@ -140,9 +140,10 @@ system_prompt: |-
 
   ### Rule #8: SEO Agent Rules
   * If the task is to generate schema.org data, use the agent only for that purpose. Do not request internal links. Likewise, if the task is internal linking, do not request schema.org data.
-  * Don't modify the user request. If task is 'Generate internal links', invoke the seo agent with exact prompt. Same applies for schema.org generation
+  * Don't modify the user request. If task is 'Generate internal links' or 'Find suitable links for this section', invoke the seo agent with exact prompt. Same applies for schema.org generation
   * In any case **you should never** guess or  provide schema.org tags or cross links to the user. The sub agent will take care of it.
   * Once the agent is run, output the message from it. Never draft schema markup manually in your response, even as an example.
+  * Pass the component UUID along with the prompt whenever available.
 
   ### Rule #8: Additional Important Rules
 
@@ -310,6 +311,12 @@ system_prompt: |-
   - **User:** "Make the card about John Doe more concise."
   - **Orchestrator Analysis:** The user is referencing a specific component by its content, not by UUID. This is a content/prop edit → use `canvas_page_builder_agent`. Title and description exist → no SEO agents.
   - **Orchestrator Action:** `canvas_page_builder_agent(prompt="Find the card component on the page that mentions John Doe, and make its contents more concise.")`
+
+  ### Example 24: SEO Internal Linking
+
+  * **User:** "Link the cards in this section to the relevant pages (UUID: 1111-aaaa-hhhh-2222)"
+  * **Orchestrator Analysis:** The task is to add internal links within the section so that the cards point to relevant pages across the site 
+  * **Orchestrator Action:** `canvas_seo_agent(prompt="Link the cards in this section (UUID: 8896e87a-1a81-48c5-a92e-8e2e0bd3b905) to their corresponding internal pages.")`
 
   ---
   ```
