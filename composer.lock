@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3751e166a562ff278f7a44bde21d35b4",
+    "content-hash": "940ca35c54eeb6a9e0f6ba9fca393013",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -3033,7 +3033,7 @@
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/canvas.git",
-                "reference": "0bff26f756d7091de3c8f8d11ef01506eac1f027"
+                "reference": "0bff26f"
             },
             "require": {
                 "drupal/core": "^11.2",
@@ -3052,6 +3052,7 @@
                 "jangregor/phpstan-prophecy": "~1|~2",
                 "league/openapi-psr7-validator": "^0.22.0",
                 "mglaman/phpstan-drupal": "^2.0.9",
+                "phpat/phpat": "^0.12",
                 "phpstan/phpstan-strict-rules": "^2"
             },
             "type": "drupal-module",
@@ -3060,8 +3061,8 @@
                     "dev-1.x": "1.x-dev"
                 },
                 "drupal": {
-                    "version": "1.1.0+57-dev",
-                    "datestamp": "1771406657",
+                    "version": "1.x-dev",
+                    "datestamp": "1774002248",
                     "security-coverage": {
                         "status": "not-covered",
                         "message": "Dev releases are not covered by Drupal security advisories."
@@ -3083,13 +3084,20 @@
                     "composer --working-dir=$(composer run composer-root) exec phpcbf -- --standard=$(pwd)/phpcs.xml --colors $(pwd)"
                 ],
                 "phpstan": [
-                    "mkdir -p test-results && composer --working-dir=$(composer run composer-root) exec phpstan -- --configuration=$(pwd)/phpstan.neon --error-format=junit analyze $(pwd) > test-results/phpstan.xml || true && composer --working-dir=$(composer run composer-root) exec phpstan -- --configuration=$(pwd)/phpstan.neon analyze $(pwd)"
+                    "mkdir -p test-results && composer --working-dir=$(composer run composer-root) exec phpstan -- --configuration=$(pwd)/phpstan.neon --autoload-file=$(pwd)/phpstan_rules/autoload.php --error-format=junit analyze $(pwd) > test-results/phpstan.xml || true && composer --working-dir=$(composer run composer-root) exec phpstan -- --configuration=$(pwd)/phpstan.neon --autoload-file=$(pwd)/phpstan_rules/autoload.php analyze $(pwd)"
+                ],
+                "phpstan-regenerate-ignores-for-11.3-and-higher": [
+                    "rm $(pwd)/phpstan-11.3-and-higher-ignores.neon && touch $(pwd)/phpstan-11.3-and-higher-ignores.neon && composer --working-dir=$(composer run composer-root) exec phpstan -- --configuration=$(pwd)/phpstan.neon --autoload-file=$(pwd)/phpstan_rules/autoload.php --generate-baseline=$(pwd)/phpstan-11.3-and-higher-ignores.neon analyze $(pwd)"
                 ]
             },
             "license": [
                 "GPL-2.0-or-later"
             ],
             "authors": [
+                {
+                    "name": "amangrover90",
+                    "homepage": "https://www.drupal.org/user/3602433"
+                },
                 {
                     "name": "attilatilman",
                     "homepage": "https://www.drupal.org/user/3528404"
