@@ -137,6 +137,7 @@ install:
   - byte_theme
   - easy_email_theme
   - gin
+  - ai_google_analytics
 recipes:
   - core/recipes/user_picture
 config:
@@ -346,7 +347,7 @@ config:
         page:
           403: /user/login
           404: /404
-          front: /page/7
+          front: /page/10
         admin_compact_mode: false
         weight_select_max: 100
         default_langcode: en

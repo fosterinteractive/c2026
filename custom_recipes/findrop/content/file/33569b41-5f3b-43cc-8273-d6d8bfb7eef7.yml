@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 33569b41-5f3b-43cc-8273-d6d8bfb7eef7
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: findrop-phone-expense-circle.png
+  uri:
+    -
+      value: 'public://2026-03/findrop-phone-expense-circle.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 6381967
+  status:
+    -
+      value: true

@@ -282,7 +282,7 @@ component_context:
       sdc.byte_theme.accordion:
         id: sdc.byte_theme.accordion
         name: Accordion
-        description: 'A single section of content than can be collapsed and expanded.'
+        description: 'Collapsible content section. Must be inside an accordion-container.'
         group: Layout
         props:
           title:
@@ -327,22 +327,22 @@ component_context:
           accordion_content:
             name: 'Accordion content'
             description: 'Content in this slot will be hidden when the accordion is collapsed.'
-        detailed_description: 'A single section of content than can be collapsed and expanded.'
+        detailed_description: 'No background. Inherits from parent section. Set heading_level to 3 when inside a section.'
       sdc.byte_theme.accordion-container:
         id: sdc.byte_theme.accordion-container
         name: 'Accordion container'
-        description: 'A container for any content, only one of whose accordions may be open at a time.'
+        description: 'Container for accordion items. Only one may be open at a time.'
         group: Layout
         props: 'No props'
         slots:
           accordion_content:
             name: 'Accordion content'
             description: 'Only one of collapsible sections added can be open at a time.'
-        detailed_description: 'A container for any content, only one of whose accordions may be open at a time.'
+        detailed_description: 'No background or text props. Inherits from parent section.'
       sdc.byte_theme.anchor:
         id: sdc.byte_theme.anchor
         name: Anchor
-        description: 'An invisible element with an ID you can link to with a URL fragment (e.g. \#intro)'
+        description: 'Invisible anchor for in-page links (e.g., #features).'
         group: Base
         props:
           id:
@@ -352,11 +352,11 @@ component_context:
             default: anchor-id
             required: true
         slots: 'No slots'
-        detailed_description: 'An invisible element with an ID you can link to with a URL fragment (e.g. \#intro)'
+        detailed_description: 'No visual appearance. ID: lowercase, hyphens allowed, must start with a letter.'
       sdc.byte_theme.badge:
         id: sdc.byte_theme.badge
         name: Badge
-        description: Badge
+        description: 'Small label with optional icon and link.'
         group: Base
         props:
           label:
@@ -397,11 +397,11 @@ component_context:
             type: boolean
             default: true
         slots: 'No slots'
-        detailed_description: Badge
+        detailed_description: 'style: primary renders blue background (white text). style: secondary renders grey background (dark text). Use primary on dark backgrounds, secondary on light.'
       sdc.byte_theme.blockquote:
         id: sdc.byte_theme.blockquote
         name: Blockquote
-        description: Blockquote
+        description: 'Styled quotation with optional citation.'
         group: Base
         props:
           text:
@@ -425,11 +425,11 @@ component_context:
             type: string
             default: null
         slots: 'No slots'
-        detailed_description: Blockquote
+        detailed_description: 'No background or text_color props. Inherits from parent. Follow global contrast rule.'
       sdc.byte_theme.button:
         id: sdc.byte_theme.button
         name: Button
-        description: Button
+        description: 'Button or link styled as button. Icons limited to: arrow-right, arrow-left, caret-right, caret-left, download, user-plus.'
         group: Base
         props:
           variant:
@@ -533,11 +533,11 @@ component_context:
             type: boolean
             default: false
         slots: 'No slots'
-        detailed_description: Button
+        detailed_description: 'On dark backgrounds: use primary or secondary-inverted. On light backgrounds (accent, secondary, inverted): use primary-inverted or secondary.'
       sdc.byte_theme.card:
         id: sdc.byte_theme.card
         name: 'Image card'
-        description: 'Image card'
+        description: 'Card with image, heading, description, and optional link. Use for stats/results and cross-product links. Do not use for short benefits (use card-icon) or testimonials.'
         group: Card
         props:
           background:
@@ -645,11 +645,11 @@ component_context:
             type: boolean
             default: false
         slots: 'No slots'
-        detailed_description: 'Image card'
+        detailed_description: 'Text color is automatic based on background prop. Use background: default on dark sections, background: inverted on accent sections. Product page standard: style: framed, background: default.'
       sdc.byte_theme.card-icon:
         id: sdc.byte_theme.card-icon
         name: 'Icon card'
-        description: 'Icon card'
+        description: 'Icon card for short benefit statements (title + 1-2 sentences). Max 6 per section. Do not use for stats/numbers (use image card).'
         group: Card
         props:
           tile_size:
@@ -797,11 +797,11 @@ component_context:
                 label: Right
                 value: right
         slots: 'No slots'
-        detailed_description: 'Icon card'
+        detailed_description: 'Text color is automatic based on background_color. Use background_color: muted only when parent section has no background color. Do not set background_color if parent section already has one. Never set tile_size (aspect ratio) — leave unset.'
       sdc.byte_theme.card-logo:
         id: sdc.byte_theme.card-logo
         name: 'Logo card'
-        description: 'A component with an image and optional background and link.'
+        description: 'Logo image with optional background color and link. Use for partner/client logo grids.'
         group: Card
         props:
           media:
@@ -861,11 +861,11 @@ component_context:
             type: string
             default: null
         slots: 'No slots'
-        detailed_description: 'A component with an image and optional background and link.'
+        detailed_description: "No text content. Background_color is optional for visual grouping. Place inside a section's main_slot."
       sdc.byte_theme.card-pricing:
         id: sdc.byte_theme.card-pricing
         name: 'Pricing card'
-        description: 'Pricing card'
+        description: 'Pricing tier card. Use only on pricing pages.'
         group: Card
         props:
           heading_text:
@@ -930,11 +930,11 @@ component_context:
             type: boolean
             default: false
         slots: 'No slots'
-        detailed_description: 'Pricing card'
+        detailed_description: 'No background prop. Inherits from parent section. Set promote: true on the recommended tier to highlight it.'
       sdc.byte_theme.card-testimonial:
         id: sdc.byte_theme.card-testimonial
         name: 'Testimonial card'
-        description: 'Testimonial card'
+        description: 'Customer quote with citation and optional headshot. Only use with explicitly provided testimonials — never fabricate.'
         group: Card
         props:
           text:
@@ -999,11 +999,11 @@ component_context:
               width: 100
               height: 100
         slots: 'No slots'
-        detailed_description: 'Testimonial card'
+        detailed_description: 'Use style: default on dark section backgrounds. Use style: inverted if parent section has accent background.'
       sdc.byte_theme.cta:
         id: sdc.byte_theme.cta
         name: 'Hero CTA'
-        description: 'A call to action with a heading, description and slot for buttons.'
+        description: 'Call-to-action banner with heading, description, and button slot. Heading renders at 7XL automatically.'
         group: Hero
         props:
           heading_text:
@@ -1104,11 +1104,11 @@ component_context:
           actions:
             name: Buttons
             description: 'No description available'
-        detailed_description: 'A call to action with a heading, description and slot for buttons.'
+        detailed_description: 'When background_color is not set or is dark (muted, primary): text is white, buttons use primary variant. When background_color is light (accent, inverted): text is dark, buttons use primary-inverted. When media is set, overlay makes it dark regardless.'
       sdc.byte_theme.footer:
         id: sdc.byte_theme.footer
         name: Footer
-        description: Footer
+        description: 'Site footer. Footer region. Do not modify per page.'
         group: Layout
         props:
           align:
@@ -1129,11 +1129,11 @@ component_context:
           footer_utility_last:
             name: 'Copyright text'
             description: 'No description available'
-        detailed_description: Footer
+        detailed_description: 'Site-wide component. Do not modify on individual pages.'
       sdc.byte_theme.group:
         id: sdc.byte_theme.group
         name: Group
-        description: Group
+        description: 'Flex container for bundling related child components. Default: vertical, medium spacing, start-aligned, small corners, small padding.'
         group: Layout
         props:
           flex_direction:
@@ -1284,11 +1284,11 @@ component_context:
           group_slot:
             name: 'Group items'
             description: 'No description available'
-        detailed_description: Group
+        detailed_description: 'If my background is accent or secondary, children use text_color: inverted. Otherwise children use text_color: default. If no background is set, inherit from parent section. Do not wrap images in groups for feature deep-dives (CSS bug distorts images). Use radius: sm for text content groups.'
       sdc.byte_theme.heading:
         id: sdc.byte_theme.heading
         name: Heading
-        description: Heading
+        description: 'Always set text_size explicitly — heading level has no visual effect when text_size is set.'
         group: Base
         props:
           heading_text:
@@ -1419,11 +1419,11 @@ component_context:
             type: string
             default: null
         slots: 'No slots'
-        detailed_description: Heading
+        detailed_description: 'Use text_color: default unless nearest parent background is accent, secondary, or inverted — then use text_color: inverted.'
       sdc.byte_theme.hero-billboard:
         id: sdc.byte_theme.hero-billboard
         name: 'Hero billboard'
-        description: 'Hero billboard'
+        description: 'Full-width hero with background image and overlay. Always use for product pages. Always set overlap_navbar: true.'
         group: Hero
         props:
           height:
@@ -1536,11 +1536,11 @@ component_context:
           hero_slot:
             name: 'Hero content'
             description: 'Never use Inverted style in text or image components, when placed here.'
-        detailed_description: 'Hero billboard. Never use Inverted style in text or image components. '
+        detailed_description: 'Always dark due to image overlay. All children: text_color: default, buttons: primary or secondary-inverted. Do not use hero-side-by-side for product pages.'
       sdc.byte_theme.hero-blog:
         id: sdc.byte_theme.hero-blog
         name: 'Hero blog'
-        description: 'Hero component for the blog content type.'
+        description: 'Blog hero with heading, date, author, and image as props.'
         group: Hero
         props:
           heading_text:
@@ -1604,11 +1604,11 @@ component_context:
               width: 1920
               height: 1056
         slots: 'No slots'
-        detailed_description: 'Hero component for the blog content type.'
+        detailed_description: 'Always on dark background. Text renders white automatically.'
       sdc.byte_theme.hero-side-by-side:
         id: sdc.byte_theme.hero-side-by-side
         name: 'Hero side-by-side'
-        description: 'Hero with side-by-side slots for media and content.'
+        description: 'Hero with image on one side, content on the other. Not for product page heroes.'
         group: Hero
         props:
           hero_flex_gap:
@@ -1782,11 +1782,11 @@ component_context:
           hero_slot:
             name: Content
             description: 'When a heading or subheading is added, Max character count must be less than 40'
-        detailed_description: 'Hero with side-by-side slots for media and content.'
+        detailed_description: 'Use text_color: default unless background is accent or secondary — then use text_color: inverted.'
       sdc.byte_theme.icon:
         id: sdc.byte_theme.icon
         name: Icon
-        description: Icon
+        description: 'Standalone Phosphor icon. Use any valid Phosphor icon ID.'
         group: Base
         props:
           icon:
@@ -1824,11 +1824,11 @@ component_context:
                 label: 'Extra large'
                 value: extra-large
         slots: 'No slots'
-        detailed_description: Icon
+        detailed_description: 'Color inherited from parent. No override needed.'
       sdc.byte_theme.image:
         id: sdc.byte_theme.image
         name: Image
-        description: Image
+        description: 'Responsive image with radius, caption, and optional link. Search the media library for images related to the product and feature being described.'
         group: Base
         props:
           media:
@@ -1897,11 +1897,11 @@ component_context:
             type: string
             default: null
         slots: 'No slots'
-        detailed_description: Image
+        detailed_description: 'No text props. Do not set size (aspect ratio) by default — leave unset. In feature deep-dives, place directly in the section grid slot — do not wrap in a group (CSS bug). Set radius: large on the image itself.'
       sdc.byte_theme.navbar:
         id: sdc.byte_theme.navbar
         name: Navbar
-        description: Navbar
+        description: 'Site navigation. Header region. Do not modify per page.'
         group: Layout
         props:
           menu_align:
@@ -1933,11 +1933,11 @@ component_context:
           links:
             name: CTAs
             description: 'No description available'
-        detailed_description: Navbar
+        detailed_description: 'Site-wide component. Do not modify on individual pages.'
       sdc.byte_theme.section:
         id: sdc.byte_theme.section
         name: Section
-        description: Section
+        description: 'Primary layout wrapper. Most sections have no background color.'
         group: Layout
         props:
           width:
@@ -2231,11 +2231,11 @@ component_context:
           footer_slot:
             name: Footer
             description: 'No description available'
-        detailed_description: Section
+        detailed_description: 'Most sections have no background_color — children use text_color: default. If background_color is accent or secondary, children must switch to text_color: inverted. Set padding to 64 when any background color is applied.'
       sdc.byte_theme.text:
         id: sdc.byte_theme.text
         name: Text
-        description: Text
+        description: 'Rich text for paragraphs, lists, and formatting. Wrap content in HTML tags.'
         group: Base
         props:
           text:
@@ -2300,5 +2300,5 @@ component_context:
                 label: Primary
                 value: primary
         slots: 'No slots'
-        detailed_description: "Wrap contents in a &lt;p&gt; tag. Other supported tags include &lt;ul&gt;, &lt;ol&gt;, &lt;strong&gt;, &lt;em&gt; Use anchor tags to add links.\r\n"
+        detailed_description: 'Use text_color: default unless nearest parent background is accent, secondary, or inverted — then use text_color: inverted. Same rule applies when used as an eyebrow label (text-sm uppercase).'
     label: 'Single-Directory Components'

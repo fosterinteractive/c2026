@@ -1,5 +1,5 @@
 {
-    "_hash": "6b66ad77ca41e067300a3d8ff20a65c362f4db609409b7367e3478d3201bff9a",
+    "_hash": "b41a96e11b088bd51c378af4af888c61bc7c5bff28e5c421ac2b2ede72fd64d4",
     "patches": {
         "drupal/core": [
             {
@@ -18,7 +18,7 @@
                 "package": "drupal/canvas",
                 "description": "issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873",
                 "url": "patches/canvas/issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873.patch",
-                "sha256": "5135ef6d3d2f21d35a14eb751c846a6787ef290ff5370d72ffaa727f60fd3309",
+                "sha256": "35490e3f357df217ee5e7b704772096301c23256ea116093a8484b0014b7a27c",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
@@ -29,6 +29,16 @@
                 "description": "Update AiPanel and AiWizard components",
                 "url": "patches/canvas/canvas-content-performance.patch",
                 "sha256": "bd87ee7dd0cee567667d66b3b7d144545aecb677b290d20bfbab6b8c5405b5d5",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "drupal/canvas",
+                "description": "Unable to publish content with a large JSON in the schema_jsonld field",
+                "url": "patches/canvas/fix-long-json-in-schema_jsonld-field-blocks-page-publishing.patch",
+                "sha256": "20f8e86ca50830e3a2179b9db3303158a0e361746a602b37efb7923b84011ab0",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

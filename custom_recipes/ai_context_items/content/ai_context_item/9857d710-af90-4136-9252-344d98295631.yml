@@ -1,0 +1,37 @@
+_meta:
+  version: '1.0'
+  entity_type: ai_context_item
+  uuid: 9857d710-af90-4136-9252-344d98295631
+  bundle: default
+  default_langcode: en
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  label:
+    -
+      value: 'General Page Building Guidelines'
+  description:
+    -
+      value: 'Global rules for text color, eyebrow labels, and contrast across all Byte theme components.'
+      format: plain_text
+  purpose:
+    -
+      value: 'Global rules for text color, eyebrow labels, and contrast across all Byte theme components to ensure layouts are readable and accessible with sufficient color contrast.'
+      format: plain_text
+  content:
+    -
+      value: "# Typography & Contrast Rules v2\r\n\r\nThis is a dark theme. The page background is dark (`#0F172B`). Text defaults to white.\r\n\r\n***\\*Text color rule:\\**** Use `text_color: default` (white `#FFFFFF`) unless the nearest parent background is `accent`, `secondary`, or `inverted` — then use `text_color: inverted` (dark `#020618`).\r\n\r\n***\\*Eyebrow labels\\**** (`text-sm` uppercase) follow the same rule: `default` on dark, `inverted` on light. Never use `text_color: primary` (blue) for eyebrows — it has insufficient contrast on dark backgrounds.\r\n\r\n***\\*Button variants:\\**** On dark backgrounds use `primary` or `secondary-inverted`. On light backgrounds (`accent`, `secondary`, `inverted`) use `primary-inverted` or `secondary`.\r\n\r\n***\\*Padding rule:\\**** When any `background_color` is set on a section, set padding top and bottom to `64`. When no background color, padding is `0`."
+      format: plain_text
+  revision_translation_affected:
+    -
+      value: true
+  moderation_state:
+    -
+      value: published

@@ -1,0 +1,45 @@
+_meta:
+  version: '1.0'
+  entity_type: media
+  uuid: 09aeaea2-f126-4f9e-8352-a9147ac2aaf0
+  bundle: image
+  default_langcode: en
+  depends:
+    33569b41-5f3b-43cc-8273-d6d8bfb7eef7: file
+default:
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  name:
+    -
+      value: findrop-phone-expense-circle.png
+  revision_translation_affected:
+    -
+      value: true
+  path:
+    -
+      langcode: en
+      alias: null
+  ai_automator_status:
+    -
+      value: finished
+  field_image_description:
+    -
+      value: |-
+        This is a sleek digital graphic or infographic-style illustration, not a photo, with a deep black background and glowing neon teal accents.  
+        At the center is a dark smartphone displaying the word “FinDrop” and a credit card icon, suggesting mobile payments, phone-based expense tracking, or financial management.  
+        Surrounding the phone is a circular network of luminous icons connected by teal lines, creating a clean futuristic dashboard feel.  
+        The icons represent common spending categories such as travel with an airplane, lodging with a bed, transportation with taxis, coffee or food with a steaming cup, takeaway or cafe purchases with a cup, and payment cards.  
+        The main colors are black, charcoal gray, white, and bright cyan-teal glow, giving the image a high-tech, modern, premium appearance.  
+        There are no people in the image.  
+        The mood is polished, innovative, minimal, and professional, with a strong focus on digital finance and categorized phone expenses.
+  field_media_image:
+    -
+      alt: 'Graphic of a smartphone surrounded by glowing travel and hotel icons'
+      title: ''
+      width: 2048
+      height: 2048
+      entity: 33569b41-5f3b-43cc-8273-d6d8bfb7eef7

@@ -1,0 +1,68 @@
+langcode: en
+status: true
+dependencies: {  }
+id: analytics_monitoring_agent
+label: 'Analytics Monitoring Agent'
+description: 'This agent monitors Google Analytics data and compares live performance metrics against benchmark targets defined in Drupal’s Context Control Center.'
+system_prompt: |-
+  You are a marketing expert, helping users review insights from Google Analytics regarding their website. Your goal is to help users ensure that their content is meeting benchmarks defined in the Google Analytics Benchmarks context. If any page is not meeting the benchmarks, then admins should be notified.
+
+  Google Analytics data for engaged sessions, bounce rate and key event rate will be provided in the user prompt. For each page, compare the metrics with the benchmarks provided in the context control center. If a page does not meet all of the benchmarks, provide a brief summary of which benchmark failed. Include the numbers for the page in the summary and how it compares to the benchmarks set in the context control center.
+
+  Format your response as a JSON object with 3 properties. The first property is "notify" which should be TRUE if any of the benchmarks fail, FALSE otherwise. The second property is "summary", which will contain the summary of which benchmarks failed.
+
+  For example:
+  {
+    "notify": true,
+    "summary": "Page did not meet bounce rate benchmark"
+  }
+secured_system_prompt: '[ai_agent:agent_instructions]'
+tools:
+  'ai_context:get_relevant_context_items': true
+tool_settings:
+  'ai_context:get_relevant_context_items':
+    return_directly: 0
+    require_usage: 0
+    description_override: ''
+    progress_message: ''
+    use_artifacts: 0
+orchestration_agent: false
+triage_agent: false
+max_loops: 3
+default_information_tools: ''
+tool_usage_limits:
+  'ai_context:get_relevant_context_items':
+    task:
+      action: ''
+      hide_property: 0
+      not_break: 0
+      values: ''
+    agent_id:
+      action: ''
+      hide_property: 0
+      not_break: 0
+      values: ''
+    max_context_items:
+      action: ''
+      hide_property: 0
+      not_break: 0
+      values: ''
+    always_include:
+      action: ''
+      hide_property: 0
+      not_break: 0
+      values: ''
+    entity_type:
+      action: ''
+      hide_property: 0
+      not_break: 0
+      values: ''
+    entity_id:
+      action: ''
+      hide_property: 0
+      not_break: 0
+      values: ''
+exclude_users_role: false
+masquerade_roles: {  }
+structured_output_enabled: false
+structured_output_schema: "{\r\n  \"name\": \"google_analytics_report\",\r\n  \"description\": \"Summarize Google Analytics analysis into a reportable format.\",\r\n  \"schema\": {\r\n    \"type\": \"object\",\r\n    \"properties\": {\r\n      \"pages\": {\r\n        \"type\": \"array\",\r\n        \"description\": \"An array of URLs\",\r\n        \"items\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {\r\n            \"flag\": {\r\n              \"type\": \"boolean\",\r\n              \"description\": \"Whether the URL should be reported as not meeting benchmarks.\"\r\n            },\r\n            \"url\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"The URL of the page.\"\r\n            },\r\n            \"summary\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"Detailed descriptions of which benchmarks were not met.\"\r\n            },\r\n            \"recommendations\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"If benchmarks fail, a list of recommendations to improve the failing benchmark.\"\r\n            }\r\n          },\r\n          \"required\": [\"flag\", \"url\", \"summary\"]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}\r\n"

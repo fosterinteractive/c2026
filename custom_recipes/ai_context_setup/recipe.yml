@@ -1,35 +1,65 @@
 name: AI Context Setup
 type: recipe
 description: 'Sets up the latest AI Context module and adds relevant context items.'
+recipes:
+  - ../custom_recipes/ai_context_items
+# Provides the 'aiContextAgentsUpdate' config action.
+install:
+  - canvas_ai_seo
 config:
   actions:
     ai_context.agents:
-      simpleConfigUpdate:
+      aiContextAgentsUpdate:
         agents:
           -
             id: canvas_template_builder_agent
             context_items: {  }
             always_include:
-              - '1'
-              - '3'
-              - '5'
-            excluded_subcontext: {  }
+              - 'FinDrop Brand Guidelines'
+              - 'Writing Tone & Voice'
+              - 'Visuals & Imagery'
+              - 'Abbreviations, Spelling, Dates & Formatting'
+              - 'FinDrop Key Facts & Value Propositions'
+              - 'FinDrop Travel — Sales Training Deck'
+              - 'General Page Building Guidelines'
+              - 'Content Structure: Product Pages'
+            excluded_subcontext:
+              - 'Content Structure: PPC Landing Page'
+              - 'Content Structure: Articles & Blogs'
+              - 'Content Structure: Press Releases'
             scope_subscriptions: {  }
           -
             id: canvas_page_builder_agent
             context_items: {  }
             always_include:
-              - '1'
-              - '3'
-            excluded_subcontext: {  }
+              - 'FinDrop Brand Guidelines'
+              - 'Writing Tone & Voice'
+              - 'Visuals & Imagery'
+              - 'Abbreviations, Spelling, Dates & Formatting'
+              - 'FinDrop Key Facts & Value Propositions'
+              - 'FinDrop Travel — Sales Training Deck'
+              - 'General Page Building Guidelines'
+              - 'Content Structure: Product Pages'
+            excluded_subcontext:
+              - 'Content Structure: PPC Landing Page'
+              - 'Content Structure: Articles & Blogs'
+              - 'Content Structure: Press Releases'
             scope_subscriptions: {  }
           -
             id: canvas_ai_orchestrator
             context_items: {  }
             always_include:
-              - '1'
-              - '7'
-            excluded_subcontext: {  }
+              - 'Agent interaction guidelines'
+              - 'FinDrop Brand Guidelines'
+            excluded_subcontext:
+              - 'Writing Tone & Voice'
+              - 'Visuals & Imagery'
+              - 'Abbreviations, Spelling, Dates & Formatting'
+              - 'FinDrop Travel — Sales Training Deck'
+              - 'Content Structure: Product Pages'
+              - 'Content Structure: PPC Landing Page'
+              - 'Content Structure: Articles & Blogs'
+              - 'Content Structure: Press Releases'
             scope_subscriptions: {  }
           -
             id: drupal_canvas_seo_agent
@@ -39,9 +69,36 @@ config:
             id: analytics_monitoring_agent
             context_items: {  }
             always_include:
-              - '2'
-            excluded_subcontext: { }
-            scope_subscriptions: { }
+              - 'Google Analytics Benchmarks'
+            excluded_subcontext:
+              - 'FinDrop Brand Guidelines'
+              - 'Writing Tone & Voice'
+              - 'Visuals & Imagery'
+              - 'Abbreviations, Spelling, Dates & Formatting'
+              - 'FinDrop Key Facts & Value Propositions'
+              - 'FinDrop Travel — Sales Training Deck'
+              - 'General Page Building Guidelines'
+              - 'Content Structure: Product Pages'
+              - 'Content Structure: PPC Landing Page'
+              - 'Content Structure: Articles & Blogs'
+              - 'Content Structure: Press Releases'
+              - 'Agent interaction guidelines'
+            scope_subscriptions: {  }
+            
     ai_context.settings:
       simpleConfigUpdate:
-        max_tokens: 30000
+        strategy: keyword
+        max_context_items: 10
+        max_global_items: 3
+        max_tokens: 200000
+        show_overview_page: true
+        context_prefix: 'The following site-specific context applies to this task. Use it strictly when relevant; do not override user intent.'
+        target_entity_types:
+          - node
+          - taxonomy_term
+          - canvas_page
+          - media
+        usage_tracking_enabled: true
+        usage_max_records: 10000
+        usage_max_age: 31536000
+        debug_logging: false

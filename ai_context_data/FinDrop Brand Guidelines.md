@@ -1,4 +1,4 @@
-# FinDrop BRAND GUIDELINES - Shared with All agents
+# FinDrop BRAND GUIDELINES
 
 ## 1. CORE IDENTITY & POSITIONING
 *   **Company:** FinDrop
@@ -62,7 +62,7 @@
 *   **Benefit:** 90%+ adoption; policy enforcement at point of booking; zero expense reports.
 
 ## 6. COMPETITIVE & LEGAL SAFETY
-*   **Strict Prohibition:** NEVER mention competitors by name (e.g., Ramp, SAP Concur, Brex) in public-facing content without explicit legal approval.
+*   **Strict Prohibition:** NEVER mention competitors by name (e.g., Romp, SAQ Concur, Brix) in public-facing content without explicit legal approval.
 *   **Positioning:** Use category language (e.g., "Unlike legacy travel portals," "Unlike traditional corporate cards").
 *   **Review Required:** Any claims of being "first," "only," or "best," or specific performance comparisons ("2x faster").
 

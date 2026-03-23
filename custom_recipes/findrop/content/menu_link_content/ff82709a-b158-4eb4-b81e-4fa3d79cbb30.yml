@@ -1,0 +1,40 @@
+_meta:
+  version: '1.0'
+  entity_type: menu_link_content
+  uuid: ff82709a-b158-4eb4-b81e-4fa3d79cbb30
+  bundle: menu_link_content
+  default_langcode: en
+  depends:
+    f08a25c6-4d5a-4789-9890-9f63331baa61: canvas_page
+default:
+  enabled:
+    -
+      value: true
+  title:
+    -
+      value: 'Virtual Cards'
+  menu_name:
+    -
+      value: main
+  link:
+    -
+      title: ''
+      options:
+        icon: null
+        icon_display: icon_only
+      target_uuid: f08a25c6-4d5a-4789-9890-9f63331baa61
+  external:
+    -
+      value: false
+  rediscover:
+    -
+      value: true
+  weight:
+    -
+      value: -50
+  expanded:
+    -
+      value: false
+  revision_translation_affected:
+    -
+      value: true

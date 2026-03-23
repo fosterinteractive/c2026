@@ -7,6 +7,9 @@ _meta:
   depends:
     49bd225b-1031-4001-8482-afbff25622fb: file
 default:
+  revision_user:
+    -
+      target_id: 1
   status:
     -
       value: true
@@ -28,7 +31,7 @@ default:
       value: finished
   field_image_description:
     -
-      value: 'This is a digital graphic image with a dark, sleek, and modern color palette featuring shades of black, grey, and subtle blue. The background consists of a grid of outlined travel-themed icons, such as airplanes, luggage, cameras, and passports, all rendered in white line art. At the center, there is a glowing, highlighted section where a smartphone-like device labeled "FinDrop" floats above the grid, drawing attention. No people are present; the focus is entirely on objects and icons. The overall mood is futuristic and professional, evoking themes of travel technology and innovation. The lighting creates a sense of importance and sophistication around the central device. The image is well-suited for tech-oriented travel apps or services.'
+      value: "FinDrop Travel Product Illustration on theme of \"expense tracking and categorization\"\r\n\r\n\r\nThis is a digital graphic image with a dark, sleek, and modern color palette featuring shades of black, grey, and subtle blue. The background consists of a grid of outlined travel-themed icons, such as airplanes, luggage, cameras, and passports, all rendered in white line art. At the center, there is a glowing, highlighted section where a smartphone-like device labeled \"FinDrop\" floats above the grid, drawing attention. No people are present; the focus is entirely on objects and icons. The overall mood is futuristic and professional, evoking themes of travel technology and innovation. The lighting creates a sense of importance and sophistication around the central device. The image is well-suited for tech-oriented travel apps or services."
   field_media_image:
     -
       alt: 'A glowing mobile phone surrounded by app icons, highlighting the “Finance” app.'

@@ -1,0 +1,649 @@
+_meta:
+  version: '1.0'
+  entity_type: canvas_page
+  uuid: f08a25c6-4d5a-4789-9890-9f63331baa61
+  default_langcode: en
+  depends:
+    38a6be95-32ac-4439-add5-34906e771c51: file
+    be342eb9-55aa-4b1b-bda6-f9ebbefb3f99: media
+    89ce780d-4e9b-4aae-bb4a-30fb0fef7b86: file
+    8cdf176d-fa3b-435c-b0ff-70df5206f27f: media
+    596fd6af-df75-4681-bc27-86f59c4a225d: file
+    dd73e867-3d74-43e3-a273-0012b0f10d69: media
+    b38beb47-f637-468a-8385-a206265ed349: file
+    0877ac26-4545-4e19-aa1c-c275dc509af2: media
+    881306db-f10d-4a85-bdea-e86c618e288b: file
+    1e2d803f-d28c-415c-8cc7-4c4e90632c76: media
+    fb30eb7e-6698-429e-a3b3-9bba46919d7b: file
+    bdc5e5e1-b8d9-411c-abc3-aa06d8ae34a8: media
+default:
+  revision_user:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  owner:
+    -
+      target_id: 1
+  title:
+    -
+      value: 'FinDrop Virtual Credit Cards '
+  description:
+    -
+      value: 'Take control of corporate spend with FinDrop Cards. Virtual & physical cards, spend controls, receipt capture & 50+ integrations. 80% less time on expenses. Book a demo.'
+  components:
+    -
+      uuid: 21a1619f-186f-437c-b780-53dd8e9e85bc
+      component_id: sdc.byte_theme.hero-billboard
+      inputs:
+        height: full
+        flex_position: bottom-left
+        overlay_opacity: 60%
+        object_position: center
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: be342eb9-55aa-4b1b-bda6-f9ebbefb3f99
+            target_type: media
+        overlap_navbar: true
+    -
+      parent_uuid: 21a1619f-186f-437c-b780-53dd8e9e85bc
+      slot: hero_slot
+      uuid: 68f8f01c-54a2-465d-a5a8-f321fd4338de
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: lg
+        items_align: start
+        flex_align: center
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: 68f8f01c-54a2-465d-a5a8-f321fd4338de
+      slot: group_slot
+      uuid: 2dcc900b-f337-47a5-98d1-290b4ab9d045
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Create and Control Corporate Cards in Seconds, Not Days'
+        level: 1
+        text_size: heading-responsive-7xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: 68f8f01c-54a2-465d-a5a8-f321fd4338de
+      slot: group_slot
+      uuid: 1a99b36d-6f17-4342-bef8-c9aab58d007c
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Instant virtual and physical cards with built-in spend controls, automatic receipt capture, and live visibility — so your finance team can stop policing expenses and start driving strategy.</p>'
+          format: canvas_html_block
+        text_size: text-lg
+        text_color: default
+    -
+      parent_uuid: 68f8f01c-54a2-465d-a5a8-f321fd4338de
+      slot: group_slot
+      uuid: ecf201a9-5f06-4a95-a257-4489c6ab10d7
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: row
+        flex_gap: sm
+        items_align: start
+        flex_align: start
+        radius: sm
+    -
+      parent_uuid: ecf201a9-5f06-4a95-a257-4489c6ab10d7
+      slot: group_slot
+      uuid: 8c8b5a97-1881-4ede-a977-716b813098f6
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: primary
+        label: 'Get Your First Card in 60 Seconds'
+        href: 'https://example.com'
+        size: large
+        icon: arrow-right
+    -
+      parent_uuid: ecf201a9-5f06-4a95-a257-4489c6ab10d7
+      slot: group_slot
+      uuid: b154bb42-51cd-4c00-8141-204508535bac
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: secondary-inverted
+        label: 'Watch 3-Minute Demo'
+        href: 'https://example.com'
+        size: large
+        icon: caret-right
+    -
+      uuid: 30f6cce1-1349-43fb-8250-8701e628e733
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 100%
+        columns: 33-33-33
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: false
+    -
+      parent_uuid: 30f6cce1-1349-43fb-8250-8701e628e733
+      slot: header_slot
+      uuid: 5104880f-1444-4da1-a02a-1d63004fa082
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Every card. Every transaction. Fully controlled.'
+        level: 2
+        text_size: heading-responsive-5xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: 30f6cce1-1349-43fb-8250-8701e628e733
+      slot: main_slot
+      uuid: f6f6342d-eebf-4845-b2db-05e29bb006b5
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: lightning
+        icon_size: extra-large
+        icon_align: center
+        text: 'Issuance in seconds'
+        description:
+          value: '<p>Create virtual cards for any team, project, or vendor in seconds. No paperwork, no waiting for plastic, no bank approvals. Employees get purchasing power immediately.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: 30f6cce1-1349-43fb-8250-8701e628e733
+      slot: main_slot
+      uuid: 15d4aea0-19aa-4008-9dc7-dd5cef6a5c0d
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: shield-check
+        icon_size: extra-large
+        icon_align: center
+        text: 'Controls built in'
+        description:
+          value: "<p>Set spend limits, restrict merchant categories, and enforce approval workflows before a single dollar is spent. Prevent out-of-policy purchases — don't discover them later.</p>"
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: 30f6cce1-1349-43fb-8250-8701e628e733
+      slot: main_slot
+      uuid: 787f9252-e820-49c7-9377-6861e6d69064
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: receipt
+        icon_size: extra-large
+        icon_align: center
+        text: 'Automatic receipt capture'
+        description:
+          value: '<p>Every transaction is captured, categorized, and matched to a receipt automatically. Zero manual work. Your team never chases a receipt again.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: 30f6cce1-1349-43fb-8250-8701e628e733
+      slot: main_slot
+      uuid: c4baab47-a7d4-437c-8068-3bd3612ab317
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: eye
+        icon_size: extra-large
+        icon_align: center
+        text: 'Live visibility'
+        description:
+          value: "<p>See every transaction the moment it happens. No more waiting for month-end statements. Spot anomalies, track budgets, and make decisions with data that's current — not 30 days old.</p>"
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: 30f6cce1-1349-43fb-8250-8701e628e733
+      slot: main_slot
+      uuid: cbc18900-f3e6-4ac6-8374-7b7809966571
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: arrows-clockwise
+        icon_size: extra-large
+        icon_align: center
+        text: 'Automatic accounting sync'
+        description:
+          value: '<p>Transactions flow directly into QuickBooks, NetSuite, and 50+ other platforms with the right GL codes, categories, and cost centers. Your books are always up to date.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: 30f6cce1-1349-43fb-8250-8701e628e733
+      slot: main_slot
+      uuid: 2e1309d3-6f77-4991-a017-0e98c3dd16c9
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: credit-card
+        icon_size: extra-large
+        icon_align: center
+        text: 'Freeze, adjust, cancel — instantly'
+        description:
+          value: "<p>Suspicious charge? Freeze a card in one tap. Employee leaves? Cancel instantly. Need to bump a limit for a conference? Adjust in seconds. You're always in control.</p>"
+          format: canvas_html_block
+        text_align: center
+    -
+      uuid: 1d2d2751-2373-4af6-b727-c127af6bbf8b
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 100%
+        columns: 33-33-33
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '64'
+        padding_block_end: '64'
+        section_header: true
+        section_footer: false
+        background_color: muted
+    -
+      parent_uuid: 1d2d2751-2373-4af6-b727-c127af6bbf8b
+      slot: header_slot
+      uuid: e3644fab-f3af-47c6-a6e3-5f04ee222a04
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: "Corporate cards weren't built for how your team actually works"
+        level: 2
+        text_size: heading-responsive-5xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: 1d2d2751-2373-4af6-b727-c127af6bbf8b
+      slot: main_slot
+      uuid: 76aa9268-fdf5-4c53-9d48-5083c69db9bb
+      component_id: sdc.byte_theme.card
+      inputs:
+        background: inverted
+        style: framed
+        orientation: vertical
+        heading_text: '80% less time on expenses'
+        level: 3
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 8cdf176d-fa3b-435c-b0ff-70df5206f27f
+            target_type: media
+        text: "Reduce expense processing time by 80% with FinDrop Cards. That's 15 hours back every month to spend on work that actually matters."
+        is_text_centered: false
+    -
+      parent_uuid: 1d2d2751-2373-4af6-b727-c127af6bbf8b
+      slot: main_slot
+      uuid: 4785147e-f696-43fd-99c5-65870c68d4c8
+      component_id: sdc.byte_theme.card
+      inputs:
+        background: inverted
+        style: framed
+        orientation: vertical
+        heading_text: '67% fewer errors'
+        level: 3
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: dd73e867-3d74-43e3-a273-0012b0f10d69
+            target_type: media
+        text: 'Automated capture and categorization eliminates the manual steps where mistakes happen. Every transaction has documentation. No more audit anxiety, no more chasing employees for missing receipts.'
+        is_text_centered: false
+    -
+      parent_uuid: 1d2d2751-2373-4af6-b727-c127af6bbf8b
+      slot: main_slot
+      uuid: 3cd43a27-d890-4e0c-b1e7-86e22a724243
+      component_id: sdc.byte_theme.card
+      inputs:
+        background: inverted
+        style: framed
+        orientation: vertical
+        heading_text: '10-day implementation'
+        level: 3
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 0877ac26-4545-4e19-aa1c-c275dc509af2
+            target_type: media
+        text: 'From sign-up to first card issued in 10 business days. We handle migration, training, and integration. Run both systems in parallel if you need to.'
+        is_text_centered: false
+    -
+      uuid: c6c05608-bc03-4987-a48e-40987c8830ce
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 50%
+        columns: '100'
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: false
+        section_footer: false
+    -
+      parent_uuid: c6c05608-bc03-4987-a48e-40987c8830ce
+      slot: main_slot
+      uuid: 14123d5b-ea25-4b48-96ed-fabdbc3a17f6
+      component_id: sdc.byte_theme.card-testimonial
+      inputs:
+        text: 'We went from spending 3 days on month-end reconciliation to just 2 hours. The ROI was immediate — we saved $180,000 in our first year. Implementation took 4 days.'
+        cite_name: 'Sarah Mitchell'
+        cite_text: 'CFO, TechFlow (500 employees)'
+        align: center
+        style: default
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 1e2d803f-d28c-415c-8cc7-4c4e90632c76
+            target_type: media
+    -
+      uuid: 72d2f491-0650-4b30-a781-b63c3801e7cf
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 75%
+        columns: 25-25-25-25
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: false
+    -
+      parent_uuid: 72d2f491-0650-4b30-a781-b63c3801e7cf
+      slot: header_slot
+      uuid: 9f4beef2-7014-4a0c-a84d-cba4413fa546
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'From sign-up to first card in minutes'
+        level: 2
+        text_size: heading-responsive-5xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: 72d2f491-0650-4b30-a781-b63c3801e7cf
+      slot: main_slot
+      uuid: 0e6cf53a-1920-48c8-8560-eb91307d2e79
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: user-plus
+        icon_size: extra-large
+        icon_align: center
+        text: '1. Sign up'
+        description:
+          value: '<p>Create your FinDrop account. No personal guarantee, no credit check against your personal score. Approval based on business health.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: 72d2f491-0650-4b30-a781-b63c3801e7cf
+      slot: main_slot
+      uuid: ce56b200-6c15-4dfd-a4ed-c66370441c8f
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: credit-card
+        icon_size: extra-large
+        icon_align: center
+        text: '2. Create cards'
+        description:
+          value: '<p>Issue virtual cards in seconds for teams, departments, or individual employees. Set limits and categories per card.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: 72d2f491-0650-4b30-a781-b63c3801e7cf
+      slot: main_slot
+      uuid: 2a695aeb-2d50-407f-83f2-3c1df392facc
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: plugs-connected
+        icon_size: extra-large
+        icon_align: center
+        text: '3. Connect your books'
+        description:
+          value: '<p>Integrate with your accounting software in minutes. We support 50+ platforms including QuickBooks and NetSuite.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      parent_uuid: 72d2f491-0650-4b30-a781-b63c3801e7cf
+      slot: main_slot
+      uuid: a89defd1-b97c-464a-a605-ccaaf5f081bd
+      component_id: sdc.byte_theme.card-icon
+      inputs:
+        background_color: muted
+        border_radius: large
+        icon: chart-line-up
+        icon_size: extra-large
+        icon_align: center
+        text: '4. Start spending'
+        description:
+          value: '<p>Employees use their cards immediately. Every transaction is automatically captured, categorized, and synced. You see it all live.</p>'
+          format: canvas_html_block
+        text_align: center
+    -
+      uuid: 1ae39ebf-a1c4-436e-8da7-beafb7596777
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 100%
+        columns: 50-50
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '128'
+        padding_block_start: '0'
+        padding_block_end: '0'
+        section_header: true
+        section_footer: false
+    -
+      parent_uuid: 1ae39ebf-a1c4-436e-8da7-beafb7596777
+      slot: header_slot
+      uuid: 6062a14c-44d9-4905-84e2-be7b941f586e
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Works with your stack. No disruption.'
+        level: 2
+        text_size: heading-responsive-5xl
+        text_color: default
+        align: center
+    -
+      parent_uuid: 1ae39ebf-a1c4-436e-8da7-beafb7596777
+      slot: main_slot
+      uuid: 74b4bd40-733a-49b8-bb21-719a18e73aad
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: start
+        flex_align: center
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: 74b4bd40-733a-49b8-bb21-719a18e73aad
+      slot: group_slot
+      uuid: 6e7d6d23-c45c-40e1-a607-03dbb75d921c
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>INTEGRATIONS</p>'
+          format: canvas_html_block
+        text_size: text-sm
+        text_color: default
+    -
+      parent_uuid: 74b4bd40-733a-49b8-bb21-719a18e73aad
+      slot: group_slot
+      uuid: 655f5f4a-cec7-40b6-949a-739231bf7867
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Your accounting software. Your ERP. Your team tools.'
+        level: 3
+        text_size: heading-responsive-4xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: 74b4bd40-733a-49b8-bb21-719a18e73aad
+      slot: group_slot
+      uuid: b7fe85af-ace5-49e4-81ed-71b39901eeec
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>QuickBooks, NetSuite, Slack, Microsoft Teams — and 50+ more integrations. All connected, two-way sync, no manual imports. Your books are always current without anyone touching a spreadsheet.</p>'
+          format: canvas_html_block
+        text_size: text-lg
+        text_color: default
+    -
+      parent_uuid: 74b4bd40-733a-49b8-bb21-719a18e73aad
+      slot: group_slot
+      uuid: 856aa4e3-bacc-42ae-8ce0-da004315f16e
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: secondary-inverted
+        label: 'See How It Works'
+        href: 'https://example.com'
+        size: medium
+        icon: arrow-right
+    -
+      parent_uuid: 1ae39ebf-a1c4-436e-8da7-beafb7596777
+      slot: main_slot
+      uuid: 8ebecb71-52a0-45f2-90d0-d042b8c2332c
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: center
+        flex_align: center
+        radius: lg
+        padding: sm
+    -
+      parent_uuid: 8ebecb71-52a0-45f2-90d0-d042b8c2332c
+      slot: group_slot
+      uuid: 366ab44f-171e-4aa7-95e8-a8226b3e5342
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: 0877ac26-4545-4e19-aa1c-c275dc509af2
+            target_type: media
+        size: '4:3'
+        radius: large
+    -
+      uuid: 1d886745-c683-46dc-bdf8-79ec43c90910
+      component_id: sdc.byte_theme.section
+      inputs:
+        width: 100%
+        columns: 50-50
+        mobile_columns: '1'
+        margin_block_start: '128'
+        margin_block_end: '64'
+        padding_block_start: '64'
+        padding_block_end: '64'
+        background_color: muted
+        section_header: false
+        section_footer: false
+    -
+      parent_uuid: 1d886745-c683-46dc-bdf8-79ec43c90910
+      slot: main_slot
+      uuid: 4104adf2-9476-4e58-9f77-b75fb18f1434
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: lg
+        items_align: start
+        flex_align: center
+        radius: sm
+        padding: sm
+    -
+      parent_uuid: 4104adf2-9476-4e58-9f77-b75fb18f1434
+      slot: group_slot
+      uuid: 55619548-0568-4425-80ab-9a89511a1ca4
+      component_id: sdc.byte_theme.heading
+      inputs:
+        heading_text: 'Stop chasing receipts. Start closing books faster.'
+        level: 2
+        text_size: heading-responsive-4xl
+        text_color: default
+        align: left
+    -
+      parent_uuid: 4104adf2-9476-4e58-9f77-b75fb18f1434
+      slot: group_slot
+      uuid: 233f14eb-2c5f-4a27-a8c3-3b0a6c8fca7f
+      component_id: sdc.byte_theme.text
+      inputs:
+        text:
+          value: '<p>Join thousands of finance teams who replaced month-end chaos with live control. Your first card is 60 seconds away.</p>'
+          format: canvas_html_block
+        text_size: text-lg
+        text_color: default
+    -
+      parent_uuid: 4104adf2-9476-4e58-9f77-b75fb18f1434
+      slot: group_slot
+      uuid: 4e7e7669-7e03-47b1-aec0-e3fb2a7c94ca
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: row
+        flex_gap: sm
+        items_align: start
+        flex_align: start
+        radius: sm
+    -
+      parent_uuid: 4e7e7669-7e03-47b1-aec0-e3fb2a7c94ca
+      slot: group_slot
+      uuid: c97d3b2e-32e8-40e1-a455-695954598642
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: primary
+        label: 'Get Your First Card in 60 Seconds'
+        href: 'https://example.com'
+        size: medium
+        icon: arrow-right
+    -
+      parent_uuid: 4e7e7669-7e03-47b1-aec0-e3fb2a7c94ca
+      slot: group_slot
+      uuid: 70f37fcd-f0cf-420e-92b9-80e6ed221778
+      component_id: sdc.byte_theme.button
+      inputs:
+        variant: secondary-inverted
+        label: 'See Pricing'
+        href: 'https://example.com'
+        size: medium
+        icon: caret-right
+    -
+      parent_uuid: 1d886745-c683-46dc-bdf8-79ec43c90910
+      slot: main_slot
+      uuid: 66b6d9fc-c86d-4780-a4f7-806510764c33
+      component_id: sdc.byte_theme.group
+      inputs:
+        flex_direction: column
+        flex_gap: md
+        items_align: center
+        flex_align: center
+        radius: lg
+        padding: sm
+    -
+      parent_uuid: 66b6d9fc-c86d-4780-a4f7-806510764c33
+      slot: group_slot
+      uuid: aeed43e8-420f-463b-b2d0-43a2316404e0
+      component_id: sdc.byte_theme.image
+      inputs:
+        media:
+          CANVAS_ENTITY_REFERENCE:
+            target_uuid: bdc5e5e1-b8d9-411c-abc3-aa06d8ae34a8
+            target_type: media
+        size: '4:3'
+        radius: small
+  path:
+    -
+      alias: /findrop-virtual-credit-cards
+      langcode: en
+  revision_translation_affected:
+    -
+      value: true
+  monitor:
+    -
+      value: false
+  metatags:
+    -
+      value: '{"description":"[canvas_page:description]","title":"[canvas_page:title] | [site:name]"}'

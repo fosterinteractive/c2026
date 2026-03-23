@@ -5,6 +5,6 @@ features:
   favicon: 1
 logo:
   use_default: 0
-  path: 'public://FinDrop_logo-outline.svg'
+  path: 'public://2026-02/FinDrop_logo-outline.svg'
 favicon:
   use_default: 1

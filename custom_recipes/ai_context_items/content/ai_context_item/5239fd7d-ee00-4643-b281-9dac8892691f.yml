@@ -1,0 +1,45 @@
+_meta:
+  version: '1.0'
+  entity_type: ai_context_item
+  uuid: 5239fd7d-ee00-4643-b281-9dac8892691f
+  bundle: default
+  default_langcode: en
+  depends:
+    9857d710-af90-4136-9252-344d98295631: ai_context_item
+default:
+  revision_uid:
+    -
+      target_id: 1
+  status:
+    -
+      value: true
+  uid:
+    -
+      target_id: 1
+  label:
+    -
+      value: ' Content Structure: Press Releases'
+  description:
+    -
+      value: 'Load when building or reviewing FinDrop press releases or company announcements. Defines section order, component patterns, and layout rules. Press releases are formal, structured, and follow a standard B2B format. ⚠️ NOT TESTED. This guideline has not been validated against live press release builds. Treat as a starting point and refine based on output quality.'
+      format: plain_text
+  purpose:
+    -
+      value: 'Load when building or reviewing FinDrop press releases or company announcements. Defines section order, component patterns, and layout rules. Press releases are formal, structured, and follow a standard B2B format. '
+      format: plain_text
+  content:
+    -
+      value: "# Content Strategy: Press Releases\r\n\r\n## Core Rules\r\n\r\n* All page content goes in the content region. Do not modify header or footer.\r\n* Use `section` components as the primary wrapper for every content block (hero excluded).\r\n* Press releases use `hero-blog` as the hero component — same as articles.\r\n* Press releases are text-heavy and highly structured. Most sections are single-column `text` blocks.\r\n* Tone is formal and factual. Follow Brand Guidelines > Tone & Voice but shift toward the professional end — no casual language, no humor. Data-confident voice still applies.\r\n\r\n## Section Defaults\r\n\r\n* Width `100%`, grid `100` (single column), mobile columns `1`.\r\n* Margin top/bottom `128`. Use `96` between tightly related consecutive sections.\r\n* Padding top/bottom `0`. Set to `64` when a background color is applied.\r\n\r\n## Background Color Rules\r\n\r\nPress releases are almost entirely default dark with no background color. They are formal documents, not marketing landing pages.\r\n\r\n* **Most sections: no background color.**\r\n* **`accent`: do not use.** Press releases should not have visual highlight bands.\r\n* **`muted`: bottom CTA only** (if included).\r\n* **`primary` and `secondary`: do not use.**\r\n\r\n***\r\n\r\n## Page Sections — Top to Bottom\r\n\r\n| Order | Section            | Required |\r\n| ----- | ------------------ | -------- |\r\n| 1     | Hero Blog          | **Yes**  |\r\n| 2     | Dateline & Summary | **Yes**  |\r\n| 3     | Body               | **Yes**  |\r\n| 4     | Quote              | **Yes**  |\r\n| 5     | Supporting Details | No       |\r\n| 6     | Boilerplate        | **Yes**  |\r\n| 7     | Media Contact      | **Yes**  |\r\n| 8     | Bottom CTA         | No       |\r\n\r\n***\r\n\r\n### 1. Hero Blog — ALWAYS INCLUDE\r\n\r\n`hero-blog` — same as articles. Do not use `hero-billboard`.\r\n\r\nProps: `heading_text` (press release headline), `level`: 1, `date` (publication date as Unix timestamp), `author` (omit or set to \"FinDrop Newsroom\"), `media` (featured image if available).\r\n\r\nHeadlines should be factual and specific: \"FinDrop Launches Integrated Business Travel Management Platform\" not \"FinDrop Changes Everything About Travel.\"\r\n\r\n***\r\n\r\n### 2. Dateline & Summary — ALWAYS INCLUDE\r\n\r\n`section` (columns `100`) → `text` in grid slot.\r\n\r\nBody text `text-lg` for visual weight. Format as:\r\n\r\n**\\[CITY, STATE — Date]** — One to two sentence summary of the announcement. This is the lead paragraph and should answer who, what, when, and why in the most concise form possible.\r\n\r\nFollow AP style for the dateline. Use the city where the company is headquartered or where the announcement originates.\r\n\r\n***\r\n\r\n### 3. Body — ALWAYS INCLUDE\r\n\r\nOne or more `section` (columns `100`) → `text` in grid slot.\r\n\r\nBody text `normal` (16px). Each section covers one topic: the problem being solved, the product details, market context, or customer impact.\r\n\r\nStructure follows the inverted pyramid — most important information first, supporting details later. Keep paragraphs short (2–4 sentences).\r\n\r\nIf citing FinDrop metrics, all stats must come from Key Facts & Value Propositions. Follow mandatory phrasing rules exactly.\r\n\r\n***\r\n\r\n### 4. Quote — ALWAYS INCLUDE\r\n\r\nAt least one executive quote is required. Use `section` (columns `100`) → `blockquote` in grid slot.\r\n\r\nQuote should come from a named FinDrop executive (e.g., CEO, VP of Product). Attribution format: \"First Last, Title, FinDrop.\"\r\n\r\nIf the press release includes a customer quote, add a second `blockquote` in a separate section. Customer quotes must be from approved references in Key Facts or explicitly flagged as new.\r\n\r\nDo not fabricate quotes.\r\n\r\n***\r\n\r\n### 5. Supporting Details (Optional)\r\n\r\n**Include when** the announcement has additional context: product availability, pricing, integration details, or event information.\r\n\r\n`section` (columns `100`) → heading in header slot → `text` in grid slot.\r\n\r\nSection heading: `level`: 2, `text_size`: `heading-responsive-4xl`, `align`: `left`.\r\n\r\nFor lists of features or availability details, use `<ul>` or `<ol>` inside the `text` component.\r\n\r\n***\r\n\r\n### 6. Boilerplate — ALWAYS INCLUDE\r\n\r\n`section` (columns `100`) → heading in header slot → `text` in grid slot.\r\n\r\nSection heading: \"About FinDrop\", `level`: 2, `text_size`: `heading-responsive-3xl`, `align`: `left`.\r\n\r\nStandard boilerplate text (keep consistent across all press releases):\r\n\r\n\"FinDrop is a financial operations platform that combines instant corporate cards, automated expense management, and integrated business travel on one platform. FinDrop reduces expense processing time by 80% and implements in 10 business days. For more information, visit findrop.com.\"\r\n\r\nUpdate the boilerplate only when product lines change. Do not customize per release.\r\n\r\n***\r\n\r\n### 7. Media Contact — ALWAYS INCLUDE\r\n\r\n`section` (columns `100`) → `text` in grid slot.\r\n\r\nBody text `normal`. Format as:\r\n\r\n**Media Contact**\r\n\\[Name]\r\n\\[Title], FinDrop\r\n\\[email]\r\n\\[phone]\r\n\r\n***\r\n\r\n### 8. Bottom CTA (Optional)\r\n\r\n**Include when** the press release should drive to a product page, demo request, or resource download.\r\n\r\n`section` (columns `50-50`, `background_color: muted`, padding `64`, margin bottom `64`) → `group` (heading + text + button) + image.\r\n\r\nSame pattern as product pages and articles. CTA should relate to the announcement topic.\r\n\r\n***\r\n\r\n## Content Mapping Logic\r\n\r\n| Press release content pattern        | Maps to                |\r\n| ------------------------------------ | ---------------------- |\r\n| Headline, date                       | Hero blog (1)          |\r\n| Dateline, lead paragraph             | Dateline & summary (2) |\r\n| Announcement details, market context | Body (3)               |\r\n| Executive or customer quotes         | Quote (4)              |\r\n| Availability, pricing, feature lists | Supporting details (5) |\r\n| Company description                  | Boilerplate (6)        |\r\n| PR contact information               | Media contact (7)      |\r\n| Conversion action                    | Bottom CTA (8)         |\r\n\r\n***\r\n\r\n## Constraints\r\n\r\n* Never use `hero-billboard` for press releases. Always `hero-blog`.\r\n* Never apply background color except on the optional `muted` bottom CTA.\r\n* Never fabricate quotes — executive or customer.\r\n* Never customize the boilerplate per release without approval.\r\n* All FinDrop stats must come from Key Facts. Follow mandatory phrasing rules.\r\n* No competitor names without Legal approval per Brand Guidelines.\r\n* Headlines must be factual and specific — no hyperbole, no superlatives without Legal review.\r\n\r\n***\r\n\r\n## Checklist\r\n\r\n* [ ] Hero uses `hero-blog`?\r\n* [ ] Dateline follows AP style?\r\n* [ ] Lead paragraph answers who, what, when, why?\r\n* [ ] At least one executive quote included?\r\n* [ ] Customer quotes approved or flagged?\r\n* [ ] All stats from Key Facts with mandatory phrasing?\r\n* [ ] Boilerplate present and standard?\r\n* [ ] Media contact present?\r\n* [ ] No competitor names without Legal approval?\r\n* [ ] No \"first/only/best\" claims without Legal review?"
+      format: plain_text
+  parent:
+    -
+      entity: 9857d710-af90-4136-9252-344d98295631
+  subcontext_type:
+    -
+      value: conditional
+  revision_translation_affected:
+    -
+      value: true
+  moderation_state:
+    -
+      value: published

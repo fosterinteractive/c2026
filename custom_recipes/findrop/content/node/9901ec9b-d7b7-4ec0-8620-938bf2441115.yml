@@ -5,7 +5,7 @@ _meta:
   bundle: blog
   default_langcode: en
   depends:
-    e89cdd0c-ee2a-4dd7-941f-29db0ae366f2: media
+    7b0171db-99c8-4a99-a5f3-e1a342b99325: media
     eb00eaac-ad10-4bdb-9a31-7612c47c6484: taxonomy_term
 default:
   revision_uid:
@@ -34,8 +34,11 @@ default:
       value: published
   path:
     -
-      alias: /blog/2026-02/why-real-time-expense-visibility-matters-more-you-think
+      alias: /blog/2026-03/why-real-time-expense-visibility-matters-more-you-think
       langcode: en
+  sae_exclude:
+    -
+      value: false
   field_blog__byline:
     -
       value: 'Aleksander Johnson'
@@ -48,7 +51,13 @@ default:
       value: 'Real-time expense visibility transforms financial management from reactive reporting to proactive decision-making by giving teams immediate insight into spending patterns as they happen.'
   field_featured_image:
     -
-      entity: e89cdd0c-ee2a-4dd7-941f-29db0ae366f2
+      entity: 7b0171db-99c8-4a99-a5f3-e1a342b99325
+  field_seo_analysis:
+    -
+      status: '0'
+      focus_keyword: ''
+      title: ''
+      description: ''
   field_tags:
     -
       entity: eb00eaac-ad10-4bdb-9a31-7612c47c6484

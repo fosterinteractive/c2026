@@ -18,7 +18,7 @@ class GoogleAnalyticsReviewController extends ControllerBase
     $header = [
       'title' => $this->t('Page'),
       'summary' => $this->t('Summary'),
-      'link' => '',
+      'link' => $this->t('Operations'),
     ];
 
     $rows = [];
@@ -42,6 +42,7 @@ class GoogleAnalyticsReviewController extends ControllerBase
                 ],
                 'attributes' => [
                   'target' => '_blank',
+                  'class' => ['button', 'button--secondary'],
                 ],
               ])->toString(),
           ];

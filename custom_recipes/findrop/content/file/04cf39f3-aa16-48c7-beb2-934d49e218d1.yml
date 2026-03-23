@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 04cf39f3-aa16-48c7-beb2-934d49e218d1
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: man-hands-airport.png
+  uri:
+    -
+      value: 'public://2026-03/man-hands-airport.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 1478566
+  status:
+    -
+      value: true

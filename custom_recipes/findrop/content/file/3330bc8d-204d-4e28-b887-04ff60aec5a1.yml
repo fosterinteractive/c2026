@@ -1,0 +1,24 @@
+_meta:
+  version: '1.0'
+  entity_type: file
+  uuid: 3330bc8d-204d-4e28-b887-04ff60aec5a1
+  default_langcode: en
+default:
+  uid:
+    -
+      target_id: 1
+  filename:
+    -
+      value: findrop-phone-expense-web.png
+  uri:
+    -
+      value: 'public://2026-03/findrop-phone-expense-web.png'
+  filemime:
+    -
+      value: image/png
+  filesize:
+    -
+      value: 4870808
+  status:
+    -
+      value: true
