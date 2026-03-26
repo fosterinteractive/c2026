@@ -14,10 +14,10 @@ messages:
 
       When she's not building products, Sarah mentors women in STEM through the Code2040 program and trains for ultramarathons.
 triggering_instructions: "Here's the content for our new FinDrop Travel product page. Build it out for travel program managers."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::content::detect_mismatch'
+    tool: 'ai_agents::ai_agent::canvas_ai_orchestrator'
     label: 'Should detect content-type vs intent mismatch'
     tool_rules: should_be_run
     parameters:
@@ -28,7 +28,7 @@ rules:
         type_of_check: equals
         value: 'product_page'
   rule_2:
-    tool: 'ai_agents::canvas::generate_page'
+    tool: 'ai_agents::ai_agent::canvas_template_builder_agent'
     label: 'Should NOT generate product page from bio content'
     tool_rules: should_not_be_run
 response_rule: 'AI should identify the content as a bio (not just "wrong content") and offer constructive options: build a bio page, paste correct content, or clarify intent. Must NOT attempt to build product page from bio content.'

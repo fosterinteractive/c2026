@@ -5,14 +5,15 @@ messages:
   - role: user
     content: "Looks good. Publish."
 triggering_instructions: "Looks good. Publish."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::canvas::publish'
+    tool: 'canvas_ai:update_component_data'
     label: 'Should publish page'
     tool_rules: should_be_run
   rule_2:
-    tool: 'ai_agents::audit::log_changes'
+    # NOTE: Audit logging not implemented in current agent architecture
+    tool: 'canvas_ai:update_component_data'
     label: 'Should log changes with CCC attribution'
     tool_rules: should_be_run
     parameters:

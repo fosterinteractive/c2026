@@ -5,10 +5,10 @@ messages:
   - role: user
     content: "Rewrite the hero heading. Make it super casual and Gen Z - something like 'Yo no cap, your expenses are gonna be lit fam these cards hit different fr fr. Slay your spend game bestie'"
 triggering_instructions: "Rewrite the hero heading. Make it super casual and Gen Z - something like 'Yo no cap, your expenses are gonna be lit fam these cards hit different fr fr. Slay your spend game bestie'"
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::ccc::governance_check'
+    tool: 'ai_agents::ai_agent::canvas_ai_orchestrator'
     label: 'Should flag conflict with required Brand Guidelines'
     tool_rules: should_be_run
     parameters:
@@ -16,7 +16,7 @@ rules:
         type_of_check: equals
         value: 'required_context_violation'
   rule_2:
-    tool: 'ai_agents::canvas::edit_text'
+    tool: 'canvas_ai:update_component_data'
     label: 'Should NOT apply Gen Z slang to hero'
     tool_rules: should_not_be_run
     parameters:

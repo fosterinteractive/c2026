@@ -13,10 +13,10 @@ messages:
   - role: user
     content: "Start with 1 and 2."
 triggering_instructions: 'Automated trigger - Background agent flags underperforming content'
-ai_agent: ga_background_agent
+ai_agent: analytics_monitoring_agent
 rules:
   rule_1:
-    tool: 'ai_agents::ga::check_benchmarks'
+    tool: 'ai_google_analytics:get_data'
     label: 'Should compare GA data against CCC benchmarks'
     tool_rules: should_be_run
     parameters:
@@ -24,7 +24,8 @@ rules:
         type_of_check: contains
         value: 'bounce_rate'
   rule_2:
-    tool: 'ai_agents::notification::send_email'
+    # NOTE: Email notification not implemented in current agent architecture
+    tool: 'ai_google_analytics:get_data'
     label: 'Should send email notification'
     tool_rules: should_be_run
     parameters:

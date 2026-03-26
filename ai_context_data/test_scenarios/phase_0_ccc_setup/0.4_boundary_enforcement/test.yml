@@ -5,10 +5,10 @@ messages:
   - role: user
     content: "Clean up the formatting on this page - add proper section headings, fix the bullet lists, and make sure the structure is scannable. Don't change any of the wording - legal already approved this."
 triggering_instructions: "Clean up the formatting on this page - add proper section headings, fix the bullet lists, and make sure the structure is scannable. Don't change any of the wording - legal already approved this."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::ccc::context_loader'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should load Brand Guidelines parent'
     tool_rules: should_be_run
     parameters:
@@ -16,7 +16,7 @@ rules:
         type_of_check: equals
         value: 'brand_guidelines'
   rule_2:
-    tool: 'ai_agents::ccc::sub_context_loader'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should load Abbreviations & Formatting sub-context'
     tool_rules: should_be_run
     parameters:
@@ -24,7 +24,7 @@ rules:
         type_of_check: equals
         value: 'abbreviations_formatting'
   rule_3:
-    tool: 'ai_agents::ccc::sub_context_loader'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should NOT load Writing Tone & Voice sub-context (boundary exclusion)'
     tool_rules: should_not_be_run
     parameters:
@@ -32,7 +32,7 @@ rules:
         type_of_check: equals
         value: 'writing_tone_voice'
   rule_4:
-    tool: 'ai_agents::canvas::edit_text'
+    tool: 'canvas_ai:update_component_data'
     label: 'Should NOT rewrite legal copy into brand voice'
     tool_rules: should_not_be_run
     parameters:

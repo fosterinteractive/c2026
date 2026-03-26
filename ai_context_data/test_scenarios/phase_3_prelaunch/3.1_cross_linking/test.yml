@@ -7,10 +7,10 @@ messages:
   - role: assistant
     content: "Found 3 relevant pages across the site. I've added links to the matching cards."
 triggering_instructions: "Add links on the cards to related pages"
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::seo::find_cross_links'
+    tool: 'canvas_ai_seo:get_linkable_components'
     label: 'Should identify cross-linking opportunities'
     tool_rules: should_be_run
     parameters:
@@ -18,7 +18,7 @@ rules:
         type_of_check: equals
         value: 'selected_cards'
   rule_2:
-    tool: 'ai_agents::seo::suggest_links'
+    tool: 'ai_agents::ai_agent::canvas_page_builder_agent'
     label: 'Should suggest specific pages to link'
     tool_rules: should_be_run
 response_rule: 'AI should identify 3 related pages for cross-linking. Suggestions should be actionable (accept/reject individually). Should note any keyword overlap concerns.'

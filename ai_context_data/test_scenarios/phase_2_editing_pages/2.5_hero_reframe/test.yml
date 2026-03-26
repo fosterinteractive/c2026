@@ -5,10 +5,10 @@ messages:
   - role: user
     content: "You've led with features in the hero. Lead with the benefit to the buyer instead."
 triggering_instructions: "You've led with features in the hero. Lead with the benefit to the buyer instead."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::canvas::edit_text'
+    tool: 'canvas_ai:update_component_data'
     label: 'Should rewrite hero heading to benefit-led'
     tool_rules: should_be_run
     parameters:
@@ -19,7 +19,7 @@ rules:
         type_of_check: equals
         value: 'benefit_led'
   rule_2:
-    tool: 'ai_agents::ccc::persona_lookup'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should use Travel Managers persona from conversation context'
     tool_rules: should_be_run
 response_rule: 'Hero should be rewritten from feature-led ("All-in-One Travel Booking...") to benefit-led ("Business Travel Your Employees Love..."). Benefits should be persona-specific (adoption rates, no expense reports) not generic. Features should remain in card sections below.'

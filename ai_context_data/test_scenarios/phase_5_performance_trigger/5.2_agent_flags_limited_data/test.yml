@@ -5,14 +5,14 @@ messages:
   - role: user
     content: "The agent flagged this page for high bounce rate. What's wrong?"
 triggering_instructions: "The agent flagged this page for high bounce rate. What's wrong?"
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::diagnosis::analyze_page'
+    tool: 'canvas_ai:get_component_content'
     label: 'Should analyze page content for preliminary hypothesis'
     tool_rules: should_be_run
   rule_2:
-    tool: 'ai_agents::clarification::request_data'
+    tool: 'ai_agents::ai_agent::canvas_ai_orchestrator'
     label: 'Should suggest connecting additional data sources'
     tool_rules: should_be_run
 response_rule: 'AI should contextualize 68% bounce rate against 45% benchmark. Should note missing data (no search queries, limited conversion data). Should offer preliminary hypothesis from page content review. Should suggest connecting Search Console.'

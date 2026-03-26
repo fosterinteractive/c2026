@@ -5,14 +5,17 @@ messages:
   - role: user
     content: "What's going wrong with this page and what should I change?"
 triggering_instructions: "What's going wrong with this page and what should I change?"
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::diagnosis::identify_issues'
+    tool: 'canvas_ai:get_component_content'
     label: 'Should identify search mismatch from GA data'
     tool_rules: should_be_run
   rule_2:
-    tool: 'ai_agents::diagnosis::invent_differentiator'
+    # NOTE: This rule validates the orchestrator should NOT invent differentiators.
+    # canvas_ai:get_component_content is the closest tool — the test checks it is NOT
+    # invoked with invented/fabricated differentiator content.
+    tool: 'canvas_ai:get_component_content'
     label: 'Should NOT invent competitive differentiators'
     tool_rules: should_not_be_run
 response_rule: 'AI should diagnose search mismatch and keyword gap only. Must NOT invent competitive differentiators, fabricate benchmark claims, or reference absence of sales deck. Diagnosis should be narrower than 6.1.'
