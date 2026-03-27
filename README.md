@@ -35,11 +35,11 @@ A static audit of all 12 Canvas AI agents was conducted to evaluate prompt quali
 
 | Document | Description |
 |---|---|
-| [Static Audit Report](.omc/plans/canvas-agent-static-audit.md) | Full findings for all 12 agents — system prompts, context gaps, red flags, test coverage |
-| [Infrastructure Plan](.omc/plans/findrop-audit-infrastructure.md) | DDEV service composition, Drush inspection, Playwright testing harness |
-| [Open Questions](.omc/plans/open-questions.md) | Unresolved questions from the audit |
-| [Next Session Handoff](.omc/handoff-next-session.md) | Priorities and environment state for continuing work |
-| [Embeddings Handoff](.omc/handoff-codex-embeddings.md) | Instructions for setting up OpenAI key and indexing content |
+| [Static Audit Report](docs/audit/canvas-agent-static-audit.md) | Full findings for all 12 agents — system prompts, context gaps, red flags, test coverage |
+| [Infrastructure Plan](docs/audit/findrop-audit-infrastructure.md) | DDEV service composition, Drush inspection, Playwright testing harness |
+| [Open Questions](docs/audit/open-questions.md) | Unresolved questions from the audit |
+| [Next Session Handoff](docs/handoff/handoff-next-session.md) | Priorities and environment state for continuing work |
+| [Embeddings Handoff](docs/handoff/handoff-codex-embeddings.md) | Instructions for setting up OpenAI key and indexing content |
 
 ## Demo Test Results
 
