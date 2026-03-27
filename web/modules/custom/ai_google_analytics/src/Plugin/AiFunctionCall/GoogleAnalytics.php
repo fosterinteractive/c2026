@@ -5,6 +5,9 @@ namespace Drupal\ai_google_analytics\Plugin\AiFunctionCall;
 use Drupal\ai\Attribute\FunctionCall;
 use Drupal\ai\Base\FunctionCallBase;
 use Drupal\ai\Service\FunctionCalling\ExecutableFunctionCallInterface;
+use Drupal\ai\Service\FunctionCalling\FunctionCallInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Google\Analytics\Data\V1beta\Client\BetaAnalyticsDataClient;
@@ -15,9 +18,10 @@ use Google\Analytics\Data\V1beta\Filter\InListFilter;
 use Google\Analytics\Data\V1beta\FilterExpression;
 use Google\Analytics\Data\V1beta\Metric;
 use Google\Analytics\Data\V1beta\RunReportRequest;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Plugin implementation of the get current URL of an entity..
+ * Retrieves Google Analytics conversion data for Canvas AI agents.
  */
 #[FunctionCall(
   id: 'ai_google_analytics:get_data',
@@ -37,12 +41,37 @@ use Google\Analytics\Data\V1beta\RunReportRequest;
 class GoogleAnalytics extends FunctionCallBase implements ExecutableFunctionCallInterface {
 
   /**
+   * The config factory.
+   */
+  protected ConfigFactoryInterface $configFactory;
+
+  /**
+   * The file system service.
+   */
+  protected FileSystemInterface $fileSystem;
+
+  /**
    * {@inheritdoc}
    */
-  public function execute() : void {
-    $config = \Drupal::config('ai_google_analytics.settings');
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): FunctionCallInterface|static {
+    $instance = new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('ai.context_definition_normalizer'),
+    );
+    $instance->configFactory = $container->get('config.factory');
+    $instance->fileSystem = $container->get('file_system');
+    return $instance;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function execute(): void {
+    $config = $this->configFactory->get('ai_google_analytics.settings');
     $credentials_uri = $config->get('credentials_uri');
-    $credentials_path = \Drupal::service('file_system')->realpath($credentials_uri);
+    $credentials_path = $this->fileSystem->realpath($credentials_uri);
     putenv('GOOGLE_APPLICATION_CREDENTIALS=' . $credentials_path);
 
     $url = $this->getContextValue('url');

@@ -124,7 +124,7 @@ final class GetLinkableComponents extends FunctionCallBase implements Executable
   }
 
   /**
-   * Finds the components in the page with atleast one Rich text prop. Vibe coded method.
+   * Finds components in the page with at least one Rich text prop.
    *
    * Ancestor components (First level components in the content region) include only uuid and name.
    * Linkable components also include their content props.
