@@ -1,150 +1,238 @@
 # WS2: Branching Sub-Task Orchestration
 
+**Revision: v2 — Revised based on proposal-critic feedback (2026-03-27)**
+
 **Status:** Draft
 **Created:** 2026-03-26
-**Estimated Scope:** EXTRA-LARGE (research-heavy, potentially requires contrib patches or a custom module)
-**Dependencies:** WS1 (efficiency optimization must be complete first -- no point optimizing branching on an inefficient chain)
+**Estimated Scope:** MEDIUM (down from EXTRA-LARGE -- scoped to concrete improvements, not speculative framework work)
+**Dependencies:** WS1 implementation (Phase 3 only). Research and design (Phases 1-2) can proceed in parallel with WS1.
 **Blocks:** WS4 (deployment recipes need to know the final agent architecture)
+
+---
+
+## Changes from v1
+
+1. **Collapsed Phase 1 (research) into a "What We Already Know" section** — the research document (`research-ai-agents-module.md`) already answers every question the old Phase 1 proposed to investigate. The plan no longer proposes re-discovering known information.
+2. **Split "branching" into 4 distinct sub-problems** — parallel execution, conditional routing, data passing, automatic triggers. Each gets its own assessment and solution based on existing research findings.
+3. **Added honest feasibility verdicts** for each option using the research document's evidence.
+4. **Documented the existing BPMN ModelOwner integration** — `Agent.php` in ai_agents is a config-UI integration, not a runtime engine. Option C (BPMN-based workflow) moved to "considered and rejected."
+5. **Moved Option D (PHP Fibers) to "considered and rejected"** — the research confirms zero Fiber usage in ai_agents and the plan's own risk table rated it HIGH/HIGH.
+6. **Added a user-facing problem statement** — what user-observable problem does this solve? If the answer is "none yet," the plan says so honestly and scopes accordingly.
+7. **Added cost-benefit analysis** — is this worth the complexity vs. current LLM-driven orchestration?
+8. **Unblocked Phase 1-2 from WS1** — research/design can proceed in parallel. Only implementation (Phase 3) needs WS1 efficiency gains in place.
 
 ---
 
 ## Problem Statement
 
-The Canvas AI orchestrator delegates to sub-agents sequentially via tool calls. While the orchestrator prompt shows examples of "parallel" calls (e.g., template_builder + title + metadata in Example 14), the actual execution is sequential -- the ai_agents framework processes tool calls one at a time. There is no conditional branching ("if FAQ content exists, generate FAQ schema"), no inter-agent coordination ("pass page builder results to SEO agent"), and no concept of reusable "skills" that compose into workflows.
+### User-Facing Problem
 
-## Current State
+Currently, there is no documented user-observable failure caused by the lack of branching orchestration. The orchestrator prompt's 24 examples (8 rules) already handle conditional routing, mutual exclusivity, and multi-tool delegation. Pages build correctly. The LLM makes reasonable routing decisions.
 
-### How the Framework Processes Tool Calls
+The problems are operational, not functional:
 
-Based on analysis of the ai_agents module source code:
+1. **Cost:** Sequential execution of parallel-requested tools means total latency (and cost) is the SUM of all sub-agent latencies, not the MAX. A page build that requests title + metadata + template_builder waits for all three sequentially.
+2. **SEO nesting waste:** The SEO agent can invoke the page builder for internal linking when it only needed schema generation. This is addressed in WS1 Step 4, but a cleaner solution would be framework-level conditional routing rather than prompt guardrails.
+3. **Brittleness:** All orchestration logic lives in the LLM prompt. If the LLM makes a wrong routing decision (e.g., calling SEO agent when only title generation was needed), there is no framework-level safety net.
 
-1. **`AiAgentEntityWrapper.php`** is the core agent runner. It manages the loop, processes tool calls, and handles `return_directly` / `default_information_tools`.
+### Honest Assessment
 
-2. **Tool execution is sequential:** When the LLM returns multiple tool calls in a single response, the framework iterates through them one by one (`executeTool()` calls happen in a loop). There is no parallel execution.
+Given that WS1 addresses the cost and nesting problems directly (token reduction + SEO tool_usage_limits), the incremental value of WS2 is:
+- **Latency improvement from true parallel execution:** Potentially significant (3x speedup for parallel tool calls), but requires framework changes that may not be accepted upstream.
+- **Automatic triggers:** Modest value -- automates "after page build, run SEO" which the orchestrator already does via prompt instructions.
+- **Conditional routing at the framework level:** Low incremental value over the current LLM-driven approach, which works correctly.
 
-3. **`AiAgentWrapper.php`** (the sub-agent-as-tool wrapper) creates a new `Task`, sets up the sub-agent, calls `determineSolvability()` then `solve()`. This is a blocking, synchronous call. The parent agent's loop waits for the sub-agent to complete before processing the next tool call.
+**Recommendation:** Scope WS2 to the highest-value, lowest-risk improvements. Defer speculative framework changes to a future workstream when concrete failure cases are documented.
 
-4. **`return_directly`** (`AiAgentEntityWrapper.php:1010-1013`): When true, the sub-agent's output is returned directly to the caller without going back through the parent agent's LLM for interpretation. This is the closest thing to "fire and forget" -- but it still blocks the parent loop.
+## What We Already Know (from research-ai-agents-module.md)
 
-5. **`available_on_loop`** (`AiAgentEntityWrapper.php:910-926`): Controls when default_information_tools execute. This is loop-scoping, not branching, but it demonstrates the framework's awareness of iteration state.
+The research document, completed 2026-03-26, provides definitive answers to all framework capability questions. Key findings:
 
-6. **No DAG/pipeline primitives:** The framework has no concept of agent graphs, dependency chains, conditional routing, or parallel execution. Orchestration is entirely emergent from the LLM's tool-calling decisions.
+### Execution Model
+- Tool execution is sequential: `AiAgentEntityWrapper.php` iterates through `$this->contextTools` in a `foreach` loop. No PHP concurrency.
+- Sub-agent calls are synchronous and blocking: `AiAgentWrapper::execute()` creates a new `Task`, calls `determineSolvability()` then `solve()`. The parent waits.
+- `max_loops` is per-agent, not aggregate. Nesting creates multiplicative worst cases.
 
-7. **No shared state between sub-agents:** Each sub-agent gets a fresh `Task` object. There is no mechanism for one sub-agent to read another's output except through the parent orchestrator's chat history.
+### Extension Points
+- **`BuildSystemPromptEvent`:** Can modify the system prompt before each LLM call. Used by ai_context for context injection. Can inject conditional instructions based on runtime state.
+- **`AgentToolFinishedExecutionEvent`:** Fires after tool execution but is observe-only. Does NOT provide tool output, parent chat history, or ability to inject new tool calls. Cannot modify execution flow.
+- **`AgentResponseEvent`:** Fires after LLM response. Can be used for logging and monitoring. Cannot modify the response or inject tools.
+- **Artifact system (`InMemoryArtifactStorage`):** Request-scoped. Artifacts survive across loop iterations within a single agent but are per-agent-instance. `use_artifacts: 0` on all current tools. Artifacts are opt-in and require tool-level configuration.
 
-### What the Orchestrator Actually Does Today
+### Existing BPMN Integration (discovered by critic, missed in v1)
+`web/modules/contrib/ai_agents/src/Plugin/ModelerApiModelOwner/Agent.php` is a `ModelerApiModelOwner` plugin that bridges ai_agents to `modeler_api`/`bpmn_io`. It maps agents to BPMN start events, sub-agents to subprocesses, and tools to tasks. This is a **configuration and visualization layer** -- it renders agent hierarchies as BPMN diagrams for the config UI. It does NOT provide a runtime execution engine. BPMN gateways, conditional routing, and parallel execution are not implemented at the runtime level.
 
-Looking at `canvas_ai_orchestrator.yml`:
+### What the Framework Cannot Do (without patching)
+- Execute tools in parallel (no Fibers, no async in tool execution path)
+- Inject tool calls into a running agent loop from an event subscriber
+- Share state between sub-agents (each gets a fresh Task)
+- Create branching/conditional execution paths at the framework level
+- Set aggregate token budgets across agent chains (addressed by WS1 Step 8)
 
-- The orchestrator prompt contains sophisticated routing logic (Rules 1-8, 24 examples)
-- It delegates to 6 sub-agents via tool calls
-- The LLM can request multiple tool calls in one response (e.g., title + metadata + template_builder)
-- But the framework processes them sequentially, not in parallel
-- Sub-agent responses flow back to the orchestrator, which decides what to do next
-- This works but is slow (sequential) and expensive (orchestrator processes every response)
+## The Four Sub-Problems
 
-### Current Delegation Patterns
+### Sub-Problem 1: Parallel Execution
 
-| Pattern | Current Behavior | Ideal Behavior |
-|---------|-----------------|----------------|
-| Template + Title + Metadata | LLM requests 3 tools, framework runs sequentially | True parallel execution |
-| SEO -> Page Builder (link insertion) | SEO agent calls page builder as sub-agent (nested) | SEO produces instructions, page builder executes independently |
-| Page build -> SEO schema | Sequential: build first, then schema | Automatic trigger when page build completes |
-| Conditional schema type | SEO agent uses heuristics in its prompt | Framework-level conditional routing |
+**Definition:** Running independent sub-agents simultaneously so total latency is max(agent_times) instead of sum(agent_times).
 
-## Proposed Approach
+**Current behavior:** The LLM requests 3 tools (title + metadata + template_builder), but the framework executes them sequentially. Total time: T_title + T_metadata + T_template.
 
-### Phase 1: Research (must complete before any implementation)
+**Feasibility verdict: NOT FEASIBLE without upstream framework changes.**
 
-**Step 1: Deep analysis of ai_agents module capabilities**
+True parallel execution requires modifying `AiAgentEntityWrapper::determineSolvability()` to use PHP Fibers or async patterns for independent tool calls. The ai_agents module has zero concurrency code. The AI provider layer has `ChatFiberSupport` for provider-level parallelism, but this is not surfaced to tool execution.
 
-Perform a thorough code review of:
-- `AiAgentEntityWrapper.php` -- full execution loop, how tool calls are dispatched
-- `AgentHelper.php` -- any orchestration utilities
-- `AiAgentBase.php` -- base class capabilities, state management
-- The `Event` system -- `AgentStartedExecutionEvent`, `BuildSystemPromptEvent` -- can events enable coordination?
-- `ArtifactInterface` / `InMemoryArtifactStorage` -- can artifacts pass data between agents?
-- `StructuredResultData` -- can this carry structured output between agents?
+**Recommendation:** Defer. File an upstream feature request with the ai_agents maintainer. Document the performance impact (measured wall-clock times from WS1 Phase 0 baseline) as evidence for the request. This is a multi-week framework change that should be contributed upstream, not maintained as a local patch.
 
-Deliverable: A document at `docs/research/ws2-framework-capabilities.md` detailing exactly what the framework supports, what extension points exist, and what would require framework changes.
+### Sub-Problem 2: Conditional Routing
 
-**Acceptance criteria:** Every relevant class and interface in `web/modules/contrib/ai_agents/src/` has been reviewed. Extension points (events, plugins, interfaces) are catalogued. The document answers: "Can we add branching without modifying the contrib module?"
+**Definition:** Framework-level "if X then agent A, else agent B" decisions, replacing LLM-prompt-based routing.
 
-**Step 2: Check upstream roadmap and community plans**
+**Current behavior:** The orchestrator prompt's Rules 1-8 implement conditional routing via LLM intelligence. Rule 1: "If entity type is not canvas_page, respond with error." Rule 3: "page_builder and template_builder are mutually exclusive." Rule 5: "If title/description are empty, proactively call the respective agents."
 
-- Review the Drupal AI module issue queue for planned orchestration features
-- Check if there are any contrib modules for agent pipelines/DAGs
-- Look at the `bpmn_io` module (already installed in the recipe, line 62) -- can BPMN workflows coordinate agents?
-- Check the `ai_agents` module's plugin architecture -- can custom agent types be added without patching?
+**Feasibility verdict: ALREADY SOLVED by the current LLM-driven approach.**
 
-Deliverable: Summary of upstream plans and available tools in `docs/research/ws2-upstream-analysis.md`.
+The orchestrator's prompt-based routing works correctly. The LLM consistently follows the 8 rules and 24 examples. No failure cases have been documented where the LLM made a wrong routing decision.
 
-**Acceptance criteria:** Issue queue reviewed. BPMN integration feasibility assessed. Plugin extensibility confirmed or denied.
+Framework-level conditional routing (e.g., a PHP router that inspects page state and dispatches agents) would add complexity without measurable benefit. The LLM's routing is more flexible -- it can handle novel scenarios not covered by explicit rules.
 
-### Phase 2: Design (after research)
+**Recommendation:** No action needed. The current approach works. If specific mis-routing failures are documented in the future, reassess.
 
-**Step 3: Design branching patterns within framework constraints**
+### Sub-Problem 3: Data Passing Between Agents
 
-Based on research findings, design the branching approach. Likely options (to be validated by research):
+**Definition:** One agent's output feeds into another agent's input without flowing through the orchestrator's LLM for reinterpretation.
 
-**Option A: Enhanced Orchestrator Prompt (no code changes)**
-- Restructure the orchestrator prompt to explicitly define conditional chains
-- Use the orchestrator's LLM intelligence for routing decisions
-- Add "pipeline" instructions: "After template_builder completes, immediately invoke seo_agent with the page content"
-- Pro: Zero code changes. Con: Still sequential, still burns orchestrator tokens.
+**Current behavior:** All sub-agent outputs flow back to the orchestrator. The orchestrator's LLM processes them and decides what to pass to the next agent. This works but costs orchestrator tokens for interpretation.
 
-**Option B: Event-Driven Coordination (custom module)**
-- Create a lightweight custom module (`canvas_ai_orchestration`)
-- Subscribe to `AgentStartedExecutionEvent` / tool completion events
-- Implement conditional triggers: "When page_builder finishes, auto-invoke seo_agent"
-- Use the artifact system to pass data between agents
-- Pro: True automation. Con: PHP code, harder to maintain.
+**Feasibility verdict: PARTIALLY FEASIBLE using the artifact system.**
 
-**Option C: BPMN-Based Workflow (if bpmn_io supports it)**
-- Define agent workflows as BPMN diagrams
-- Use gateways for conditional branching
-- Map BPMN tasks to agent invocations
-- Pro: Visual workflow editor, industry standard. Con: May not integrate with ai_agents.
+The `InMemoryArtifactStorage` is request-scoped and survives across agent loop iterations. If `use_artifacts: 1` is enabled on relevant tools, tool outputs are stored as artifacts and can be referenced by subsequent tools via `ArtifactHelper::replaceArtifactArguments()`. However:
+- Artifacts are keyed by tool output name, not by agent ID
+- All current tools have `use_artifacts: 0`
+- The system is designed for passing structured data between tools within a single agent, not between separate agent invocations
+- Enabling artifacts requires per-tool configuration changes and prompt updates to reference artifact keys
 
-**Option D: Parallel Execution Patch (upstream contribution)**
-- Modify `AiAgentEntityWrapper` to execute independent tool calls in parallel (using PHP Fibers or async)
-- Contribute the patch upstream
-- Pro: Solves the root cause. Con: Significant framework change, may not be accepted.
+**Recommendation:** Investigate enabling `use_artifacts: 1` for the page builder's output tools (`set_component_structure`, `update_component_data`) so the SEO agent can reference page content without re-querying. This is a targeted improvement, not a general data-passing solution. Estimated effort: 1-2 days of config changes + testing.
 
-**Acceptance criteria:** One primary approach selected with rationale. Architecture document at `docs/research/ws2-architecture-decision.md`. Fallback approach identified.
+### Sub-Problem 4: Automatic Triggers
 
-### Phase 3: Implementation
+**Definition:** "When agent A finishes, automatically invoke agent B" without the orchestrator's LLM making the decision.
 
-**Step 4: Implement the selected approach**
+**Current behavior:** The orchestrator's LLM decides what to do after each sub-agent completes. This works but costs a full orchestrator LLM call per decision.
 
-Implementation details depend on the research/design outcome. At minimum, the following improvements can be made regardless of approach:
+**Feasibility verdict: PARTIALLY FEASIBLE using `AgentToolFinishedExecutionEvent`, with significant limitations.**
 
-- Restructure orchestrator prompt to define explicit pipelines
-- Add conditional SEO schema generation trigger
-- Implement result-passing between SEO agent and page builder
-- Add "skill" definitions that compose multiple agent operations
+An event subscriber can detect when a tool (sub-agent) finishes, but:
+- The event does NOT provide the tool's output (cannot pass results to the triggered agent)
+- The subscriber cannot inject a tool call into the parent's execution loop
+- The subscriber CAN start a completely independent agent execution as a side effect, but the result would not flow back to the orchestrator
 
-**Acceptance criteria:** At least one branching pattern works end-to-end (e.g., "page build -> automatic SEO schema generation"). Token cost of the branching pattern is measured and compared to the sequential baseline.
+A viable pattern: subscribe to `AgentToolFinishedExecutionEvent`, detect when `canvas_page_builder_agent` finishes, trigger `drupal_canvas_seo_agent` as a fire-and-forget side effect for schema generation (Mode A only, which does not need to return results to the orchestrator). This would automate SEO schema generation without orchestrator involvement.
+
+**Limitation:** The triggered agent runs outside the orchestrator's context. It cannot report results back, cannot ask clarifying questions, and the orchestrator does not know it ran. This is acceptable for idempotent operations like schema generation but not for operations that require coordination.
+
+**Recommendation:** Implement a targeted automatic trigger for SEO schema generation after page build completion. This is the highest-value concrete improvement in WS2. Estimated effort: 2-3 days.
+
+## Proposed Approach (Revised)
+
+### Phase 1: Design Targeted Improvements
+
+**Step 1: Design the automatic SEO trigger**
+
+Based on Sub-Problem 4 analysis, design an event subscriber that:
+1. Subscribes to `AgentToolFinishedExecutionEvent`
+2. Detects when the orchestrator's `canvas_page_builder_agent` or `canvas_template_builder_agent` tool finishes
+3. Checks whether the page already has schema.org JSON-LD (idempotency check)
+4. If no schema exists, triggers `drupal_canvas_seo_agent` in Mode A (schema-only) as a fire-and-forget operation
+5. The SEO agent runs independently, generates schema, and saves it via `add_schema_org_json`
+
+Key design decisions:
+- The trigger should NOT fire when the SEO agent itself invokes the page builder (prevent recursion). Use `callerAgentRunnerId` to detect nesting.
+- The trigger should be configurable (enabled/disabled via settings)
+- The trigger should log its activity for debugging
+
+**Acceptance criteria:** Design document at `docs/research/ws2-seo-trigger-design.md`. Covers: event subscriber architecture, idempotency check, recursion prevention, configuration, logging.
+
+**Step 2: Evaluate artifact-based data passing for SEO**
+
+Test whether enabling `use_artifacts: 1` on the page builder's output tools allows the SEO agent to reference page content via artifact keys instead of re-querying with `get_component_content`.
+
+1. Enable `use_artifacts: 1` on `set_component_structure` and `update_component_data` in the orchestrator's `tool_settings`
+2. Verify artifacts are populated after page builder execution
+3. Test whether the SEO agent can access these artifacts when invoked by the orchestrator in the same request
+4. Measure token savings: artifact reference vs. `get_component_content` tool call
+
+**Acceptance criteria:** Document whether artifact-based data passing works for the SEO use case. If yes, quantify token savings. If no, document why and close this option.
+
+### Phase 2: Implementation (after WS1 efficiency gains are in place)
+
+**Step 3: Implement automatic SEO schema trigger**
+
+Build the event subscriber module (can be part of `canvas_ai_efficiency` from WS1 Step 8 or a new `canvas_ai_orchestration` module):
+
+- `src/EventSubscriber/SeoSchemaTriggerSubscriber.php`
+- Subscribe to `AgentToolFinishedExecutionEvent`
+- Implement recursion check: skip if `callerAgentRunnerId` indicates we are inside an SEO agent invocation
+- Implement idempotency check: query for existing schema.org data on the canvas page
+- Trigger SEO agent in Mode A with a constrained prompt: "Generate Schema.org JSON-LD for this page. Use Mode A only. Do not invoke the page builder."
+- Use `overrideFunctions()` to remove `canvas_page_builder_agent` from the triggered SEO agent's available tools (prevents nesting entirely)
+- Log trigger events for observability
+
+**Acceptance criteria:** After a page build completes, schema.org JSON-LD is automatically generated without orchestrator involvement. No recursion. Idempotent (running twice does not duplicate schema). Token cost of the automatic trigger measured and documented.
+
+**Step 4: Implement artifact-based data passing (conditional on Step 2 results)**
+
+If Step 2 shows artifact-based data passing is viable:
+1. Enable `use_artifacts: 1` on relevant tool settings
+2. Update SEO agent prompt to reference artifact data instead of re-querying
+3. Measure token savings
+
+If Step 2 shows it is not viable: skip this step, document findings.
+
+**Acceptance criteria:** If implemented: SEO agent uses artifact data from page builder. Token savings measured and documented. If skipped: decision documented with evidence.
+
+### Phase 3: Upstream Contribution
+
+**Step 5: File upstream feature requests**
+
+Based on WS1 and WS2 findings, file concrete issues with the ai_agents module:
+
+1. **Parallel tool execution:** Request Fiber-based parallel execution for independent tools. Include wall-clock timing data from WS1 measurements showing the sequential execution cost.
+2. **Aggregate token tracking:** Request a built-in token budget mechanism. Reference the custom subscriber from WS1 Step 8 as a proof of concept.
+3. **Loop-aware context injection:** Request that `BuildSystemPromptEvent` include loop iteration context so subscribers can optimize for subsequent loops.
+
+**Acceptance criteria:** Issues filed on drupal.org with evidence from WS1/WS2 measurements. Each issue includes a concrete use case, measured impact, and proposed solution approach.
+
+## Considered and Rejected
+
+### Option C: BPMN-Based Runtime Workflow Engine
+The existing `Agent.php` `ModelerApiModelOwner` plugin maps agents to BPMN diagrams for configuration and visualization. It does NOT provide a runtime execution engine. Building a BPMN-driven execution engine that reads the graph at runtime and dispatches agent calls accordingly would be a multi-month project. The value proposition (visual workflow editor) does not justify the cost when the current LLM-driven orchestration works correctly and the improvements in this plan address the concrete operational issues.
+
+### Option D: PHP Fibers for Parallel Tool Execution
+The ai_agents module has zero Fiber usage. The AI provider layer has `ChatFiberSupport` but this is for provider-level parallelism, not tool execution. Implementing Fiber-based tool execution would require significant changes to `AiAgentEntityWrapper::determineSolvability()` -- the core execution loop. This is an upstream framework change, not a local patch. Filed as an upstream feature request in Step 5.
+
+### "Do Nothing" Option
+Seriously considered. The current LLM-driven orchestration works correctly. WS1 addresses the most expensive cost issues (token waste, SEO nesting). The incremental value of WS2 is the automatic SEO trigger (saves orchestrator tokens + reduces latency for schema generation) and potential artifact-based data passing. If these prove too complex, "do nothing beyond WS1" is an acceptable outcome. The plan is scoped so that each step delivers independent value and can be stopped at any point.
 
 ## Cross-References
 
-- **WS1 (Efficiency):** WS1 must be complete first. The `return_directly` analysis in WS1 Step 3 directly informs which agents can run as independent branches. The `available_on_loop` mechanism discovered in WS1 Step 5 may provide a pattern for conditional execution.
-- **WS3 (Markdown Config):** If agent prompts move to markdown (WS3), the orchestrator prompt restructuring in Step 3 Option A becomes easier to iterate on.
-- **WS4 (Deploy):** WS4 needs to know the final agent architecture to build deployment recipes. If WS2 adds a custom module, WS4 must include it in the recipe.
+- **WS1 (Efficiency):** WS1 Step 4 (SEO nesting mitigation via `tool_usage_limits`) is a prerequisite for WS2's automatic SEO trigger. WS1's token budget enforcement (Step 8) applies to the triggered SEO agent execution. WS1 measurements provide the evidence base for upstream feature requests.
+- **WS3 (Markdown Config):** If WS2 modifies the SEO agent's prompt for the automatic trigger, the modified prompt should be the version migrated to markdown in WS3.
+- **WS4 (Deploy):** If WS2 produces a custom module, it must be included in WS4's deployment recipes.
 
 ## Risks and Mitigations
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|------------|
-| Framework provides no useful extension points | MEDIUM | HIGH | Fall back to Option A (prompt-only). Still achieves conditional logic via LLM intelligence. |
-| BPMN integration is too complex for the timeline | HIGH | MEDIUM | BPMN is a nice-to-have. Options A and B are viable without it. |
-| Parallel execution requires core framework changes | HIGH | HIGH | Don't pursue parallel execution in v1. Focus on smarter sequential routing (Option A/B). |
-| Custom module creates maintenance burden | MEDIUM | MEDIUM | Keep the module minimal. Use events/subscribers, not framework patches. Target upstream contribution. |
+| Automatic SEO trigger causes recursion | LOW | HIGH | Explicit recursion check via `callerAgentRunnerId`. `overrideFunctions()` removes page builder from triggered SEO agent's tools. |
+| Artifact system does not work across agent boundaries | MEDIUM | LOW | Step 2 evaluates this before committing to implementation. Fallback is to skip artifact-based data passing. |
+| Automatic trigger fires at wrong time (mid-build) | MEDIUM | MEDIUM | Only trigger after the page builder tool FINISHES (not starts). Check for orchestrator context to ensure the build is complete. |
+| Upstream feature requests are rejected | MEDIUM | LOW | The requests are filed for community benefit. Local improvements (automatic trigger, artifact usage) deliver value regardless. |
 
 ## Success Criteria
 
-1. At least one branching/conditional pattern implemented and working
-2. Research documents complete with framework capability analysis
-3. Architecture decision documented with rationale
-4. No modifications to `web/modules/contrib/ai_agents/` core code (patches or custom module only)
-5. Token cost of branching pattern measured and documented
+1. Automatic SEO schema generation trigger implemented and working (saves orchestrator tokens + latency for schema generation)
+2. Artifact-based data passing evaluated with documented results (implemented if viable)
+3. Upstream feature requests filed with evidence from WS1/WS2 measurements
+4. No modifications to `web/modules/contrib/ai_agents/` core code
+5. Token cost of automatic trigger measured and documented (target: cheaper than orchestrator-mediated SEO invocation)
+6. All improvements deliver independent value -- no step depends on another step succeeding

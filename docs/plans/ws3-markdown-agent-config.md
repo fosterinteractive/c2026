@@ -1,11 +1,26 @@
 # WS3: Markdown-Based Agent Configuration
 
+**Revision: v2 — Revised based on proposal-critic feedback (2026-03-27)**
+
 **Status:** Draft
 **Created:** 2026-03-26
 **Estimated Scope:** MEDIUM (leverages existing ai_context patterns, primarily config + recipe work)
 **Dependencies:** WS1 (efficiency optimization should be done first so we migrate the already-trimmed prompts)
 **Blocks:** WS4 (config format affects deployment recipe structure)
 **Can run in parallel with:** WS2 (no mutual dependencies)
+
+---
+
+## Changes from v1
+
+1. **Fixed the critical `setSystemPrompt()` clobbering bug** — v1's approach would replace the composited output (prompt + default_information_tools), silently stripping runtime context from 5 of 9 agents. Redesigned the approach with two viable options and an explicit recommendation.
+2. **Gave Option D (extending ai_context) serious analysis** — the critic argued it reuses battle-tested infrastructure (entity import, recipe integration, usage tracking) and avoids the composition problem entirely. Option D is now a first-class alternative alongside the revised Option C.
+3. **Specified caching strategy** — file reads on every agent loop iteration (5-10+ per request) need caching. Added explicit caching design with Drupal's cache backend.
+4. **Added error handling specification** — malformed frontmatter, missing files, agent_id mismatches, file read failures.
+5. **Fixed proof-of-concept agent choice** — `canvas_title_generation_agent` has `default_information_tools` (get_entity_context, get_page_data) and would hit the clobbering bug immediately. Changed to `analytics_monitoring_agent` (no default_information_tools, simple prompt).
+6. **Clarified file path convention** — `ai_context_data/` is at the project root, not under `web/`. Agent prompt files follow the same convention.
+7. **Added testing strategy** — kernel test for the prompt loader, integration test verifying the subscriber modifies the prompt correctly.
+8. **Revised recommendation** — after analyzing the clobbering bug, Option D (extending ai_context) is now the recommended approach for its safety and infrastructure reuse. Option C remains viable with the clobbering fix but requires more custom code.
 
 ---
 
@@ -26,56 +41,65 @@ The goal is to make agent system prompts work like Claude Code skills -- markdow
 
 The ai_context module already solves the markdown-to-agent-context problem:
 
-1. **Markdown source files** live in `ai_context_data/*.md` (10 files currently)
+1. **Markdown source files** live in `ai_context_data/*.md` (10 files currently) at the **project root** (parent of `web/`), NOT under `DRUPAL_ROOT` (`web/`)
 2. **Content entities** are created from these files and exported as recipe content in `custom_recipes/ai_context_items/content/ai_context_item/*.yml`
 3. **Entity structure** (from `0ddd4133-6b3c-4b05-8a59-3b1f45ffa4df.yml`): Each entity has `label`, `description`, `purpose`, `content` (the markdown), and `subcontext_type` fields
 4. **Agent mapping** happens in `custom_recipes/ai_context_setup/recipe.yml` via the `aiContextAgentsUpdate` config action, which maps context items to agents via `always_include` / `excluded_subcontext`
-5. **Runtime injection** happens via `SystemPromptSubscriber.php`: subscribes to `BuildSystemPromptEvent`, calls `AiContextSelector::select()` to get relevant context, appends it to the system prompt
+5. **Runtime injection** happens via `SystemPromptSubscriber.php`: subscribes to `BuildSystemPromptEvent`, calls `AiContextSelector::select()` to get relevant context, **appends** it to the system prompt
 6. **Rendering** happens via `AiContextRenderer.php`: loads entities, budgets tokens, renders compact context blocks
 
 ### How Agent Prompts Work (the current approach)
 
 1. **System prompts** are stored as the `system_prompt` field on `AiAgent` config entities
-2. **At runtime**, `AiAgentEntityWrapper::getSystemPrompt()` (line 872) reads `secured_system_prompt`, applies token replacement (`[ai_agent:agent_instructions]` is replaced with the actual `system_prompt`), then appends `default_information_tools` output
-3. **Token replacement** (`applyTokens()`) handles dynamic tokens like `[canvas_ai:page_title]`, `[site:name]`, etc.
-4. **The `BuildSystemPromptEvent`** fires after the base prompt is assembled, allowing subscribers (like ai_context) to append content
+2. **At runtime**, `AiAgentEntityWrapper::getSystemPrompt()` (line 872-882) does:
+   ```php
+   $dynamic = $this->getDefaultInformationTools();  // Executes tools, gets output
+   $secured_system_prompt = $this->aiAgent->get('secured_system_prompt');
+   // defaults to "[ai_agent:agent_instructions]"
+   $prompt = $this->applyTokens($secured_system_prompt);  // Resolves to system_prompt value
+   return $prompt . "\n\n" . $dynamic;  // COMPOSITES prompt + tool output
+   ```
+3. **The `BuildSystemPromptEvent`** fires at line 455-457 with the **composited** string (prompt + default_information_tools output). The event's `setSystemPrompt()` replaces this entire composited string.
+4. **Token replacement** (`applyTokens()`) runs AGAIN at line 463 on the event's output.
 
-### Key Insight
+### The Critical Clobbering Problem (from v1 critique)
 
-The `BuildSystemPromptEvent` is the extension point. The ai_context module already uses it to inject context items. A similar pattern could inject agent system prompts from markdown files -- but the approach needs to be different because system prompts REPLACE the base prompt rather than appending to it.
+v1 recommended Option C (custom module with `BuildSystemPromptEvent`) where the subscriber calls `setSystemPrompt()` to replace the prompt with markdown file content. This would **destroy default_information_tools output** because `setSystemPrompt()` replaces the composited string (prompt + dynamic tool output), not just the agent instructions portion.
+
+**Five agents have non-empty `default_information_tools`:**
+- `canvas_title_generation_agent` — get_entity_context, get_page_data
+- `canvas_metadata_generation_agent` — get_entity_context, get_page_data
+- `canvas_component_agent` — get_js_component, get_props_type, get_node_fields
+- `canvas_page_builder_agent` — current_layout, available_components
+- `canvas_template_builder_agent` — current_layout, available_components
+
+For these agents, naive `setSystemPrompt()` replacement would silently drop runtime context (entity information, page data, current layout, component props) that is essential for correct agent behavior.
 
 ### Agent Prompt Sizes
 
-| Agent | System Prompt Tokens | Complexity |
-|-------|---------------------|------------|
-| canvas_ai_orchestrator | ~4,500 (post-WS1: ~2,800) | HIGH -- 8 rules, 24 examples (post-WS1: ~12 examples) |
-| canvas_page_builder_agent | ~3,200 | HIGH -- 3 workflows, YAML templates, error handling |
-| canvas_template_builder_agent | ~2,000 | MEDIUM -- component placement, prop logic |
-| canvas_component_agent | ~4,000 | HIGH -- React/Preact code generation |
-| drupal_canvas_seo_agent | ~3,000 | HIGH -- 3 modes, good/bad prompt examples |
-| canvas_metadata_generation_agent | ~500 (post-WS1: ~200) | LOW |
-| canvas_title_generation_agent | ~50 (post-WS1: ~100) | LOW |
-| analytics_monitoring_agent | ~300 | LOW |
-| drupal_cms_assistant | varies | MEDIUM |
+| Agent | System Prompt Tokens | Complexity | Has default_information_tools |
+|-------|---------------------|------------|-------------------------------|
+| canvas_ai_orchestrator | ~4,500 (post-WS1: ~2,800) | HIGH | No |
+| canvas_page_builder_agent | ~3,200 | HIGH | **Yes** (current_layout, available_components) |
+| canvas_template_builder_agent | ~2,000 | MEDIUM | **Yes** (current_layout, available_components) |
+| canvas_component_agent | ~4,000 | HIGH | **Yes** (get_js_component, get_props_type, get_node_fields) |
+| drupal_canvas_seo_agent | ~3,000 | HIGH | No |
+| canvas_metadata_generation_agent | ~500 (post-WS1: ~200) | LOW | **Yes** (get_entity_context, get_page_data) |
+| canvas_title_generation_agent | ~50 (post-WS1: ~100) | LOW | **Yes** (get_entity_context, get_page_data) |
+| analytics_monitoring_agent | ~300 | LOW | No |
+| drupal_cms_assistant | varies | MEDIUM | No |
 
 ## Proposed Approach
 
-### Phase 1: Design the Markdown-to-Prompt Pattern
+### Step 1: Define the markdown file format for agent prompts
 
-**Step 1: Define the markdown file format for agent prompts**
-
-Create a standard format that mirrors Claude Code skills / ai_context_data files:
+Create a standard format:
 
 ```markdown
 ---
 agent_id: canvas_ai_orchestrator
 label: "Drupal Canvas AI Orchestrator"
 description: "Orchestration agent that routes user requests to specialized sub-agents"
-version: "2.0"
-tokens:
-  - canvas_ai:verbose_context_for_orchestrator
-  - canvas_ai:entity_type
-  - canvas_ai:page_title
 ---
 
 # Canvas AI Orchestrator
@@ -89,127 +113,235 @@ You are an expert AI Orchestrator for Drupal Canvas...
 ...
 ```
 
-The frontmatter declares metadata. The body IS the system prompt. Tokens referenced in the prompt (like `[canvas_ai:page_title]`) are declared in the frontmatter for documentation but resolved at runtime by the existing `applyTokens()` mechanism.
+The frontmatter declares metadata. The body IS the system prompt content that replaces the `system_prompt` field value (NOT the composited output).
 
-**Acceptance criteria:** Format documented in `docs/specs/agent-prompt-format.md`. Format supports all current prompt features (tokens, dynamic context references). At least 2 team members have reviewed the format.
+**Important:** ALL token patterns in the markdown body (e.g., `[canvas_ai:page_title]`, `[site:name]`) are resolved automatically by `applyTokens()` at runtime, regardless of whether they appear in frontmatter. Do not use token-like patterns as literal examples in prompts -- they will be replaced. If you need to show a token as an example, escape it (e.g., `\[canvas_ai:page_title\]`).
 
-**Step 2: Evaluate implementation options**
+**Excluded from frontmatter:** The v1 `tokens` and `version` fields are removed. `tokens` was decorative (all token patterns are resolved regardless of declaration) and created a false sense of control. `version` had no defined semantics.
 
-**Option A: File-reference in config entity (lightest weight)**
-- Add a `system_prompt_file` field to the AiAgent config entity schema
-- When `system_prompt_file` is set, `getSystemPrompt()` reads from that file path instead of the `system_prompt` field
-- File path is relative to the Drupal root (e.g., `ai_agent_prompts/canvas_ai_orchestrator.md`)
-- The `system_prompt` field becomes a fallback / cache
-- Requires a small patch to `AiAgentEntityWrapper::getSystemPrompt()`
+**Scope:** Only the 9 Canvas/FinDrop agent prompts are migrated. The 3 contrib agents (`content_type_agent_triage`, `field_agent_triage`, `taxonomy_agent_config`) are excluded because their prompts are maintained upstream.
 
-**Option B: Config override via settings.php**
-- Use Drupal's `$config` override system in `settings.php` or `settings.local.php`
-- Override `ai_agents.ai_agent.canvas_ai_orchestrator.system_prompt` with file contents
-- Pro: No module changes. Con: Prompts loaded at config init, not lazy. Complex settings.php.
+**Acceptance criteria:** Format documented in `docs/specs/agent-prompt-format.md`. Format supports all current prompt features (tokens, dynamic context references).
 
-**Option C: Custom module with BuildSystemPromptEvent**
-- Create `canvas_ai_prompts` module
-- Subscribe to `BuildSystemPromptEvent` (like ai_context does)
-- Read markdown files from a defined directory
-- Replace the system prompt entirely for matching agent IDs
-- Pro: Clean separation, no patches. Con: The event appends, doesn't replace -- would need to call `setSystemPrompt()` which replaces the entire prompt.
+### Step 2: Select implementation approach
 
-**Option D: Extend ai_context module**
-- Create a new ai_context_item type called "agent_prompt"
-- Store agent prompts as context items with a special scope
-- Map them via `always_include` with a "replaces_system_prompt" flag
-- Pro: Uses existing infrastructure. Con: Conflates context (supplementary) with prompts (primary).
+Two viable approaches remain after the clobbering analysis. Both are analyzed in detail:
 
-**Recommended: Option C (custom module with BuildSystemPromptEvent)**
+**Option C (revised): Custom module with safe prompt replacement**
 
-Rationale: `BuildSystemPromptEvent::setSystemPrompt()` already exists and can replace the full prompt. A custom module is the cleanest approach -- no patches to contrib, no conflation with context items, and the markdown files live in the repo as first-class entities. The module is small (one event subscriber, one service to load/parse markdown files).
+The original Option C's clobbering bug can be fixed. The subscriber must replace ONLY the `system_prompt` portion of the composited string, preserving the `default_information_tools` output:
 
-**Acceptance criteria:** Option selected with documented rationale. Proof-of-concept tested with one agent (title_generation_agent as the simplest case).
+Approach: The subscriber runs at a priority higher than ai_context (runs first). It:
+1. Gets the current composited prompt via `$event->getSystemPrompt()`
+2. Loads the agent's original `system_prompt` value from config
+3. Loads the markdown file content for the agent
+4. Applies token replacement to the markdown content (using the agent's token context)
+5. Performs a string replacement: swap the resolved original `system_prompt` portion with the markdown content, leaving the `default_information_tools` suffix intact
+6. Calls `$event->setSystemPrompt()` with the modified composite
 
-### Phase 2: Build the Infrastructure
+**Risk:** This relies on the original `system_prompt` value being a recognizable substring of the composited output. If `applyTokens()` transforms the prompt in ways that make substring matching unreliable, this approach breaks silently. Also, if `secured_system_prompt` uses a non-trivial wrapper (not just `[ai_agent:agent_instructions]`), the substring matching becomes more complex.
 
-**Step 3: Implement the markdown prompt loader**
+**Mitigation:** All FinDrop agents use `secured_system_prompt: '[ai_agent:agent_instructions]'` (simple passthrough). The substring is the resolved `system_prompt` value before `default_information_tools` appending. Add a validation check: if the original prompt text is not found in the composite, log an error and fall back to the config entity prompt.
+
+**Option D (revised): Extend ai_context as "agent prompt" context items**
+
+Store agent prompts as ai_context entities with a special type. The ai_context module's `SystemPromptSubscriber` already handles injection via `BuildSystemPromptEvent` -- but it **appends** content rather than replacing. This avoids the clobbering problem entirely because the default_information_tools output is never touched.
+
+Implementation:
+1. Create a new ai_context_item subtype or use a convention (e.g., label prefix `[PROMPT]` or a dedicated `subcontext_type: agent_prompt`)
+2. For each agent, create an ai_context_item entity containing the full system prompt as the `content` field
+3. Map each prompt entity to its agent via `always_include` in the ai_context agent mapping
+4. Modify the `system_prompt` field in agent configs to a minimal stub (e.g., "See context items for full instructions")
+5. The ai_context `SystemPromptSubscriber` appends the prompt content after the stub
+
+**Advantages over Option C:**
+- Reuses battle-tested infrastructure (entity import, recipe integration, usage tracking, token budgeting)
+- No custom module needed (just config/content entities and recipe changes)
+- No clobbering risk (appends, never replaces)
+- Markdown source files follow the exact same workflow as existing `ai_context_data/*.md` files
+- Agent prompt entities can use `always_include` for deterministic injection (bypasses keyword matching)
+
+**Disadvantages:**
+- Semantic conflation: agent prompts and supplementary context are different concepts, but they use the same entity type and injection mechanism
+- The agent's `system_prompt` field becomes a stub, which is confusing in the config UI
+- Prompt content is duplicated: once in the markdown source file, once in the content entity export, once as a stub in the config entity
+- Keyword-based context selection could be affected if the stub prompt has different keywords than the full prompt (mitigated by using `always_include`)
+
+**Recommendation: Option D (extending ai_context)**
+
+After analyzing the clobbering bug, Option D is the safer and more pragmatic choice:
+- It avoids the clobbering problem entirely
+- It reuses existing, tested infrastructure instead of building a parallel system
+- The "semantic conflation" concern is theoretical -- at the code level, both context and prompts are string mutations on the same system prompt via the same event
+- The markdown workflow is identical to the existing ai_context_data workflow that is already established
+
+Option C remains viable as a fallback if Option D proves unworkable (e.g., if the ai_context token budgeting truncates long prompts, or if the "append vs replace" behavior causes the prompt to appear after context items instead of before).
+
+**Acceptance criteria:** Option selected with documented rationale. Proof-of-concept tested with `analytics_monitoring_agent` (chosen because it has NO default_information_tools and a simple ~300 token prompt -- the safest first test).
+
+### Step 3: Implement the prompt loading mechanism
+
+**If Option D (recommended):**
+
+1. Create markdown source files in `ai_agent_prompts/` at the project root (alongside `ai_context_data/`):
+   ```
+   ai_agent_prompts/
+     canvas_ai_orchestrator.md
+     canvas_page_builder_agent.md
+     canvas_template_builder_agent.md
+     canvas_component_agent.md
+     canvas_title_generation_agent.md
+     canvas_metadata_generation_agent.md
+     drupal_canvas_seo_agent.md
+     analytics_monitoring_agent.md
+     drupal_cms_assistant.md
+   ```
+
+2. Create ai_context_item entities for each agent prompt:
+   - `label`: e.g., "[PROMPT] Canvas AI Orchestrator"
+   - `content`: the full markdown prompt content
+   - `subcontext_type`: use a convention to distinguish prompts from supplementary context
+   - `purpose`: "System prompt for {agent_name}"
+
+3. Export entities to `custom_recipes/ai_context_items/content/ai_context_item/`
+
+4. Map each prompt entity to its agent in `custom_recipes/ai_context_setup/recipe.yml`:
+   - Add to `always_include` for the matching agent
+   - This ensures deterministic injection (no keyword matching)
+
+5. Reduce agent config `system_prompt` fields to minimal stubs:
+   - For agents WITHOUT default_information_tools: stub can be empty or a one-liner
+   - For agents WITH default_information_tools: stub must preserve any instructions that reference default_information_tools output (e.g., "The current layout is provided above")
+
+6. Verify: the ai_context subscriber appends the prompt entity content to the system prompt. The agent receives: stub + default_information_tools output + prompt entity content + other context items.
+
+**Ordering concern:** ai_context appends AFTER the base prompt + default_information_tools. This means the full prompt instructions appear after the dynamic tool output, not before. Test whether this ordering affects agent behavior. If agents perform worse with instructions after dynamic context, consider adjusting `SystemPromptSubscriber` priority or adding a custom subscriber that reorders the content.
+
+**If Option C (fallback):**
 
 Create `web/modules/custom/canvas_ai_prompts/`:
 - `canvas_ai_prompts.info.yml` -- module definition
 - `canvas_ai_prompts.services.yml` -- service definitions
-- `src/Service/AgentPromptLoader.php` -- loads and parses markdown files from a configured directory
-- `src/EventSubscriber/AgentPromptSubscriber.php` -- subscribes to `BuildSystemPromptEvent`, loads markdown for the matching agent_id, applies token replacement, calls `setSystemPrompt()`
+- `src/Service/AgentPromptLoader.php` -- loads and parses markdown files, with caching
+- `src/EventSubscriber/AgentPromptSubscriber.php` -- subscribes to `BuildSystemPromptEvent` at priority 100 (higher than ai_context at 0), performs safe substring replacement
 
-Prompt files directory: `ai_agent_prompts/` at the repo root (alongside `ai_context_data/`)
+**Caching strategy (applies to both options):**
 
-Key behaviors:
-- Frontmatter parsed with a YAML parser (same as Drupal recipe parsing)
-- Body treated as the system prompt text (NOT converted to HTML -- the prompt goes to the LLM as-is)
-- Token replacement (e.g., `[canvas_ai:page_title]`) handled by the existing `applyTokens()` mechanism via the event
-- If no markdown file exists for an agent, fall back to the config entity `system_prompt` (backward compatible)
-- Event subscriber priority should be higher than ai_context (which runs at default priority) so the base prompt is set before context is appended
+For Option D: ai_context already handles caching through Drupal's entity loading cache. No additional caching needed.
 
-**Acceptance criteria:** Module loads prompts from markdown files. Token replacement works. Fallback to config entity works when no file exists. One agent (title_generation_agent) successfully uses a markdown-based prompt.
+For Option C: The `AgentPromptLoader` service must cache parsed markdown to avoid filesystem reads on every loop iteration:
+- Use Drupal's `cache.default` backend with cache tag `canvas_ai_prompts`
+- Cache key: `agent_prompt:{agent_id}:{file_mtime}` (file modification time for auto-invalidation during development)
+- `drush cr` clears the cache (standard Drupal behavior)
+- In development: check file mtime on each request. If changed, invalidate cache entry.
+- In production: rely on `drush cr` after deployments.
 
-### Phase 3: Migration
+**Error handling (applies to both options):**
 
-**Step 4: Migrate existing prompts to markdown files**
+- **Malformed frontmatter:** Log a warning, fall back to config entity `system_prompt`. Do not crash the agent.
+- **Missing file for an agent_id:** Log a notice, use config entity `system_prompt`. This is the normal case for agents not yet migrated.
+- **agent_id mismatch (frontmatter agent_id does not match filename):** Log a warning, skip the file. Use config entity `system_prompt`.
+- **File read failure (permissions, missing directory):** Log an error, fall back to config entity `system_prompt`.
+- **All errors must be non-fatal.** The agent must always have a working prompt, even if the markdown loading fails.
 
-Extract all agent system prompts from YAML configs into markdown files:
+**Acceptance criteria:** Prompt loading mechanism implemented. Token replacement works. Fallback to config entity works when no file/entity exists. `analytics_monitoring_agent` successfully uses a markdown-based prompt. No regressions for agents with default_information_tools (verify title_generation_agent still receives get_entity_context and get_page_data output).
 
-```
-ai_agent_prompts/
-  canvas_ai_orchestrator.md
-  canvas_page_builder_agent.md
-  canvas_template_builder_agent.md
-  canvas_component_agent.md
-  canvas_title_generation_agent.md
-  canvas_metadata_generation_agent.md
-  drupal_canvas_seo_agent.md
-  analytics_monitoring_agent.md
-  drupal_cms_assistant.md
-```
+### Step 4: Migrate existing prompts to markdown files
+
+Extract all 9 agent system prompts from YAML configs into markdown files:
 
 For each file:
 1. Extract `system_prompt` from the YAML config
-2. Add frontmatter with agent_id, label, description, token declarations
+2. Add frontmatter with agent_id, label, description
 3. Clean up YAML escaping artifacts (convert `\r\n` to newlines, remove YAML `|-` block scalar syntax)
-4. Verify the prompt content is identical post-migration (diff check)
+4. For Option D: create the ai_context_item entity and export it
+5. For Option D: update `recipe.yml` to map the entity to the agent
+6. Verify the prompt content produces identical agent behavior:
+   - Run a page build and compare output quality to pre-migration baseline
+   - For agents with default_information_tools: verify dynamic context is still present in the system prompt (check via ai_observability logs)
+   - For agents using keyword-based context selection: verify the same context items are selected (check via ai_context usage tracking)
 
-**Acceptance criteria:** All 9 agent prompts migrated to markdown files. Each prompt produces identical LLM behavior (verified by running the driesnote demo). YAML configs still contain the prompts as fallback but the module overrides them.
+**Migration order (safest first):**
+1. `analytics_monitoring_agent` (no default_information_tools, simple prompt, standalone)
+2. `drupal_canvas_seo_agent` (no default_information_tools, complex prompt)
+3. `canvas_ai_orchestrator` (no default_information_tools, most complex prompt)
+4. `drupal_cms_assistant` (no default_information_tools)
+5. `canvas_title_generation_agent` (HAS default_information_tools -- verify carefully)
+6. `canvas_metadata_generation_agent` (HAS default_information_tools)
+7. `canvas_template_builder_agent` (HAS default_information_tools, complex prompt)
+8. `canvas_page_builder_agent` (HAS default_information_tools, complex prompt)
+9. `canvas_component_agent` (HAS default_information_tools, highest security risk)
 
-### Phase 4: Developer Workflow
+**Acceptance criteria:** All 9 agent prompts migrated to markdown files. Each prompt produces identical agent behavior verified by running a page build after each migration. Agents with default_information_tools confirmed to still receive their dynamic context.
 
-**Step 5: Document the developer workflow**
+### Step 5: Testing
+
+**Automated tests:**
+
+1. **Kernel test: `AgentPromptLoadingTest`**
+   - If Option D: Test that an ai_context_item entity with the agent prompt is loaded and injected for the correct agent via `always_include`
+   - If Option C: Test that `AgentPromptLoader::load('analytics_monitoring_agent')` returns parsed markdown content with correct frontmatter
+   - Test fallback: when no markdown/entity exists, the config entity `system_prompt` is used unchanged
+   - Test error handling: malformed frontmatter falls back gracefully
+
+2. **Kernel test: `DefaultInformationToolsPreservationTest`**
+   - Create a test agent with `default_information_tools` that returns a known string
+   - Apply the prompt loading mechanism
+   - Verify the known string is still present in the final system prompt
+   - This is the regression test for the clobbering bug
+
+3. **Integration test: `PromptMigrationConsistencyTest`**
+   - For each migrated agent, compare the system prompt produced by the markdown mechanism vs. the original config entity mechanism
+   - Verify token replacement works identically
+   - Verify ai_context items are the same (if using Option D with `always_include`)
+
+**Acceptance criteria:** All tests pass. The clobbering bug has an explicit regression test. Test coverage includes agents with and without default_information_tools.
+
+### Step 6: Document the developer workflow
 
 Create documentation for how developers edit agent prompts:
 
-1. Edit the markdown file in `ai_agent_prompts/`
-2. Clear Drupal cache (`ddev drush cr`) to pick up changes
-3. Test the agent behavior in the Canvas UI
-4. Commit the markdown file
-5. PR review shows clean markdown diffs instead of YAML noise
-6. Recipe export (`ddev export-ai-context`) is not needed for prompt changes -- they are file-based
+1. Edit the markdown file in `ai_agent_prompts/` (or update the ai_context_item entity content for Option D)
+2. If Option D: re-export content (`ddev export-ai-context`)
+3. If Option C: clear Drupal cache (`ddev drush cr`) to pick up file changes
+4. Test the agent behavior in the Canvas UI
+5. Commit the markdown file (and entity export for Option D)
+6. PR review shows clean markdown diffs
 
-**Acceptance criteria:** Developer workflow documented in `docs/guides/editing-agent-prompts.md`. At least one prompt change has been made via the new workflow and verified.
+**Deployment path (for WS4):**
+- The `ai_agent_prompts/` directory lives at the project root, alongside `ai_context_data/`
+- For Option D: prompt entities are exported as recipe content (same as existing ai_context_items). Deployment platforms receive them via the recipe, not via filesystem paths.
+- For Option C: the markdown files must be accessible at runtime. For deployment platforms that use the full repo (amazee.io, DDEV), files are at `{project_root}/ai_agent_prompts/`. For platforms that only deploy `web/`, the module must handle a configurable base path. Document this in the deployment guide.
+
+**Acceptance criteria:** Developer workflow documented in `docs/guides/editing-agent-prompts.md`. Deployment path clarified for each target platform (DDEV, amazee.io, Drupal Forge).
 
 ## Cross-References
 
-- **WS1 (Efficiency):** WS1's prompt trimming (Steps 1 and 6) should be done FIRST in YAML, then the trimmed prompts are migrated to markdown in WS3 Phase 3. This avoids doing the same trimming work twice.
-- **WS2 (Branching):** If WS2 restructures the orchestrator prompt for branching patterns, that restructured prompt should be the version migrated to markdown.
-- **WS4 (Deploy):** WS4's deployment recipes need to include the `ai_agent_prompts/` directory and the `canvas_ai_prompts` module. The recipe structure may need a step to copy prompt files to the correct location.
+- **WS1 (Efficiency):** WS1's prompt trimming (Steps 1 and 3) should be done FIRST in YAML, then the trimmed prompts are migrated to markdown in WS3 Phase 3. This avoids doing the same trimming work twice.
+- **WS2 (Branching):** If WS2 restructures the orchestrator prompt for the automatic SEO trigger, that modified prompt should be the version migrated to markdown.
+- **WS4 (Deploy):** WS4's deployment recipes need to include the prompt mechanism:
+  - Option D: ai_context_item entities are already part of the recipe content export. No additional deployment work.
+  - Option C: the `canvas_ai_prompts` module and `ai_agent_prompts/` directory must be in the deployment artifacts.
 
 ## Risks and Mitigations
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|------------|
-| `BuildSystemPromptEvent::setSystemPrompt()` doesn't fully replace (appends instead) | LOW | HIGH | Test with a simple agent first. If it appends, the event subscriber can clear the prompt first then set it. |
-| Token replacement breaks when prompt is loaded from file | LOW | MEDIUM | Use the same `applyTokens()` method. Tokens are string replacements -- they work regardless of source. |
-| Developers forget to clear cache after editing prompts | MEDIUM | LOW | Document clearly. Consider adding a file watcher in DDEV for development. |
-| Recipe export overwrites the YAML prompts | MEDIUM | MEDIUM | The markdown files are the source of truth. YAML prompts are fallback only. Document this clearly. |
-| Frontmatter parsing adds complexity | LOW | LOW | Use Symfony YAML component already available in Drupal. Frontmatter parsing is a few lines of code. |
+| Option D: ai_context token budgeting truncates long prompts | MEDIUM | HIGH | Test with the orchestrator prompt (~2,800 tokens post-WS1). If truncated, increase the ai_context token budget or switch to Option C. |
+| Option D: prompt appears AFTER dynamic context in the system prompt | MEDIUM | MEDIUM | Test with analytics_monitoring_agent first. If ordering matters, adjust subscriber priority or add a reordering subscriber. |
+| Option C: substring replacement for clobbering fix is fragile | MEDIUM | HIGH | Add validation check: if original prompt text not found in composite, log error and fall back. Explicit regression test. |
+| Keyword-based context selection returns different items with different prompt text | LOW | MEDIUM | All agents use `always_include` for their context items, which bypasses keyword matching. Verify during migration. |
+| Recipe export overwrites entity content | MEDIUM | MEDIUM | For Option D: the markdown files are the source of truth. Re-export after editing. Document this workflow. For Option C: markdown files are independent of recipe export. |
+| Developers include token-like patterns as literal examples in prompts | LOW | LOW | Document that all `[token:name]` patterns are resolved. Provide escaping guidance. |
 
 ## Success Criteria
 
 1. All 9 agent prompts available as markdown files in `ai_agent_prompts/`
-2. Custom module loads prompts from files at runtime
-3. Backward compatible -- agents work without the module (fall back to YAML config)
+2. Prompt loading mechanism works at runtime (Option D via ai_context entities or Option C via custom module)
+3. Backward compatible -- agents work without the mechanism (fall back to YAML config)
 4. PR diffs for prompt changes show clean markdown instead of YAML noise
 5. Developer workflow documented and tested
 6. No modifications to `web/modules/contrib/ai_agents/` or `web/modules/contrib/ai_context/`
+7. Clobbering bug has an explicit regression test
+8. Agents with default_information_tools confirmed to retain their dynamic context after migration
+9. Deployment path documented for DDEV, amazee.io, and Drupal Forge
