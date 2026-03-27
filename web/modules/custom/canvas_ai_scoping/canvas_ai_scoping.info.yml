@@ -1,0 +1,8 @@
+name: Canvas AI Layout Scoping
+type: module
+description: 'Scopes Canvas AI layout context to the active region when editing a specific component, reducing LLM token consumption.'
+package: Canvas
+core_version_requirement: ^10.3 || ^11
+dependencies:
+  - ai_agents:ai_agents
+  - canvas_ai:canvas_ai

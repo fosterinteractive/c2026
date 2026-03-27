@@ -132,6 +132,7 @@ install:
   - canvas
   - canvas_ai
   - canvas_ai_seo
+  - canvas_ai_scoping
   - claro
   - canvas_stark
   - byte_theme

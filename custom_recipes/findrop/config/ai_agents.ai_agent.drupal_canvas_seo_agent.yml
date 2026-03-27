@@ -227,7 +227,7 @@ tool_settings:
     use_artifacts: 0
 orchestration_agent: false
 triage_agent: false
-max_loops: 10
+max_loops: 5
 default_information_tools: ''
 tool_usage_limits:
   'ai_agent:add_schema_org_json':

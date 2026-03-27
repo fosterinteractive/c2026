@@ -20,7 +20,6 @@ config:
               - 'Visuals & Imagery'
               - 'Abbreviations, Spelling, Dates & Formatting'
               - 'FinDrop Key Facts & Value Propositions'
-              - 'FinDrop Travel — Sales Training Deck'
               - 'General Page Building Guidelines'
               - 'Content Structure: Product Pages'
             excluded_subcontext:
@@ -37,7 +36,6 @@ config:
               - 'Visuals & Imagery'
               - 'Abbreviations, Spelling, Dates & Formatting'
               - 'FinDrop Key Facts & Value Propositions'
-              - 'FinDrop Travel — Sales Training Deck'
               - 'General Page Building Guidelines'
               - 'Content Structure: Product Pages'
             excluded_subcontext:

@@ -1,0 +1,12 @@
+services:
+  canvas_ai_scoping.layout_scoping_subscriber:
+    class: Drupal\canvas_ai_scoping\EventSubscriber\LayoutScopingSubscriber
+    arguments:
+      - '@canvas_ai.tempstore'
+    tags:
+      - { name: event_subscriber }
+
+  canvas_ai_scoping.context_scoping_subscriber:
+    class: Drupal\canvas_ai_scoping\EventSubscriber\ContextScopingSubscriber
+    tags:
+      - { name: event_subscriber }
