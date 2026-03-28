@@ -6,6 +6,7 @@ namespace Drupal\canvas_ai_scoping\EventSubscriber;
 
 use Drupal\ai_agents\Event\BuildSystemPromptEvent;
 use Drupal\canvas_ai\CanvasAiTempStore;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -34,6 +35,7 @@ final class LayoutScopingSubscriber implements EventSubscriberInterface {
 
   public function __construct(
     private readonly CanvasAiTempStore $canvasAiTempStore,
+    private readonly LoggerInterface $logger,
   ) {}
 
   /**
@@ -56,7 +58,7 @@ final class LayoutScopingSubscriber implements EventSubscriberInterface {
 
     $tokens = $event->getTokens();
     $activeUuid = $tokens['active_component_uuid'] ?? 'None';
-    if ($activeUuid === 'None' || $activeUuid === '' || $activeUuid === NULL) {
+    if ($activeUuid === 'None' || $activeUuid === '') {
       return;
     }
 
@@ -84,7 +86,7 @@ final class LayoutScopingSubscriber implements EventSubscriberInterface {
       $event->setSystemPrompt(
         str_replace($layoutJson, $scopedJson, $systemPrompt)
       );
-      \Drupal::logger('canvas_ai_scoping')->notice(
+      $this->logger->notice(
         'Scoped layout for @agent: section in "@region" (@orig_len → @scoped_len bytes, @pct% reduction)',
         [
           '@agent' => $event->getAgentId(),

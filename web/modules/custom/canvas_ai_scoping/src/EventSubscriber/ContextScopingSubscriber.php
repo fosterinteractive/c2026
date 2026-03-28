@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\canvas_ai_scoping\EventSubscriber;
 
 use Drupal\ai_agents\Event\BuildSystemPromptEvent;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -19,9 +20,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * LayoutScopingSubscriber (priority -10), at priority -20.
  *
  * Format dependency: relies on ai_context's AiContextRenderer output format:
- *   "- ID: <title>\n  Tags: ...\n  Guidance:\n    <content>"
- * wrapped in "-------" separators. If the format changes, stripping silently
- * fails (items leak back in) — fail-open by design.
+ *   "- ID: <numeric_id>\n  Tags: ...\n  Guidance:\n    <content>"
+ * wrapped in "-------" separators. Items are matched by distinctive content
+ * strings within the Guidance block, since the ID field is numeric (not the
+ * entity label). If the format changes, stripping silently fails (items leak
+ * back in) — fail-open by design.
  */
 final class ContextScopingSubscriber implements EventSubscriberInterface {
 
@@ -33,17 +36,31 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
   ];
 
   /**
-   * Context items to REMOVE during edit operations.
+   * Content fingerprints to match context items for REMOVAL during edits.
    *
-   * These are structural/strategic docs needed for page building but not
-   * for editing existing component props.
+   * Each entry is a distinctive string that appears in the Guidance content
+   * of a context item. Matched case-insensitively. Only one fingerprint per
+   * item is needed — pick the most stable/unique string.
+   *
+   * Mapped to human-readable names for logging.
    */
-  private const STRIP_DURING_EDITS = [
-    'Content Structure: Product Pages',
-    'General Page Building Guidelines',
-    'FinDrop Key Facts & Value Propositions',
-    'Visuals & Imagery',
+  private const STRIP_FINGERPRINTS = [
+    // Content Structure: Product Pages — heading in the content body.
+    'Content Strategy: Product Pages v4' => 'Content Structure: Product Pages',
+    // General Page Building Guidelines — global text/color rules.
+    'Global rules for text color, eyebrow labels, and contrast' => 'General Page Building Guidelines',
+    // FinDrop Key Facts & Value Propositions — approved stats.
+    'single source of truth for approved statistics, value propositions' => 'FinDrop Key Facts',
+    // Visuals & Imagery — not needed for text/prop edits.
+    // Use a unique string from its content body, not the title (which appears in other items).
+    'Three Visual Approaches' => 'Visuals & Imagery',
+    // Sales Training Deck — competitive positioning, not needed for edits.
+    'outcome-focused buyer positioning' => 'Sales Training Deck',
   ];
+
+  public function __construct(
+    private readonly LoggerInterface $logger,
+  ) {}
 
   /**
    * {@inheritdoc}
@@ -65,7 +82,7 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
 
     $tokens = $event->getTokens();
     $activeUuid = $tokens['active_component_uuid'] ?? 'None';
-    if ($activeUuid === 'None' || $activeUuid === '' || $activeUuid === NULL) {
+    if ($activeUuid === 'None' || $activeUuid === '') {
       return;
     }
 
@@ -90,6 +107,7 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
     $afterContext = substr($systemPrompt, $endPos);
 
     // Split into individual context items by "- ID: " markers.
+    // The renderer outputs: "- ID: <numeric>\n  Tags: ...\n  Guidance:\n    <content>"
     $items = preg_split('/(?=^- ID: )/m', $contextBlock, -1, PREG_SPLIT_NO_EMPTY);
     if (empty($items)) {
       return;
@@ -97,15 +115,18 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
 
     $originalCount = count($items);
     $strippedCount = 0;
+    $strippedNames = [];
 
-    // Filter out items that match our strip list.
+    // Filter out items whose Guidance content matches a strip fingerprint.
     $keptItems = [];
     foreach ($items as $item) {
       $shouldStrip = FALSE;
-      foreach (self::STRIP_DURING_EDITS as $stripTitle) {
-        if (str_contains($item, '- ID: ' . $stripTitle)) {
+      $itemLower = mb_strtolower($item);
+      foreach (self::STRIP_FINGERPRINTS as $fingerprint => $name) {
+        if (str_contains($itemLower, mb_strtolower($fingerprint))) {
           $shouldStrip = TRUE;
           $strippedCount++;
+          $strippedNames[] = $name;
           break;
         }
       }
@@ -120,7 +141,7 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
 
     // Verify we didn't strip everything — fail-open safety check.
     if (empty($keptItems)) {
-      \Drupal::logger('canvas_ai_scoping')->warning(
+      $this->logger->warning(
         'ContextScopingSubscriber: All @count context items would be stripped — skipping to fail-open.',
         ['@count' => $originalCount]
       );
@@ -135,9 +156,10 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
 
     $originalLen = strlen($systemPrompt);
     $newLen = strlen($newPrompt);
-    \Drupal::logger('canvas_ai_scoping')->notice(
-      'Stripped @stripped of @total context items for edit operation (@orig → @new bytes, @pct% reduction in prompt)',
+    $this->logger->notice(
+      'ContextScopingSubscriber: stripped @names (@stripped of @total items, @orig → @new bytes, @pct% reduction)',
       [
+        '@names' => implode(', ', $strippedNames),
         '@stripped' => $strippedCount,
         '@total' => $originalCount,
         '@orig' => $originalLen,

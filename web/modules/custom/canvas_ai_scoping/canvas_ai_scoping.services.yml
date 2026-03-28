@@ -1,12 +1,37 @@
 services:
+  # Logger channel for the module.
+  logger.channel.canvas_ai_scoping:
+    parent: logger.channel_base
+    arguments: ['canvas_ai_scoping']
+
   canvas_ai_scoping.layout_scoping_subscriber:
     class: Drupal\canvas_ai_scoping\EventSubscriber\LayoutScopingSubscriber
     arguments:
       - '@canvas_ai.tempstore'
+      - '@logger.channel.canvas_ai_scoping'
+    tags:
+      - { name: event_subscriber }
+
+  canvas_ai_scoping.loop_aware_context_subscriber:
+    class: Drupal\canvas_ai_scoping\EventSubscriber\LoopAwareContextSubscriber
+    arguments:
+      - '@logger.channel.canvas_ai_scoping'
     tags:
       - { name: event_subscriber }
 
   canvas_ai_scoping.context_scoping_subscriber:
     class: Drupal\canvas_ai_scoping\EventSubscriber\ContextScopingSubscriber
+    arguments:
+      - '@logger.channel.canvas_ai_scoping'
     tags:
       - { name: event_subscriber }
+
+  canvas_ai_scoping.token_breakdown_subscriber:
+    class: Drupal\canvas_ai_scoping\EventSubscriber\TokenBreakdownSubscriber
+    arguments:
+      - '@logger.channel.canvas_ai_scoping'
+    tags:
+      - { name: event_subscriber }
+
+  canvas_ai_scoping.direct_edit_matcher:
+    class: Drupal\canvas_ai_scoping\Service\DirectEditMatcher
