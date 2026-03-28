@@ -58,14 +58,27 @@ A complete plan for contributing 4 patches to 3 Drupal contrib modules (ai_agent
 - **P4 scope:** Schema-driven classification of "simple edits" — need to survey Canvas component schemas to validate this is feasible.
 - **Honest framing:** Strategy recommends being honest about AI context (tokens as evidence), not euphemistic. Critic validated this approach.
 
-### Next steps (task #6)
-- Write drupal.org-ready issue descriptions for each of the 5 filings
-- This is blocked on strategy review
+### Next steps — 3 parallel tracks (see ADR-008 for full schedule)
 
-### Immediate local work (not blocked on review)
-1. **Fix ContextScopingSubscriber** — separator format mismatch. Enable ai_observability `log_input: true`, check actual format, fix string matching.
-2. **Investigate Sales Training Deck injection** — arrives via parent-child subcontext of Brand Guidelines, not `always_include`. Add to `excluded_subcontext` for builders.
-3. **Clean up and commit** — remove `\Drupal::logger()` debug calls from canvas_ai_scoping.
+**Track A — PHP/Backend** (can start immediately)
+1. Fix ContextScopingSubscriber separator format bug — enable `log_input: true`, check actual format
+2. Build loop-aware context injection using existing `AgentStartedExecutionEvent::getLoopCount()` (note: returns 0 on first loop)
+3. Instrument per-component token breakdown (debug subscriber)
+4. Run 5x repeated measurements (heading edit + page build) — report mean + range
+5. Investigate Sales Training Deck injection path (parent-child subcontext, add to `excluded_subcontext` for builders)
+6. Clean up `\Drupal::logger()` debug calls
+
+**Track B — TypeScript/Frontend** (can start immediately, independent of Track A)
+1. Survey Canvas component catalog — map all props to types, estimate deterministic edit coverage
+2. Build P4 pattern matcher prototype (edit/add disambiguation via keyword exclusion)
+3. Build direct edit endpoint (`renderDirect()` + route + CSRF + permissions)
+
+**Track C — Docs/Evidence** (can start immediately, no code dependencies)
+1. Check ai_agents + ai_context drupal.org issue queues for existing efficiency discussions
+2. Slop audit on `docs/proposals/canvas-ai-region-scoping.md` (per ADR-009)
+3. Draft drupal.org issue descriptions for P4 and P1
+
+Tracks A and B are fully independent. Track C feeds from A's measurement results once available.
 
 ## Critical Context
 

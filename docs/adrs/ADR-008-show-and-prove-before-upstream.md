@@ -90,24 +90,50 @@ Additionally, upstream maintainers are more receptive to contributions that come
 
 ## Validation Sequence
 
+### Parallel Tracks
+
+Three tracks can run simultaneously. A and B are fully independent. C slots in anywhere.
+
+**Track A — PHP/Backend (canvas_ai_scoping module + measurement)**
 ```
-Week 1-2:  Fix ContextScopingSubscriber (P2 local)
-           Extend LayoutScopingSubscriber with region index (P1 local)
-           Build measurement harness (drush command for standard test scenarios)
-
-Week 3-4:  Build P4 prototype (frontend detection + direct edit endpoint)
-           Build P3a workaround (loop detection in custom subscriber)
-           Run full benchmark suite across page configurations
-
-Week 5-6:  Build context envelope prototype (ADR-006 local)
-           Survey component catalog for deterministic prop mapping (ADR-007)
-           Run envelope tests — verify agent quality with reduced context
-
-Week 7-8:  Compile results into demo package
-           Record demo sessions (screen recording + token logs)
-           Update upstream proposals with measured evidence
-           File first drupal.org issues (P4, P3a, P1) with working patches
+Week 1-2:  Fix ContextScopingSubscriber separator format bug
+           Build loop-aware context injection using existing AgentStartedExecutionEvent::getLoopCount()
+           Instrument per-component token breakdown (debug subscriber logging strlen of each segment)
+           Run 5x repeated measurements for heading edit + page build (mean + range)
+Week 3-4:  Extend LayoutScopingSubscriber with region index generation
+           Test cross-region operations with region index only
+           Multi-page benchmarks across 5, 15, 30 component pages
+Week 5-6:  Build context envelope prototype (component + neighbors + section summary)
+           Run envelope tests — verify agent produces correct results with reduced context
 ```
+
+**Track B — TypeScript/Frontend (P4 prototype + schema survey)**
+```
+Week 1-2:  Survey Canvas component catalog — map all props to types (string/color/number/etc.)
+           Estimate: what % of props support deterministic editing?
+           Document edit/add disambiguation keyword list
+Week 3-4:  Build P4 pattern matcher in AiWizard.tsx (or parallel component)
+           Build direct edit endpoint (renderDirect + route + CSRF + permissions)
+           Test: 5 edits in chat — verify 3 route deterministic, 2 route to AI
+Week 5-6:  Integrate with context envelope prototype from Track A
+           Test selection-first flow end-to-end
+```
+
+**Track C — Docs/Evidence (can run anytime, no code dependencies)**
+```
+Week 1:    Check ai_agents + ai_context drupal.org issue queues for existing efficiency discussions
+           Check Foster Interactive's public Canvas roadmap for overlap
+           Slop audit on docs/proposals/canvas-ai-region-scoping.md (ADR-009)
+Week 3-4:  Compile benchmark results from Track A into drupal.org-ready evidence tables
+           Draft issue descriptions for P4 and P1 (ADR-009 checklist before publishing)
+Week 7-8:  Record demo sessions (screen recording + token counter overlay)
+           Compile demo package (DDEV recipe anyone can reproduce)
+           File first drupal.org issues (P4, P1) with patches + evidence
+```
+
+### Dependency between tracks
+
+Track A's measurement results feed Track C's evidence tables. Track B's component schema survey informs the 60/25/15 edit-type split estimate (validates or revises ADR-006). Track A's context envelope prototype must be tested with Track B's frontend to verify end-to-end quality.
 
 ## What "Show and Prove" Looks Like
 
