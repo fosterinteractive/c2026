@@ -1,9 +1,9 @@
 # Upstream Contribution Strategy: Efficient AI Operations for Drupal
 
 **Date:** 2026-03-27
-**Status:** Revised (post-critic v1)
+**Status:** Revised (post-critic v2 — meta-critic round with proposal/drupal/perf critics)
 **Branch:** `feat/ws1-efficiency-optimization`
-**ADRs:** `docs/adrs/ADR-001` through `ADR-005`
+**ADRs:** `docs/adrs/ADR-001` through `ADR-009`
 
 ---
 
@@ -57,15 +57,25 @@ All measurements taken with the above changes already applied. The "baseline" is
 
 **Current baseline for remaining work: 111K tokens per heading edit, 259K per page build.**
 
-### Per-Call Cost Breakdown (page_builder_agent, ~22K/call)
+### Per-Call Cost Breakdown (page_builder_agent, ~22K/call measured average)
 
-| Component | Tokens/Call | Reducible? | Proposal |
-|-----------|------------|-----------|----------|
+| Component | Tokens/Call (estimated) | Reducible? | Proposal |
+|-----------|------------------------|-----------|----------|
 | System prompt (agent instructions) | 8-10K | Partially | — |
 | ai_context items (7 always_include) | 6-8K | Yes | P2 |
 | Tool definitions (6 tools) | 3-4K | No | Framework-controlled |
 | Layout JSON (already scoped) | ~2.8K | Done | P1 (already applied locally) |
 | Chat history (accumulates) | 3-10K | Yes | P3 |
+
+**Reconciliation note:** Component midpoints sum to ~28.8K, but the measured average is ~22.2K (111K / 5 calls). The ~6.6K discrepancy likely reflects overlap (ai_context is appended to the system prompt, so their tokens partially overlap in the total). These component estimates need instrumented verification — a debug subscriber that logs `strlen()` of each segment as assembled in `BuildSystemPromptEvent`. This is Week 1 measurement work.
+
+### Cost Translation
+
+At current Anthropic Claude Sonnet pricing (~$3/MTok input, ~$15/MTok output, assuming 70/30 split):
+- Heading edit (111K tokens): **~$0.73/edit**
+- Page build (253K tokens): **~$1.67/build**
+- 20-edit session at current cost: **~$14.60**
+- Production site (1000 edits/day): **~$730/day, ~$22K/month** in LLM costs for editing alone
 
 ### What We Proved Does NOT Work
 
@@ -110,38 +120,36 @@ Each layer is independent and additively beneficial.
 
 ### Filing Order (strategic + dependency-driven)
 
+**Note on P3a:** The original strategy proposed adding `getLoopIteration()` to `BuildSystemPromptEvent`. Post-critic code review revealed that `AgentStartedExecutionEvent` already exposes `getLoopCount()` (line 81-83) and fires BEFORE `BuildSystemPromptEvent` (line 449 vs 457 in `AiAgentEntityWrapper`). The ai_context `SystemPromptSubscriber` already subscribes to `AgentStartedExecutionEvent`. **P3a is eliminated.** P2 implements loop-awareness using the existing event API — no upstream framework change needed.
+
+**Off-by-one note:** `getLoopCount()` returns 0 on the first loop (it fires before `$this->looped++`). P2's subscriber must treat loop 0 as "first iteration — inject context."
+
 **1. P4 — Lightweight Edit Path** (file first)
 - **Why first:** Most aligned with Drupal community values. Argues *against* using LLMs where unnecessary. Easiest to explain: "Why are we using a language model for string replacement?"
 - **Community reception:** Highest. Maps to the principle that deterministic tooling beats probabilistic approaches.
 - **Dependencies:** None.
 
-**2. P3a — Loop Iteration in BuildSystemPromptEvent** (file second)
-- **Why second:** Small, clean framework improvement. Adds `getLoopIteration()` to an existing event — ~15 LOC. Easy review, uncontroversial. This is a prerequisite for P2.
-- **Community reception:** High. Pure API addition, backwards compatible, enables downstream optimizations.
-- **Dependencies:** None. Enables P2.
-
-**3. P1 — Native Region Scoping** (file third)
-- **Why third:** Already proven via custom module. 79% layout reduction measured. Full proposal already written for Foster Interactive. Lowest technical risk.
+**2. P1 — Native Region Scoping** (file second)
+- **Why second:** Already proven via custom module. 79% layout reduction measured. Full proposal already written for Foster Interactive. Lowest technical risk.
 - **Community reception:** High. Data loading optimization — familiar pattern.
 - **Dependencies:** None.
 
-**4. P2 — Loop-Aware Context Injection** (file fourth)
-- **Why fourth:** Depends on P3a being accepted. By now, P3a and P4 have built contributor credibility. The framing as an extension of existing agent-aware selection is clean.
-- **Community reception:** Conditional. Sound principle, builds on accepted P3a.
-- **Dependencies:** Requires P3a (loop iteration in event).
+**3. P2 — Loop-Aware Context Injection** (file third)
+- **Why third:** No upstream dependency — uses existing `AgentStartedExecutionEvent::getLoopCount()`. By now P4 and P1 have built contributor credibility.
+- **Community reception:** Conditional. Sound principle, extends existing agent-aware selection pattern.
+- **Dependencies:** None (P3a eliminated — loop count already available).
 
-**5. P3b — Orchestrator History Windowing** (file last)
+**4. P3b — Orchestrator History Windowing** (file last)
 - **Why last:** Highest risk. `allRequiredToolsRan()` breaks with naive windowing. Needs careful scoping to orchestrator-level cross-turn history only.
 - **Community reception:** Mixed. Windowing is controversial; may be deferred to a future major version.
-- **Dependencies:** Benefits from P3a being accepted.
+- **Dependencies:** None.
 
 ### Implementation Order (for local development)
 
 1. P1 (region scoping) — already proven, extend custom module
-2. P2 (context scoping) — fix the ContextScopingSubscriber, then generalize
-3. P3a (loop-aware injection) — straightforward event subscriber
-4. P4 (lightweight edit path) — frontend + backend, most design work
-5. P3b (history windowing) — defer until upstream discussion matures
+2. P2 (context scoping) — fix ContextScopingSubscriber, use existing `AgentStartedExecutionEvent::getLoopCount()`
+3. P4 (lightweight edit path) — frontend + backend, most design work
+4. P3b (history windowing) — defer until upstream discussion matures
 
 ---
 
@@ -163,6 +171,7 @@ Proposed: When `active_component_uuid` identifies a specific component, serializ
 | `ui/src/components/aiExtension/AiWizard.tsx` | Scope `transformLayout()` + filter `textPropsMapString` | ~60 |
 | `canvas_ai/src/Controller/CanvasBuilder.php:167-169` | Accept `scope` param, store scoped layout | ~40 |
 | `canvas_ai/src/CanvasAiTempStore.php` | Region index get/set methods | ~20 |
+| `canvas_ai/src/Plugin/AiFunctionCall/GetCurrentLayout.php` | Return scoped layout when scope is active in tempstore (currently returns full unscoped layout) | ~20 |
 | `canvas_ai/src/Plugin/AiFunctionCall/SetAIGeneratedTemplateData.php` | Region-aware validation | ~15 |
 | `canvas_ai/src/Plugin/AiFunctionCall/MoveComponentInPage.php` | Cross-region boundary detection | ~15 |
 
@@ -199,25 +208,22 @@ The ai_context module already has agent-aware context selection — `AiContextSe
 
 However, `BuildSystemPromptEvent` fires on every loop iteration within an agent's execution, and `SystemPromptSubscriber` re-appends all selected context items every time. For agents with 7 `always_include` items (~6-8K tokens), this injects 6-8K tokens of identical content on every loop — content the LLM already has from the first iteration.
 
-Proposed: **Extend** the existing agent-aware selection with **loop-aware injection**. This requires a cross-module change:
-1. **ai_agents** (P3a prerequisite): Include the loop iteration number in `BuildSystemPromptEvent` so subscribers can be loop-aware
-2. **ai_context**: `SystemPromptSubscriber` checks loop iteration and skips re-injection on loop > 1 when context items haven't changed
+Proposed: **Extend** the existing agent-aware selection with **loop-aware injection**. No upstream framework change is needed — `AgentStartedExecutionEvent` already exposes `getLoopCount()` (line 81-83) and the `SystemPromptSubscriber` already subscribes to it (line 59). The subscriber caches the loop count from `AgentStartedExecutionEvent` and checks it during `onPreSystemPrompt()`, skipping re-injection when loop > 0 (note: `getLoopCount()` returns 0 on the first iteration because it fires before `$this->looped++`).
 
-This follows the existing pattern — `AiContextSelector` already filters by agent; this adds filtering by loop iteration as a second dimension.
+This follows the existing pattern — `AiContextSelector` already filters by agent; this adds filtering by loop iteration as a second dimension using an event the subscriber already listens to.
 
 **Patch Scope:**
 
 | File | Change | LOC |
 |------|--------|-----|
-| `ai_context/src/EventSubscriber/SystemPromptSubscriber.php:87` | Check loop iteration from event, skip injection on loop > 1 | ~15 |
-| `ai_context/src/Service/AiContextSelector.php:82` | No change to existing `$agentId` filtering — loop-awareness lives in the subscriber, not the selector | ~0 |
+| `ai_context/src/EventSubscriber/SystemPromptSubscriber.php` | Cache loop count from `AgentStartedExecutionEvent::getLoopCount()` in `onAgentStarted()`, check in `onPreSystemPrompt()` — skip injection when loop > 0 | ~20 |
 
-**Note:** This proposal depends on P3a (loop iteration in `BuildSystemPromptEvent`). P3a must be filed and accepted first.
+**No upstream dependency.** Uses existing `AgentStartedExecutionEvent` API.
 
 **Test Plan:**
-- Context items injected on loop 1 (identical to current behavior) (unit)
-- Context items NOT re-injected on loop 2+ when loop iteration is available (unit)
-- When `BuildSystemPromptEvent` has no loop data (pre-P3a), falls back to current inject-every-loop behavior (backwards compatible) (kernel)
+- Context items injected on loop 0 (first iteration, identical to current behavior) (unit)
+- Context items NOT re-injected on loop 1+ (unit)
+- Backwards compatible: without the subscriber change, current inject-every-loop behavior unchanged (kernel)
 - Items using keyword-based selection (which may change between loops based on new messages) can opt out of loop-aware skipping (unit)
 
 **Objection Handling:**
@@ -226,8 +232,8 @@ This follows the existing pattern — `AiContextSelector` already filters by age
 |-----------------|----------|----------|
 | "The existing agent-aware selection already handles this" | Agent-aware selection filters WHICH items load. This addresses WHETHER to re-inject on subsequent loops. Orthogonal dimensions — same items, fewer re-injections. | `AiContextSelector::select($task, $agentId)` already works per-agent |
 | "What if context items change between loops?" | Default is inject-every-loop (backwards compatible). Loop-aware skipping is opt-in. Keyword-matched items that depend on new messages can declare themselves as "re-inject always." | Backwards compatibility |
-| "This crosses module boundaries (ai_agents event + ai_context subscriber)" | The existing pattern already crosses this boundary — ai_context subscribes to ai_agents' `BuildSystemPromptEvent`. This extends that pattern, not creates a new one. | Existing subscriber architecture |
-| "Sending identical data isn't a problem — the model has it in context" | It IS in context, which means re-injecting it adds duplicate content to the system prompt. The LLM processes all system prompt tokens on every call regardless of duplication. 6-8K × 4 extra loops = 24-32K wasted tokens per operation. | Measured: 7 items × ~1K each × 5 loops |
+| "This only changes one module's subscriber" | Correct — the change is entirely within ai_context. It uses an existing ai_agents event API (`AgentStartedExecutionEvent::getLoopCount()`) that the subscriber already listens to. | No cross-module patch needed |
+| "Sending identical data isn't a problem — the model has it in context" | It IS in context, which means re-injecting it adds duplicate content to the system prompt. The LLM processes all system prompt tokens on every call regardless of duplication. For the page_builder agent (7 items, ~7K tokens, 3-4 loops per edit): ~7K × 3 skipped loops = ~21K wasted tokens per edit operation. | ai_observability logs (needs instrumented verification) |
 
 **Acceptance Criteria:**
 - Context injection is loop-aware (configurable, default: every loop for backwards compatibility)
@@ -237,18 +243,7 @@ This follows the existing pattern — `AiContextSelector` already filters by age
 
 ---
 
-### P3: History Windowing (ai_agents) — SPLIT INTO TWO ISSUES
-
-#### P3a: Loop-Aware Event Data (Bug Fix)
-
-**drupal.org Issue Title:** "BuildSystemPromptEvent should include loop iteration count"
-
-**Description:**
-`BuildSystemPromptEvent` fires on every loop iteration but provides no way for subscribers to know which iteration they are on. This prevents loop-aware behavior — subscribers that inject content must inject it identically on every loop, even when the content hasn't changed.
-
-This is a standalone framework improvement that **enables** P2 (loop-aware context injection). File this first; P2 depends on it. Single issue on drupal.org in the ai_agents queue — P2 references it from the ai_context queue.
-
-#### P3b: Orchestrator History Windowing (Feature)
+### P3: Orchestrator History Windowing (ai_agents)
 
 **drupal.org Issue Title:** "Add configurable conversation history limit for multi-turn agent sessions"
 
@@ -274,7 +269,7 @@ Proposed: Add a configurable `max_history_turns` to the **provider-level setting
 | "This is a vendor cost concern, not architecture" | It's a resource concern — sending 80K+ of stale messages per call is redundant computation analogous to uncapped log buffers. | 80K measured after 5 turns |
 | "Token limits belong in the provider config, not agent config" | Agreed — proposed as provider-level setting, not agent entity field. Environment-specific, not exportable. | Config design principle |
 | "Windowing breaks tool verification" | Only window cross-turn history. Within a single operation, history is intact. `allRequiredToolsRan()` only needs current-operation history. | Architectural analysis |
-| "This should be two issues" | It IS two issues — P3a (loop iteration in events) and P3b (history windowing). | Scope management |
+| "Loop-aware context should be in the same issue" | P2 (loop-aware context injection) is a separate concern — it modifies ai_context, not ai_agents. Different modules, different maintainers. | Scope management |
 
 ---
 
@@ -287,16 +282,18 @@ When a user selects a specific component and provides an explicit value change (
 
 Proposed: Add a frontend detection layer that identifies deterministic edits (single component + recognized prop + explicit value) and routes them directly to the update endpoint. Complex edits (ambiguous references, multi-component, style reasoning) continue through the agent chain.
 
-The classification must be **schema-driven and deterministic** — based on the component's prop schema, not heuristics. If the component schema declares a property as `string`, `color`, or `number`, and the user provides a literal value for that property on a selected component, the edit is deterministic.
+The classification is **pattern-based with conservative scope**: the detector fires only when the user's input matches a narrow set of explicit edit patterns (e.g., "change/set/update [prop] to [value]") AND a component is selected. Any input containing add/insert/create/new keywords falls through to the AI path. The prop name is resolved against the component schema's display labels. This is a constrained pattern matcher, not a general NLU system — it handles the ~60% of edits that are unambiguous, and everything else goes to the AI.
+
+**Edit/add disambiguation:** The detector explicitly checks for add-intent keywords ("add", "insert", "create", "new", "below", "above", "after", "before") and falls through to the AI path if any are present. A selected component + "add a testimonial below this" will NOT be classified as a deterministic edit.
 
 **Patch Scope:**
 
 | File | Change | LOC |
 |------|--------|-----|
-| `canvas/ui/src/components/aiExtension/AiWizard.tsx` | Simple edit detection + routing | ~80 |
-| `canvas_ai/src/Controller/CanvasBuilder.php` | New `renderDirect()` method | ~60 |
-| `canvas_ai/canvas_ai.routing.yml` | New `/canvas-ai/direct-edit` route | ~10 |
-| `canvas_ai/src/Plugin/AiFunctionCall/UpdateComponentData.php` | Direct invocation support | ~20 |
+| `canvas/ui/src/components/aiExtension/AiWizard.tsx` | Pattern-based edit detection, prop name resolution against schema labels, routing logic, add-intent keyword check | ~200-300 |
+| `canvas_ai/src/Controller/CanvasBuilder.php` | New `renderDirect()` method with CSRF validation + `'use Drupal Canvas AI'` permission check (matching existing `render()` security) | ~80 |
+| `canvas_ai/canvas_ai.routing.yml` | New `/canvas-ai/direct-edit` route with `_permission: 'use Drupal Canvas AI'` | ~10 |
+| `canvas_ai/src/Plugin/AiFunctionCall/UpdateComponentData.php` | Direct invocation support (extract validation logic for reuse) | ~30 |
 
 **Test Plan:**
 - Exact prop match + literal value → direct path (unit)
@@ -311,10 +308,34 @@ The classification must be **schema-driven and deterministic** — based on the 
 
 | Likely Objection | Response | Evidence |
 |-----------------|----------|----------|
-| "How do you define 'simple'?" | Schema-driven: component prop schema defines type. String/color/number + explicit value + selected component = deterministic. No heuristics. | Component metadata API |
-| "What about prop name resolution?" | Component metadata provides display labels → prop IDs mapping. The frontend already has this data for rendering the component form. | `GetMetadataOfComponents.php:92` |
+| "How do you define 'simple'?" | Pattern-based: user input matches "change/set/update [prop] to [value]" + component selected + prop resolves against schema. Conservative scope — add-intent keywords ("add", "insert", "create", "new") always fall through to AI. | Component metadata API + keyword exclusion |
+| "What about prop name resolution?" | Component metadata provides display labels → prop IDs mapping. The frontend already has this data for rendering the component form. Ambiguous prop names (no match or multiple matches) fall through to AI. | `GetMetadataOfComponents.php:92` |
 | "This bypasses brand voice enforcement" | Documented limitation. Direct edits are explicit user intent — the user typed exactly what they want. UI indicator shows "direct edit" vs "AI-assisted." | User intent argument |
 | "Scope creep — users will want more patterns" | Strict scope: only patterns with 100% deterministic mapping. Conservative boundary. Complex edits fall through to AI. | ADR-004 |
+
+---
+
+## Phase 2 Vision: Selection-First Editing (ADR-006/007)
+
+P1-P4 fix the current AI path. ADR-006 and ADR-007 describe a longer-term paradigm shift: **making the AI the escalation path, not the default path for all editing.** User selection narrows context. Templates, presets, and content tokens expand the deterministic surface area. The AI handles creative and ambiguous operations only.
+
+**These are internal vision documents, not upstream proposals.** ADR-006/007 prescribe a UX philosophy that is Foster Interactive's decision to make. We do not reference them in drupal.org issues. P1-P4 are presented as standalone improvements; ADR-006/007 inform our local prototyping and our conversations with Canvas maintainers.
+
+**How P1-P4 are stepping stones toward the vision:**
+- P4 (deterministic bypass) is the first concrete implementation of ADR-006's selection-first principle
+- P1 (region scoping) is the first step toward ADR-006's context envelopes (section-level → component-level)
+- P2 (loop-aware context) reduces the cost of the AI path, making the AI-vs-deterministic boundary less costly to cross
+- P3 (history windowing) bounds session-level growth for multi-turn creative operations
+
+**Projected impact (estimated, sensitivity varies with edit-type distribution):**
+
+| Edit-type split (direct/simple/complex) | Session reduction |
+|-----------------------------------------|-------------------|
+| 60/25/15 (optimistic) | ~87-90% |
+| 40/30/30 (moderate) | ~70-77% |
+| 20/30/50 (pessimistic) | ~53-63% |
+
+The edit-type split is unknown and must be measured via usage telemetry before citing specific aggregate numbers. See ADR-008 for the local validation plan.
 
 ---
 
@@ -342,7 +363,7 @@ The classification must be **schema-driven and deterministic** — based on the 
 
 ### Option C: Upstream Critical + Extend Locally (RECOMMENDED)
 
-**What it looks like:** File all 4 issues. Provide patches for P1 and P3a (lowest risk, clearest value). Maintain and extend `canvas_ai_scoping` locally for P2 and P4 concepts while upstream discussion matures. Contribute patches for P2 and P4 after building credibility with P1/P3a.
+**What it looks like:** File all 3 issues (P4, P1, P2 — P3a eliminated, P3b deferred). Provide patches for P4 and P1 first (strongest positioning, lowest risk). Maintain and extend `canvas_ai_scoping` locally while upstream discussion matures. File P2 after building credibility.
 
 **Pros:** Immediate local improvements. Upstream credibility built incrementally. Lower coordination risk. Community benefits from the easiest wins first.
 
@@ -368,7 +389,7 @@ Foster Interactive may have their own roadmap for lightweight edits that conflic
 
 ### 4. Community skepticism about AI module contributions (Probability: LOW-MEDIUM)
 Drupal core committers (notably catch) are skeptical of LLM-related contributions. These proposals target contrib AI modules, not core, which reduces friction — but high-profile AI contributors can still attract scrutiny.
-**Mitigation:** Be honest about the AI context. Lead with architecture and measurable data (tokens as payload metrics). Keep patches narrowly scoped with tests. Build credibility through small wins (P3a, P1) before larger proposals. Don't try to hide that these are AI module improvements — the maintainers know their own modules.
+**Mitigation:** Be honest about the AI context. Lead with architecture and measurable data (tokens as payload metrics). Keep patches narrowly scoped with tests. Build credibility through small wins (P4, P1) before larger proposals. Don't try to hide that these are AI module improvements — the maintainers know their own modules.
 
 ### 5. The framework changes direction (Probability: LOW)
 The ai_agents module is in active development. A major refactor could make our patches obsolete.
@@ -378,23 +399,23 @@ The ai_agents module is in active development. A major refactor could make our p
 
 ## Backcasting: Working Backward from "All 4 Merged"
 
-**End state:** All 4 proposals merged upstream. `canvas_ai_scoping` module retired. Edit operations cost <30K tokens.
+**End state:** P1, P2, P4 merged upstream. P3 in discussion or deferred. `canvas_ai_scoping` module retired. Edit operations cost <40K tokens (AI path) or 0 tokens (deterministic path).
 
 **Week 24:** P4 (lightweight edit path) merged after 2 review cycles.
-- Required: P1 merged, giving us credibility. Schema-driven detection tested across component types.
+- Required: P1 merged, giving us credibility. Pattern-based detection tested across component types.
 
-**Week 18:** P3b (history windowing) merged or deferred to next major.
-- Required: P3a merged. allRequiredToolsRan() fix landed. Provider-level config accepted as the right home.
+**Week 18:** P3 (history windowing) merged or deferred to next major.
+- Required: `allRequiredToolsRan()` scoping fix landed. Provider-level config accepted as the right home.
 
 **Week 12:** P2 (context scoping) merged.
-- Required: Loop iteration available in BuildSystemPromptEvent (P3a). Tag-based filtering API accepted. Our subscriber approach validated by maintainers.
+- Required: Uses existing `AgentStartedExecutionEvent::getLoopCount()` — no upstream dependency. Subscriber approach validated by maintainers.
 
-**Week 8:** P1 (region scoping) merged. P3a (loop-aware events) merged.
-- Required: Foster Interactive buy-in (already have relationship). Benchmarks across multiple page configurations. Tests passing in CI.
+**Week 8:** P1 (region scoping) merged.
+- Required: Foster Interactive buy-in (already have relationship). Benchmarks across multiple page configurations (5, 15, 30 components). Tests passing in CI.
 
-**Week 4:** P4 + P3a + P1 filed on drupal.org. Local `canvas_ai_scoping` module extended with ContextScopingSubscriber fix.
+**Week 4:** P4 + P1 filed on drupal.org with patches. Local `canvas_ai_scoping` module extended with ContextScopingSubscriber fix and loop-aware injection.
 
-**Week 1:** Benchmark methodology established. Reproducible test protocol documented. ADRs finalized. Component schema surveyed for P4 simple-edit coverage.
+**Week 1:** Benchmark methodology established. Repeated measurements (5x) with mean + range. Component schema surveyed for P4 edit coverage. ADRs finalized.
 
 ---
 
@@ -416,8 +437,7 @@ Every issue must include reproducible benchmarks:
 |----------|----------|------------|
 | P1 (Region scoping) | Layout bytes before/after across 3+ page configs | Full page vs. scoped section |
 | P2 (Context scoping) | Context tokens per loop before/after | Every-loop vs. loop-1-only |
-| P3a (Loop-aware events) | Redundant data volume per multi-loop operation | N/A (event API addition) |
-| P3b (History windowing) | Orchestrator history size vs. turn count | Unbounded vs. windowed |
+| P3 (History windowing) | Orchestrator history size vs. turn count | Unbounded vs. windowed |
 | P4 (Lightweight edit) | Token count + latency for simple edit: agent vs. direct | 111K tokens / 10-30s vs. 0 tokens / <1s |
 
 ### Presentation in drupal.org Issues
@@ -493,15 +513,16 @@ While upstream proposals are in review, extend `canvas_ai_scoping`:
 
 | Phase | Weeks | Activities | Deliverables |
 |-------|-------|-----------|-------------|
-| **Foundation** | 1-2 | Fix local module, establish benchmarks, finalize ADRs | Working local module, benchmark suite, measurement data |
-| **First Issues** | 3-4 | File P4, P3a, P1 on drupal.org with patches and tests | 3 drupal.org issues with MRs |
-| **Build Credibility** | 5-12 | Engage in review, iterate on feedback, file P2 (after P3a accepted) | 4 issues total, P3a/P1 approaching RTBC |
-| **Advanced** | 13-24 | P3b filed, P4 refined, upstream patches landing | Contributions merged, local module retired |
+| **Foundation** | 1-2 | Fix local module, run 5x repeated measurements, instrument per-component breakdown, survey component schemas for P4 | Working local module, benchmark suite with mean+range, measurement data |
+| **Show & Prove** | 3-6 | Build P4 prototype, context envelope prototype (ADR-006), multi-page benchmarks | Local demos of deterministic editing + reduced context |
+| **First Issues** | 7-8 | File P4 + P1 on drupal.org with patches, tests, and benchmark evidence | 2 drupal.org issues with MRs |
+| **Build Credibility** | 9-16 | Engage in review, iterate on feedback, file P2 | 3 issues total, P1 approaching RTBC |
+| **Advanced** | 17-24 | P3 filed, P4 refined, upstream patches landing | Contributions merged, local module retired |
 
 **Milestones:**
-- Optimistic: P1 + P3a merged by week 8
-- Realistic: P1 + P3a merged by week 12, P2 in review
-- Pessimistic: P1 merged by week 16, others in discussion
+- Optimistic: P1 merged by week 12, P2 in review
+- Realistic: P1 merged by week 16, P2 filed, P4 in discussion
+- Pessimistic: P1 in review at week 20, others in discussion
 
 ---
 
@@ -518,22 +539,28 @@ While upstream proposals are in review, extend `canvas_ai_scoping`:
 
 ## Cross-References
 
-- **ADRs:** `docs/adrs/ADR-001` through `ADR-005`
+- **ADRs:** `docs/adrs/ADR-001` through `ADR-009` (001-005: upstream proposals, 006-007: internal vision, 008-009: execution discipline)
 - **Existing proposal:** `docs/proposals/canvas-ai-region-scoping.md` (Foster Interactive)
 - **WS1 plan:** `docs/plans/ws1-efficiency-optimization.md`
 - **Measurement data:** `docs/plans/ws1-baseline-measurement.md`
 - **Static audit:** `docs/audit/canvas-agent-static-audit.md`
 - **Remaining levers:** `.omc/plans/token-reduction-remaining-levers.md`
+- **Handoff:** `docs/handoff/handoff-upstream-strategy.md`
 
 ## Architectural References (from code analysis)
 
 - `AiAgentEntityWrapper.php:424` — `determineSolvability()` entry (loop engine)
-- `AiAgentEntityWrapper.php:455-458` — BuildSystemPromptEvent dispatch (every loop)
+- `AiAgentEntityWrapper.php:449` — `AgentStartedExecutionEvent` dispatch (fires BEFORE looped++)
+- `AiAgentEntityWrapper.php:450` — `$this->looped++` (loop count increments here)
+- `AiAgentEntityWrapper.php:455-458` — `BuildSystemPromptEvent` dispatch (every loop, AFTER looped++)
 - `AiAgentEntityWrapper.php:524` — ChatInput construction (windowing insertion point)
 - `AiAgentEntityWrapper.php:890-936` — `getDefaultInformationTools()` with `available_on_loop`
 - `AiAgentEntityWrapper.php:1022-1050` — `allRequiredToolsRan()` (breaks with naive windowing)
+- `AgentStartedExecutionEvent.php:81-83` — `getLoopCount()` already exists (P3a unnecessary)
+- `SystemPromptSubscriber.php:59` — already subscribes to `AgentStartedExecutionEvent`
 - `SystemPromptSubscriber.php:87-144` — Context injection into system prompt
-- `AiContextSelector.php:82` — Context selection logic
+- `AiContextSelector.php:82` — Context selection logic (already agent-aware via `$agentId` param)
 - `AiContextRenderer.php:157` — Context item format (fragile string matching target)
 - `CanvasBuilder.php:69-314` — Request entry point, tempstore setup
+- `GetCurrentLayout.php:70-71` — Layout retrieval from tempstore (needs scoping for P1)
 - `GetCurrentLayout.php:70-71` — Layout retrieval from tempstore

@@ -22,13 +22,14 @@ The Canvas AI edit flow for "Change this heading to Take Control of Every Dollar
 
 **Total: 5 LLM calls, 111K tokens, for what is functionally a key-value update.**
 
-A pattern detector could identify:
+A conservative pattern matcher could identify deterministic edits:
 - Single component selected (UUID known)
-- Single property referenced ("heading", "text", "color", "background")
+- User input matches an explicit edit pattern ("change/set/update [prop] to [value]")
+- Prop name resolves against the component schema's display labels (single match)
+- No add-intent keywords present ("add", "insert", "create", "new", "below", "above")
 - Explicit value provided (quoted text, color code, URL)
-- No ambiguity requiring LLM reasoning
 
-And route directly to the tool, consuming 0 LLM tokens.
+When ALL conditions match, route directly to the tool, consuming 0 LLM tokens. When ANY condition fails, fall through to the AI agent chain. This is a constrained pattern matcher with a conservative boundary, not a general NLU system.
 
 ## Consequences
 
@@ -52,7 +53,7 @@ And route directly to the tool, consuming 0 LLM tokens.
 
 ## Alternatives Considered
 
-**"Use a smaller/faster model for simple edits"** — Still burns tokens and adds latency. A regex-based detector is faster and free.
+**"Use a smaller/faster model for simple edits"** — Still burns tokens and adds latency. A pattern-based detector is faster and free.
 
 **"Let the orchestrator decide"** — The orchestrator already costs ~10K tokens just to route. By the time it decides the edit is simple, you've already spent the tokens.
 

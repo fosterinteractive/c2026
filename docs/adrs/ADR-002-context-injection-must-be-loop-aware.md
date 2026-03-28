@@ -46,4 +46,10 @@ For `ai_context` items, the situation is different: `SystemPromptSubscriber` re-
 
 ## Evidence
 
-Measured on FinDrop: 5-call heading edit sends 10-12K of identical context items on each of 5 calls = 50-60K tokens of pure duplication. Eliminating loops 2-5 context saves ~40-48K tokens (36-43% of 111K total).
+Measured on FinDrop: a heading edit involves ~5 API calls — 2 orchestrator calls (2 `always_include` items, ~1.2K context) and 3-4 page_builder loops (7 `always_include` items, ~7K context each).
+
+The page_builder's context is re-injected on each of its 3-4 loops. Skipping loops 2-4 saves ~7K × 3 = **~21K tokens per edit operation (19% of 111K total).**
+
+Note: the orchestrator calls have only 2 context items (~1.2K) — skipping those saves little. The high-value target is the page_builder's 7-item context block across its internal loops.
+
+Previous versions of this document claimed 40-48K savings (36-43%). That was incorrect — it assumed all 5 calls were page_builder loops with 7 items each. The corrected figure accounts for the orchestrator/page_builder call distinction.

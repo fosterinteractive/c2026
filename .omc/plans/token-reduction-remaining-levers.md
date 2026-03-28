@@ -151,14 +151,14 @@ After all Tier 1+2 changes:
 
 ## Expected Outcome
 
-| Change | Est. Savings | Cumulative Total |
-|--------|-------------|-----------------|
-| Baseline (B2) | — | 111K |
-| Sales Training Deck removal | -7.5K | ~103K |
-| return_directly (if safe) | -10K | ~93K |
-| ai_context stripping for edits | -12-18K | ~75-81K |
-| Workflow collapsing for edits | -9-12K | ~63-72K |
-| **Target** | | **<70K** |
+| Change | Est. Savings | Cumulative Total | Status |
+|--------|-------------|-----------------|--------|
+| Baseline (B2) | — | 111K | Measured (N=1) |
+| Sales Training Deck removal | -2.5K (via excluded_subcontext) | ~108K | Needs investigation — arrives via parent subcontext, not always_include |
+| ~~return_directly (if safe)~~ | ~~-10K~~ | ~~N/A~~ | **EXCLUDED** — breaks title/metadata generation (confirmed) |
+| ai_context stripping for edits (P2) | -21K (corrected: 3 loops × 7K) | ~87K | Pending — ContextScopingSubscriber bug fix needed |
+| Workflow collapsing for edits | -9-12K | ~75-78K | Medium risk — may break add-relative-to-selection |
+| **Revised Target** | | **~75-80K** | |
 
 ## Open Questions
 
