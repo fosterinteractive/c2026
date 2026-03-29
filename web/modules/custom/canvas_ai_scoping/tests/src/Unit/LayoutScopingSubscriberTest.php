@@ -7,6 +7,7 @@ namespace Drupal\Tests\canvas_ai_scoping\Unit;
 use Drupal\ai_agents\Event\BuildSystemPromptEvent;
 use Drupal\canvas_ai\CanvasAiTempStore;
 use Drupal\canvas_ai_scoping\EventSubscriber\LayoutScopingSubscriber;
+use Drupal\canvas_ai_scoping\Service\ContextEnvelopeBuilder;
 use Drupal\Tests\UnitTestCase;
 use Psr\Log\LoggerInterface;
 
@@ -112,6 +113,7 @@ class LayoutScopingSubscriberTest extends UnitTestCase {
     $this->logger = $this->createMock(LoggerInterface::class);
     $this->subscriber = new LayoutScopingSubscriber(
       $this->tempStore,
+      new ContextEnvelopeBuilder(),
       $this->logger,
     );
   }
@@ -321,11 +323,11 @@ class LayoutScopingSubscriberTest extends UnitTestCase {
   }
 
   /**
-   * Tests scoping when the active component is nested inside a slot.
+   * Tests section scoping with nested component via page_builder_agent.
    *
    * @covers ::onBuildSystemPrompt
    */
-  public function testScopedLayoutWithNestedActiveComponent(): void {
+  public function testSectionScopingWithNestedActiveComponent(): void {
     $layoutJson = json_encode(self::$testLayout, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
     $this->tempStore->method('getData')
@@ -334,7 +336,7 @@ class LayoutScopingSubscriberTest extends UnitTestCase {
 
     $event = $this->createMock(BuildSystemPromptEvent::class);
     $event->method('getAgentId')
-      ->willReturn('canvas_component_agent');
+      ->willReturn('canvas_page_builder_agent');
     // card-uuid-1 is nested inside card-grid's slot.
     $event->method('getTokens')
       ->willReturn(['active_component_uuid' => 'card-uuid-1']);
@@ -357,6 +359,50 @@ class LayoutScopingSubscriberTest extends UnitTestCase {
     $this->assertArrayHasKey('_note', $contentComponents[0]); // heading = summary
     $this->assertArrayHasKey('slots', $contentComponents[1]);  // card-grid = full
     $this->assertArrayHasKey('_note', $contentComponents[2]); // cta = summary
+  }
+
+  /**
+   * Tests component_agent gets an envelope instead of section scoping.
+   *
+   * @covers ::onBuildSystemPrompt
+   */
+  public function testComponentAgentGetsEnvelope(): void {
+    $layoutJson = json_encode(self::$testLayout, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+    $this->tempStore->method('getData')
+      ->with(CanvasAiTempStore::CURRENT_LAYOUT_KEY)
+      ->willReturn($layoutJson);
+
+    $event = $this->createMock(BuildSystemPromptEvent::class);
+    $event->method('getAgentId')
+      ->willReturn('canvas_component_agent');
+    $event->method('getTokens')
+      ->willReturn(['active_component_uuid' => 'heading-uuid-1']);
+    $event->method('getSystemPrompt')
+      ->willReturn($layoutJson);
+
+    $capturedPrompt = NULL;
+    $event->method('setSystemPrompt')
+      ->willReturnCallback(function (string $prompt) use (&$capturedPrompt): void {
+        $capturedPrompt = $prompt;
+      });
+
+    $this->subscriber->onBuildSystemPrompt($event);
+
+    $envelope = json_decode($capturedPrompt, TRUE);
+
+    // Should be an envelope, not section-scoped layout.
+    $this->assertSame('component', $envelope['scope']);
+    $this->assertArrayHasKey('active_component', $envelope);
+    $this->assertArrayHasKey('neighbors', $envelope);
+    $this->assertArrayHasKey('section', $envelope);
+    $this->assertArrayHasKey('page_outline', $envelope);
+
+    // No 'regions' key — this is not section scoping.
+    $this->assertArrayNotHasKey('regions', $envelope);
+
+    $this->assertSame('heading-uuid-1', $envelope['active_component']['uuid']);
+    $this->assertSame('Features', $envelope['active_component']['propValues']['heading_text']);
   }
 
   /**

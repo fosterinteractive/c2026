@@ -6,6 +6,7 @@ namespace Drupal\canvas_ai_scoping\EventSubscriber;
 
 use Drupal\ai_agents\Event\BuildSystemPromptEvent;
 use Drupal\canvas_ai\CanvasAiTempStore;
+use Drupal\canvas_ai_scoping\Service\ContextEnvelopeBuilder;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -26,15 +27,22 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 final class LayoutScopingSubscriber implements EventSubscriberInterface {
 
   /**
-   * Agents whose layout context should be scoped when a component is selected.
+   * Agents that get section-level scoping (full active section + summaries).
    */
-  private const SCOPED_AGENTS = [
+  private const SECTION_SCOPED_AGENTS = [
     'canvas_page_builder_agent',
+  ];
+
+  /**
+   * Agents that get component-level envelope (only the selected component).
+   */
+  private const ENVELOPE_AGENTS = [
     'canvas_component_agent',
   ];
 
   public function __construct(
     private readonly CanvasAiTempStore $canvasAiTempStore,
+    private readonly ContextEnvelopeBuilder $envelopeBuilder,
     private readonly LoggerInterface $logger,
   ) {}
 
@@ -49,10 +57,17 @@ final class LayoutScopingSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Scopes the layout in the system prompt to the active section.
+   * Scopes the layout in the system prompt based on agent type.
+   *
+   * - canvas_component_agent: component-level envelope (ADR-006 layers 1-4)
+   * - canvas_page_builder_agent: section-level scoping (full active section)
    */
   public function onBuildSystemPrompt(BuildSystemPromptEvent $event): void {
-    if (!in_array($event->getAgentId(), self::SCOPED_AGENTS, TRUE)) {
+    $agentId = $event->getAgentId();
+    $useEnvelope = in_array($agentId, self::ENVELOPE_AGENTS, TRUE);
+    $useSectionScoping = in_array($agentId, self::SECTION_SCOPED_AGENTS, TRUE);
+
+    if (!$useEnvelope && !$useSectionScoping) {
       return;
     }
 
@@ -73,38 +88,65 @@ final class LayoutScopingSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    $activeRegion = $this->findRegionForComponent($layout['regions'], $activeUuid);
-    if ($activeRegion === NULL) {
-      return;
+    $regionIndex = $this->generateRegionIndex($layout);
+
+    if ($useEnvelope) {
+      $envelope = $this->envelopeBuilder->build($layout, $activeUuid, $regionIndex);
+      if ($envelope === NULL) {
+        // Component not found — fall through to section scoping.
+        $useEnvelope = FALSE;
+        $useSectionScoping = TRUE;
+      }
+      else {
+        $scopedJson = json_encode($envelope, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $this->replaceLayoutInPrompt($event, $layoutJson, $scopedJson, 'envelope');
+        return;
+      }
     }
 
-    $scopedLayout = $this->buildScopedLayout($layout, $activeRegion, $activeUuid);
-    $scopedJson = json_encode($scopedLayout, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if ($useSectionScoping) {
+      $activeRegion = $this->findRegionForComponent($layout['regions'], $activeUuid);
+      if ($activeRegion === NULL) {
+        return;
+      }
 
+      $scopedLayout = $this->buildScopedLayout($layout, $activeRegion, $activeUuid);
+      $scopedJson = json_encode($scopedLayout, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+      $this->replaceLayoutInPrompt($event, $layoutJson, $scopedJson, 'section');
+    }
+  }
+
+  /**
+   * Replaces layout JSON in the system prompt and logs the result.
+   */
+  private function replaceLayoutInPrompt(
+    BuildSystemPromptEvent $event,
+    string $originalJson,
+    string $scopedJson,
+    string $mode,
+  ): void {
     $systemPrompt = $event->getSystemPrompt();
-    if (str_contains($systemPrompt, $layoutJson)) {
+    if (str_contains($systemPrompt, $originalJson)) {
       $event->setSystemPrompt(
-        str_replace($layoutJson, $scopedJson, $systemPrompt)
+        str_replace($originalJson, $scopedJson, $systemPrompt)
       );
       $this->logger->notice(
-        'Scoped layout for @agent: section in "@region" (@orig_len → @scoped_len bytes, @pct% reduction)',
+        'Scoped layout for @agent (@mode): @orig_len → @scoped_len bytes (@pct% reduction)',
         [
           '@agent' => $event->getAgentId(),
-          '@region' => $activeRegion,
-          '@orig_len' => strlen($layoutJson),
+          '@mode' => $mode,
+          '@orig_len' => strlen($originalJson),
           '@scoped_len' => strlen($scopedJson),
-          '@pct' => round((1 - strlen($scopedJson) / strlen($layoutJson)) * 100),
+          '@pct' => round((1 - strlen($scopedJson) / strlen($originalJson)) * 100),
         ]
       );
     }
     else {
-      // Layout JSON not found in the system prompt — may have been
-      // pretty-printed or encoded differently. Full layout passes through.
       $this->logger->warning(
         'LayoutScopingSubscriber: layout JSON not found in system prompt for @agent (layout @len bytes). Scoping skipped — full layout passes through.',
         [
           '@agent' => $event->getAgentId(),
-          '@len' => strlen($layoutJson),
+          '@len' => strlen($originalJson),
         ]
       );
     }
