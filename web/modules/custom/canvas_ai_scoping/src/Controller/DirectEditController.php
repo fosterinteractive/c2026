@@ -11,6 +11,7 @@ use Drupal\canvas_ai_scoping\Service\DirectEditMatcher;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Access\CsrfTokenGenerator;
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Core\State\StateInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -38,6 +39,7 @@ final class DirectEditController extends ControllerBase {
     private readonly CanvasAiTempStore $canvasAiTempStore,
     private readonly CsrfTokenGenerator $csrfTokenGenerator,
     private readonly LoggerInterface $logger,
+    private readonly StateInterface $state,
   ) {}
 
   /**
@@ -51,6 +53,7 @@ final class DirectEditController extends ControllerBase {
       $container->get('canvas_ai.tempstore'),
       $container->get('csrf_token'),
       $container->get('logger.channel.canvas_ai_scoping'),
+      $container->get('state'),
     );
   }
 
@@ -138,14 +141,58 @@ final class DirectEditController extends ControllerBase {
       }
     }
 
-    // Attempt pattern match.
+    // Attempt pattern match with timing.
+    $startUs = (int) (hrtime(TRUE) / 1000);
     $match = $this->matcher->match($message, $componentName);
+    $elapsedUs = (int) (hrtime(TRUE) / 1000) - $startUs;
+
     if ($match === NULL) {
+      // Always log elapsed time; gate detailed telemetry on State toggle.
+      $this->logger->info('DirectEdit: match elapsed @elapsed_us us (reject)', [
+        '@elapsed_us' => $elapsedUs,
+      ]);
+      if ($this->state->get('canvas_ai_scoping.telemetry_enabled', FALSE)) {
+        $this->logger->info('DirectEdit telemetry: @data', [
+          '@data' => Json::encode([
+            'tier' => 'reject',
+            'component_name' => $componentName,
+            'prop' => NULL,
+            'reason' => 'no_match',
+            'elapsed_us' => $elapsedUs,
+            'message_length' => mb_strlen($message),
+          ]),
+        ]);
+      }
       return new JsonResponse([
         'status' => FALSE,
         'reason' => 'no_match',
         'message' => 'Message does not match a deterministic edit pattern',
       ], 422);
+    }
+
+    // Determine tier and resolved prop for telemetry.
+    $isCompound = isset($match['changes']);
+    $tier = $isCompound ? 2 : 1;
+    $resolvedProp = $isCompound
+      ? implode(', ', array_column($match['changes'], 'prop'))
+      : ($match['prop'] ?? NULL);
+
+    // Always log elapsed time; gate detailed telemetry on State toggle.
+    $this->logger->info('DirectEdit: match elapsed @elapsed_us us (tier @tier)', [
+      '@elapsed_us' => $elapsedUs,
+      '@tier' => $tier,
+    ]);
+    if ($this->state->get('canvas_ai_scoping.telemetry_enabled', FALSE)) {
+      $this->logger->info('DirectEdit telemetry: @data', [
+        '@data' => Json::encode([
+          'tier' => $tier,
+          'component_name' => $componentName,
+          'prop' => $resolvedProp,
+          'reason' => 'matched',
+          'elapsed_us' => $elapsedUs,
+          'message_length' => mb_strlen($message),
+        ]),
+      ]);
     }
 
     try {

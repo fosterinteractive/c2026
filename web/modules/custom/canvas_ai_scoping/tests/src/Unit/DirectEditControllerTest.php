@@ -11,6 +11,7 @@ use Drupal\canvas_ai_scoping\Controller\DirectEditController;
 use Drupal\canvas_ai_scoping\Service\ComponentSchemaLoaderInterface;
 use Drupal\canvas_ai_scoping\Service\DirectEditMatcher;
 use Drupal\Core\Access\CsrfTokenGenerator;
+use Drupal\Core\State\StateInterface;
 use Drupal\Tests\UnitTestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,16 +25,60 @@ use Symfony\Component\HttpFoundation\Request;
 final class DirectEditControllerTest extends UnitTestCase {
 
   /**
+   * Creates a DirectEditController with standard mocks.
+   *
+   * @param \Drupal\canvas_ai_scoping\Service\ComponentSchemaLoaderInterface $schemaLoader
+   *   The schema loader mock.
+   * @param \Drupal\canvas_ai\AiResponseValidator $responseValidator
+   *   The response validator mock.
+   * @param \Drupal\canvas_ai\CanvasAiPageBuilderHelper $pageBuilderHelper
+   *   The page builder helper mock.
+   * @param \Drupal\canvas_ai\CanvasAiTempStore $tempStore
+   *   The tempstore mock.
+   * @param \Drupal\Core\Access\CsrfTokenGenerator $csrfTokenGenerator
+   *   The CSRF token generator mock.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The logger mock.
+   * @param \Drupal\Core\State\StateInterface|null $state
+   *   The state mock, or NULL to create a default one.
+   *
+   * @return \Drupal\canvas_ai_scoping\Controller\DirectEditController
+   *   The controller instance.
+   */
+  private function buildController(
+    ComponentSchemaLoaderInterface $schemaLoader,
+    AiResponseValidator $responseValidator,
+    CanvasAiPageBuilderHelper $pageBuilderHelper,
+    CanvasAiTempStore $tempStore,
+    CsrfTokenGenerator $csrfTokenGenerator,
+    LoggerInterface $logger,
+    ?StateInterface $state = NULL,
+  ): DirectEditController {
+    $matcher = new DirectEditMatcher($schemaLoader);
+    $state ??= $this->createMock(StateInterface::class);
+
+    return new DirectEditController(
+      $matcher,
+      $responseValidator,
+      $pageBuilderHelper,
+      $tempStore,
+      $csrfTokenGenerator,
+      $logger,
+      $state,
+    );
+  }
+
+  /**
    * @covers ::edit
    */
   public function testEditSeedsTempstoreFromLayoutBeforeComponentValidation(): void {
     $schemaLoader = $this->createMock(ComponentSchemaLoaderInterface::class);
-    $matcher = new DirectEditMatcher($schemaLoader);
     $responseValidator = $this->createMock(AiResponseValidator::class);
     $pageBuilderHelper = $this->createMock(CanvasAiPageBuilderHelper::class);
     $tempStore = $this->createMock(CanvasAiTempStore::class);
     $csrfTokenGenerator = $this->createMock(CsrfTokenGenerator::class);
     $logger = $this->createMock(LoggerInterface::class);
+    $state = $this->createMock(StateInterface::class);
 
     $csrfTokenGenerator->expects($this->once())
       ->method('validate')
@@ -51,6 +96,10 @@ final class DirectEditControllerTest extends UnitTestCase {
       ->method('getEnumValues')
       ->with('heading_text', 'sdc.byte_theme.heading')
       ->willReturn(NULL);
+
+    $state->method('get')
+      ->with('canvas_ai_scoping.telemetry_enabled', FALSE)
+      ->willReturn(FALSE);
 
     $tempStore->expects($this->once())
       ->method('setData')
@@ -95,16 +144,14 @@ final class DirectEditControllerTest extends UnitTestCase {
         ],
       ]);
 
-    $logger->expects($this->once())
-      ->method('notice');
-
-    $controller = new DirectEditController(
-      $matcher,
+    $controller = $this->buildController(
+      $schemaLoader,
       $responseValidator,
       $pageBuilderHelper,
       $tempStore,
       $csrfTokenGenerator,
       $logger,
+      $state,
     );
 
     $request = Request::create(
@@ -130,6 +177,117 @@ final class DirectEditControllerTest extends UnitTestCase {
     $this->assertSame(0, $payload['tokens_used']);
     $this->assertSame('heading_text', $payload['matched_prop']);
     $this->assertSame('Welcome', $payload['matched_value']);
+  }
+
+  /**
+   * Tests that elapsed_us is always logged, even when telemetry is disabled.
+   *
+   * @covers ::edit
+   */
+  public function testTelemetryElapsedAlwaysLogged(): void {
+    $schemaLoader = $this->createMock(ComponentSchemaLoaderInterface::class);
+    $responseValidator = $this->createMock(AiResponseValidator::class);
+    $pageBuilderHelper = $this->createMock(CanvasAiPageBuilderHelper::class);
+    $tempStore = $this->createMock(CanvasAiTempStore::class);
+    $csrfTokenGenerator = $this->createMock(CsrfTokenGenerator::class);
+    $logger = $this->createMock(LoggerInterface::class);
+    $state = $this->createMock(StateInterface::class);
+
+    $csrfTokenGenerator->method('validate')->willReturn(TRUE);
+    $schemaLoader->method('getPropAliases')->willReturn([]);
+    $state->method('get')
+      ->with('canvas_ai_scoping.telemetry_enabled', FALSE)
+      ->willReturn(FALSE);
+
+    // With telemetry disabled, info should be called exactly once for elapsed.
+    $logger->expects($this->once())
+      ->method('info')
+      ->with(
+        $this->stringContains('match elapsed'),
+        $this->callback(function (array $ctx): bool {
+          return isset($ctx['@elapsed_us']);
+        })
+      );
+
+    $controller = $this->buildController(
+      $schemaLoader,
+      $responseValidator,
+      $pageBuilderHelper,
+      $tempStore,
+      $csrfTokenGenerator,
+      $logger,
+      $state,
+    );
+
+    $request = Request::create(
+      '/admin/api/canvas/direct-edit',
+      'POST',
+      server: ['HTTP_X_CSRF_TOKEN' => 'valid-token'],
+      content: json_encode([
+        'message' => 'Change the heading to Welcome',
+        'component_uuid' => '390aa880-8d99-46f8-8727-3d0c762ece8a',
+        'component_name' => 'sdc.byte_theme.heading',
+      ], JSON_THROW_ON_ERROR)
+    );
+
+    $response = $controller->edit($request);
+    $this->assertSame(422, $response->getStatusCode());
+  }
+
+  /**
+   * Tests that detailed telemetry is logged when the State toggle is enabled.
+   *
+   * @covers ::edit
+   */
+  public function testTelemetryDetailedWhenEnabled(): void {
+    $schemaLoader = $this->createMock(ComponentSchemaLoaderInterface::class);
+    $responseValidator = $this->createMock(AiResponseValidator::class);
+    $pageBuilderHelper = $this->createMock(CanvasAiPageBuilderHelper::class);
+    $tempStore = $this->createMock(CanvasAiTempStore::class);
+    $csrfTokenGenerator = $this->createMock(CsrfTokenGenerator::class);
+    $logger = $this->createMock(LoggerInterface::class);
+    $state = $this->createMock(StateInterface::class);
+
+    $csrfTokenGenerator->method('validate')->willReturn(TRUE);
+    $schemaLoader->method('getPropAliases')->willReturn([]);
+    $state->method('get')
+      ->with('canvas_ai_scoping.telemetry_enabled', FALSE)
+      ->willReturn(TRUE);
+
+    // With telemetry enabled: 1 elapsed log + 1 detailed telemetry log.
+    $infoMessages = [];
+    $logger->expects($this->exactly(2))
+      ->method('info')
+      ->willReturnCallback(function (string $msg) use (&$infoMessages): void {
+        $infoMessages[] = $msg;
+      });
+
+    $controller = $this->buildController(
+      $schemaLoader,
+      $responseValidator,
+      $pageBuilderHelper,
+      $tempStore,
+      $csrfTokenGenerator,
+      $logger,
+      $state,
+    );
+
+    $request = Request::create(
+      '/admin/api/canvas/direct-edit',
+      'POST',
+      server: ['HTTP_X_CSRF_TOKEN' => 'valid-token'],
+      content: json_encode([
+        'message' => 'Change the heading to Welcome',
+        'component_uuid' => '390aa880-8d99-46f8-8727-3d0c762ece8a',
+        'component_name' => 'sdc.byte_theme.heading',
+      ], JSON_THROW_ON_ERROR)
+    );
+
+    $response = $controller->edit($request);
+    $this->assertSame(422, $response->getStatusCode());
+    $this->assertCount(2, $infoMessages);
+    $this->assertStringContainsString('match elapsed', $infoMessages[0]);
+    $this->assertStringContainsString('telemetry', $infoMessages[1]);
   }
 
 }
