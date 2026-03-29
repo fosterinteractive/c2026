@@ -5,10 +5,10 @@ messages:
   - role: user
     content: "Too aggressive. Soften it - confident, not pushy."
 triggering_instructions: "Too aggressive. Soften it - confident, not pushy."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::canvas::edit_text'
+    tool: 'canvas_ai:update_component_data'
     label: 'Should adjust tone while preserving keywords'
     tool_rules: should_be_run
     parameters:

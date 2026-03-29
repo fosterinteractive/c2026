@@ -12,10 +12,10 @@ messages:
 
       Headline: Stop Drowning in Manual Expense Processing Description: Live walkthrough with instant ROI calculation Button: Request Demo
 triggering_instructions: 'Create a landing page for the Book a Demo landing page based on our LinkedIn Ad. Follow our standard bottom funnel landing page structure.'
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::ccc::sub_context_loader'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should activate Bottom of Funnel sub-context'
     tool_rules: should_be_run
     parameters:
@@ -23,7 +23,7 @@ rules:
         type_of_check: equals
         value: 'bottom_of_funnel'
   rule_2:
-    tool: 'ai_agents::ccc::sub_context_loader'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should NOT activate Top of Funnel sub-context'
     tool_rules: should_not_be_run
     parameters:
@@ -31,7 +31,7 @@ rules:
         type_of_check: equals
         value: 'top_of_funnel'
   rule_3:
-    tool: 'ai_agents::ccc::sub_context_loader'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should activate Finance Teams persona'
     tool_rules: should_be_run
     parameters:

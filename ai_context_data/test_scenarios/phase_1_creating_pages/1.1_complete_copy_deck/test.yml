@@ -13,10 +13,10 @@ messages:
 
       [Full copy deck content follows - see supporting_content/findrop_travel_copy_deck.md]
 triggering_instructions: "I'm building the FinDrop Travel product page. The audience is Travel Managers and Program Administrators, with CFOs and Controllers as a secondary audience."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::canvas::generate_page'
+    tool: 'ai_agents::ai_agent::canvas_template_builder_agent'
     label: 'Should generate full page without asking questions'
     tool_rules: should_be_run
     parameters:
@@ -24,7 +24,7 @@ rules:
         type_of_check: equals
         value: 'product_page'
   rule_2:
-    tool: 'ai_agents::clarification::ask_question'
+    tool: 'ai_agents::ai_agent::canvas_ai_orchestrator'
     label: 'Should NOT ask clarifying questions'
     tool_rules: should_not_be_run
 response_rule: 'AI should generate complete 8-section product page (hero, problem, features, finance section, testimonials, how-it-works, FAQ, CTA) without asking questions. All copy deck content should be placed in appropriate Mercury components.'

@@ -14,10 +14,10 @@ messages:
 
       The audience is travel program managers. Goal is evaluation.
 triggering_instructions: 'Here are some notes from the product team for our Travel product page'
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::clarification::identify_gaps'
+    tool: 'ai_agents::ai_agent::canvas_ai_orchestrator'
     label: 'Should identify specific content gaps'
     tool_rules: should_be_run
     parameters:
@@ -25,7 +25,7 @@ rules:
         type_of_check: contains
         value: 'testimonials'
   rule_2:
-    tool: 'ai_agents::canvas::generate_page'
+    tool: 'ai_agents::ai_agent::canvas_template_builder_agent'
     label: 'Should NOT generate full page from sparse input'
     tool_rules: should_not_be_run
 response_rule: 'AI should acknowledge what is present (feature bullets, adoption stat) and identify specific missing content: testimonials, FAQ, CTA copy, problem narrative. Should offer to draft missing content from CCC value propositions with transparency.'

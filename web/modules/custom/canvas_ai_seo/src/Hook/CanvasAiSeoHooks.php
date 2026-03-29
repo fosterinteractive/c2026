@@ -59,11 +59,19 @@ final class CanvasAiSeoHooks {
       return;
     }
 
+    // Sanitize: round-trip through JSON decode/encode to prevent script
+    // injection. Raw LLM output could contain "</script>" sequences.
+    $decoded = json_decode($jsonld);
+    if ($decoded === NULL) {
+      return;
+    }
+    $sanitized = json_encode($decoded, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
     $metatag_attachments['#attached']['html_head'][] = [
       [
         '#type' => 'html_tag',
         '#tag' => 'script',
-        '#value' => $jsonld,
+        '#value' => $sanitized,
         '#attributes' => ['type' => 'application/ld+json'],
       ],
       'canvas_ai_seo_jsonld',

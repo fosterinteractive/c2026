@@ -7,10 +7,10 @@ messages:
   - role: user
     content: "Yeah, let's try photography."
 triggering_instructions: "Yeah, let's try photography."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::canvas::swap_media'
+    tool: 'canvas_ai:update_component_data'
     label: 'Should swap all illustrations to photography'
     tool_rules: should_be_run
     parameters:
@@ -21,7 +21,7 @@ rules:
         type_of_check: equals
         value: 'all'
   rule_2:
-    tool: 'ai_agents::canvas::regenerate_alt_text'
+    tool: 'canvas_ai:update_component_data'
     label: 'Should regenerate alt text for swapped images'
     tool_rules: should_be_run
 response_rule: 'AI should swap all illustration assets to photography. Hero, feature cards, CTA should all use photography. Alt text should be regenerated for all swapped images.'

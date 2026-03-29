@@ -146,18 +146,22 @@ tool_settings:
     use_artifacts: 0
 orchestration_agent: false
 triage_agent: false
-max_loops: 10
+max_loops: 8
 default_information_tools: |-
   current_layout:
     label: 'Current layout'
     description: 'The current layout of the page is:'
     tool: 'canvas_ai:get_current_layout'
     parameters: {  }
+    available_on_loop:
+      - 1
   available_components:
     label: 'Available components'
     description: 'These are the Components available to use'
     tool: 'canvas_ai:get_component_context'
     parameters: {  }
+    available_on_loop:
+      - 1
 tool_usage_limits:
   'canvas_ai:set_template_data':
     component_structure:

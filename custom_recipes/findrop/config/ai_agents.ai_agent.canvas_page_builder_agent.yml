@@ -214,7 +214,7 @@ system_prompt: |-
   *   If any tool call fails, analyze the error message.
   *   Diagnose the issue, correct your inputs internally.
   *   **Retry the tool call immediately.**
-  *   Continue this internal loop until all tool calls succeed.
+  *   You may retry each failed tool call up to **3 times**. If it still fails after 3 attempts, report the error to the user instead of continuing to retry.
 
   ---
 
@@ -277,18 +277,22 @@ tool_settings:
     use_artifacts: 0
 orchestration_agent: false
 triage_agent: false
-max_loops: 30
+max_loops: 15
 default_information_tools: |-
   current_layout:
     label: 'Current layout'
     description: 'The current layout of the page is:'
     tool: 'canvas_ai:get_current_layout'
     parameters: {  }
+    available_on_loop:
+      - 1
   available_components:
     label: 'Available components'
     description: 'These are the Components available to use'
     tool: 'canvas_ai:get_component_context'
     parameters: {  }
+    available_on_loop:
+      - 1
 tool_usage_limits:
   'canvas_ai:set_component_structure':
     component_structure:

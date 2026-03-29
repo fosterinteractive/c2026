@@ -16,10 +16,10 @@ messages:
     content: |
       Done. I went with illustrations - they match the technical content. Your visual identity guidelines also include photography. Want me to swap?
 triggering_instructions: "Here's our copy deck for the new FinDrop Travel product page."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::clarification::ask_question'
+    tool: 'ai_agents::ai_agent::canvas_ai_orchestrator'
     label: 'Should ask about audience (Turn 1)'
     tool_rules: should_be_run
     parameters:
@@ -27,7 +27,7 @@ rules:
         type_of_check: contains
         value: 'audience'
   rule_2:
-    tool: 'ai_agents::clarification::ask_question'
+    tool: 'ai_agents::ai_agent::canvas_ai_orchestrator'
     label: 'Should ask about conversion goal (Turn 1)'
     tool_rules: should_be_run
     parameters:
@@ -35,7 +35,7 @@ rules:
         type_of_check: contains
         value: 'goal'
   rule_3:
-    tool: 'ai_agents::canvas::generate_page'
+    tool: 'ai_agents::ai_agent::canvas_template_builder_agent'
     label: 'Should generate page after answers (Turn 2)'
     tool_rules: should_be_run
 response_rule: 'Turn 1: AI should ask exactly 2 targeted questions (audience, goal) with clear options. Turn 2: After answers, AI should build full page with demo request as primary CTA and guide download as secondary.'

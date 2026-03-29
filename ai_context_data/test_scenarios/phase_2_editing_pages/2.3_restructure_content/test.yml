@@ -5,10 +5,10 @@ messages:
   - role: user
     content: "Too much copy in this section. Turn this into a FAQ block at the bottom."
 triggering_instructions: "Too much copy in this section. Turn this into a FAQ block at the bottom."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::canvas::create_section'
+    tool: 'canvas_ai:set_component_structure'
     label: 'Should create new FAQ section'
     tool_rules: should_be_run
     parameters:
@@ -19,7 +19,7 @@ rules:
         type_of_check: equals
         value: 'bottom'
   rule_2:
-    tool: 'ai_agents::canvas::create_component'
+    tool: 'canvas_ai:set_component_structure'
     label: 'Should create accordion-container with accordion items'
     tool_rules: should_be_run
     parameters:

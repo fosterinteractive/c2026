@@ -9,10 +9,10 @@ messages:
   - role: assistant
     content: "OK — updated."
 triggering_instructions: 'AI flags competitive claim after generating hero from sales deck'
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::governance::flag_violation'
+    tool: 'ai_agents::ai_agent::canvas_ai_orchestrator'
     label: 'Should proactively flag competitive claim'
     tool_rules: should_be_run
     parameters:
@@ -20,7 +20,7 @@ rules:
         type_of_check: equals
         value: 'competitive_claims'
   rule_2:
-    tool: 'ai_agents::canvas::edit_text'
+    tool: 'canvas_ai:update_component_data'
     label: 'Should rephrase to remove competitor name'
     tool_rules: should_be_run
     parameters:

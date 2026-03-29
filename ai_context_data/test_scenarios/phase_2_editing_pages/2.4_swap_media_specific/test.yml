@@ -7,10 +7,10 @@ messages:
   - role: assistant
     content: "Done. Hero and footer updated to photography. Feature cards still using illustrations."
 triggering_instructions: "Switch the hero and the footer CTA to photography."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::canvas::swap_media'
+    tool: 'canvas_ai:update_component_data'
     label: 'Should swap only feature card images'
     tool_rules: should_be_run
     parameters:
@@ -21,7 +21,7 @@ rules:
         type_of_check: equals
         value: 'illustration'
   rule_2:
-    tool: 'ai_agents::canvas::swap_media'
+    tool: 'canvas_ai:update_component_data'
     label: 'Should NOT swap hero or CTA images'
     tool_rules: should_not_be_run
     parameters:

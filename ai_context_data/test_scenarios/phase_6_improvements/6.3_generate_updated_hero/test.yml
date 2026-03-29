@@ -5,10 +5,10 @@ messages:
   - role: user
     content: "Yes, fix all three. Lead with the security differentiator. Make sure 'enterprise security' is in the subhead - that's what people are searching for. Outcomes first, not features."
 triggering_instructions: "Yes, fix all three. Lead with the security differentiator. Make sure 'enterprise security' is in the subhead."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::canvas::generate_component'
+    tool: 'canvas_ai:set_component_structure'
     label: 'Should generate new hero with security focus'
     tool_rules: should_be_run
     parameters:
@@ -16,7 +16,7 @@ rules:
         type_of_check: contains
         value: 'enterprise security'
   rule_2:
-    tool: 'ai_agents::ccc::extract_content'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should extract differentiator from Sales Pitch Deck'
     tool_rules: should_be_run
     parameters:

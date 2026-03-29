@@ -20,7 +20,6 @@ config:
               - 'Visuals & Imagery'
               - 'Abbreviations, Spelling, Dates & Formatting'
               - 'FinDrop Key Facts & Value Propositions'
-              - 'FinDrop Travel — Sales Training Deck'
               - 'General Page Building Guidelines'
               - 'Content Structure: Product Pages'
             excluded_subcontext:
@@ -37,7 +36,6 @@ config:
               - 'Visuals & Imagery'
               - 'Abbreviations, Spelling, Dates & Formatting'
               - 'FinDrop Key Facts & Value Propositions'
-              - 'FinDrop Travel — Sales Training Deck'
               - 'General Page Building Guidelines'
               - 'Content Structure: Product Pages'
             excluded_subcontext:
@@ -62,9 +60,35 @@ config:
               - 'Content Structure: Press Releases'
             scope_subscriptions: {  }
           -
+            id: canvas_title_generation_agent
+            context_items: {  }
+            always_include:
+              - 'FinDrop Brand Guidelines'
+              - 'FinDrop Key Facts & Value Propositions'
+            excluded_subcontext:
+              - 'Content Structure: PPC Landing Page'
+              - 'Content Structure: Articles & Blogs'
+              - 'Content Structure: Press Releases'
+              - 'FinDrop Travel — Sales Training Deck'
+            scope_subscriptions: {  }
+          -
+            id: canvas_metadata_generation_agent
+            context_items: {  }
+            always_include:
+              - 'FinDrop Brand Guidelines'
+              - 'FinDrop Key Facts & Value Propositions'
+              - 'Writing Tone & Voice'
+            excluded_subcontext:
+              - 'Content Structure: PPC Landing Page'
+              - 'Content Structure: Articles & Blogs'
+              - 'Content Structure: Press Releases'
+              - 'FinDrop Travel — Sales Training Deck'
+            scope_subscriptions: {  }
+          -
             id: drupal_canvas_seo_agent
             context_items: {  }
-            always_include: {  }
+            always_include:
+              - 'FinDrop Key Facts & Value Propositions'
           -
             id: analytics_monitoring_agent
             context_items: {  }

@@ -5,10 +5,10 @@ messages:
   - role: user
     content: "Generate a new hero variant - high impact, bolder, main value prop front and center."
 triggering_instructions: "Generate a new hero variant - high impact, bolder, main value prop front and center."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::canvas::generate_component'
+    tool: 'canvas_ai:set_component_structure'
     label: 'Should generate NEW hero component'
     tool_rules: should_be_run
     parameters:
@@ -19,7 +19,9 @@ rules:
         type_of_check: equals
         value: 'create_new'
   rule_2:
-    tool: 'ai_agents::canvas::delete_component'
+    # NOTE: Canvas AI cannot delete components — set_component_structure is the closest equivalent,
+    # but this rule validates the original hero must NOT be removed.
+    tool: 'canvas_ai:set_component_structure'
     label: 'Should NOT delete original hero'
     tool_rules: should_not_be_run
 response_rule: 'AI should generate a new Billboard Hero variant below/adjacent to existing. Original hero must remain for comparison. New variant should have punchier headline with adoption stat prominent.'

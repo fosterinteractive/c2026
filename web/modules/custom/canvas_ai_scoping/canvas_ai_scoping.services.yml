@@ -1,0 +1,54 @@
+services:
+  # Logger channel for the module.
+  logger.channel.canvas_ai_scoping:
+    parent: logger.channel_base
+    arguments: ['canvas_ai_scoping']
+
+  canvas_ai_scoping.layout_scoping_subscriber:
+    class: Drupal\canvas_ai_scoping\EventSubscriber\LayoutScopingSubscriber
+    arguments:
+      - '@canvas_ai.tempstore'
+      - '@logger.channel.canvas_ai_scoping'
+    tags:
+      - { name: event_subscriber }
+
+  canvas_ai_scoping.loop_aware_context_subscriber:
+    class: Drupal\canvas_ai_scoping\EventSubscriber\LoopAwareContextSubscriber
+    arguments:
+      - '@logger.channel.canvas_ai_scoping'
+    tags:
+      - { name: event_subscriber }
+
+  canvas_ai_scoping.context_edit_scope_manager:
+    class: Drupal\canvas_ai_scoping\Service\ContextEditScopeManager
+    arguments:
+      - '@entity_type.manager'
+      - '@state'
+      - '@logger.channel.canvas_ai_scoping'
+
+  canvas_ai_scoping.context_scoping_subscriber:
+    class: Drupal\canvas_ai_scoping\EventSubscriber\ContextScopingSubscriber
+    arguments:
+      - '@canvas_ai_scoping.context_edit_scope_manager'
+      - '@logger.channel.canvas_ai_scoping'
+    tags:
+      - { name: event_subscriber }
+
+  canvas_ai_scoping.token_breakdown_subscriber:
+    class: Drupal\canvas_ai_scoping\EventSubscriber\TokenBreakdownSubscriber
+    arguments:
+      - '@logger.channel.canvas_ai_scoping'
+    tags:
+      - { name: event_subscriber }
+
+  canvas_ai_scoping.component_schema_loader:
+    class: Drupal\canvas_ai_scoping\Service\ComponentSchemaLoader
+    arguments:
+      - '@extension.list.theme'
+      - '@cache.default'
+      - '@logger.channel.canvas_ai_scoping'
+
+  canvas_ai_scoping.direct_edit_matcher:
+    class: Drupal\canvas_ai_scoping\Service\DirectEditMatcher
+    arguments:
+      - '@canvas_ai_scoping.component_schema_loader'

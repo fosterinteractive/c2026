@@ -1,0 +1,113 @@
+---
+# drupal-intent-testing manifest
+# Tier 1 — Rejection: ADD_KEYWORDS block "add a section below this"
+
+issue:
+  title: "Tier 1 rejection: add/create operations route to AI"
+  reference: "docs/proposals/tiered-deterministic-edit-routing.md"
+  adr:
+    - "ADR-004: Simple operations bypass LLM"
+  description: >
+    When a content author selects a heading and says "add a section below this",
+    the DirectEditMatcher must detect the ADD_KEYWORDS ("add", "below") and
+    return NULL immediately. The DirectEditController converts this to a 422
+    with reason: "no_match" so the frontend can route to the standard AI
+    agent pipeline. No prop extraction should be attempted.
+
+environment:
+  base_url: "https://c2026.ddev.site"
+  credentials:
+    username: admin
+    password: admin
+  canvas_page: "/canvas-demo"
+  component:
+    name: "sdc.byte_theme.heading"
+    uuid: "{{HEADING_UUID}}"
+
+setup:
+  steps:
+    - action: navigate
+      url: "{{environment.base_url}}/canvas-demo?canvas=true"
+    - action: wait_for
+      selector: ".canvas-editor"
+    - action: click
+      selector: "[data-component-uuid='{{HEADING_UUID}}']"
+
+steps:
+  - id: "reject-add-section"
+    description: "POST an add-intent message — must return 422"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "add a section below this"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "returns-422"
+        description: "Endpoint returns 422 to signal: route this to AI"
+        assert: http_status
+        expected: 422
+      - id: "reason-no-match"
+        description: "Response body carries reason: no_match"
+        assert: response_json
+        path: "reason"
+        expected: "no_match"
+      - id: "status-false"
+        description: "status field is false (not an applied edit)"
+        assert: response_json
+        path: "status"
+        expected: false
+
+  - id: "reject-create-keyword"
+    description: "'create' keyword also triggers rejection"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "create a new button below the heading"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "create-keyword-returns-422"
+        description: "'create' is in ADD_KEYWORDS and must reject"
+        assert: http_status
+        expected: 422
+
+  - id: "reject-insert-keyword"
+    description: "'insert' keyword also triggers rejection"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "insert a card after this"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "insert-keyword-returns-422"
+        description: "'insert' and 'after' are both ADD_KEYWORDS and must reject"
+        assert: http_status
+        expected: 422
+
+assertions:
+  text_present:
+    - "no_match"
+  text_absent:
+    - "direct_edit"
+    - "tokens_used"
+    - "matched_prop"
+
+ai_agent_invoked: false
+expected_http_status: 422
+tier: 1
+tokens_expected: 0
+latency_budget_ms: 100

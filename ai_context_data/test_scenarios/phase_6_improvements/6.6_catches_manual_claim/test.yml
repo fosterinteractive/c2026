@@ -5,14 +5,14 @@ messages:
   - role: user
     content: "I just added some text to the value prop section. Review it for me."
 triggering_instructions: "I just added some text to the value prop section. Review it for me."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::governance::review_content'
+    tool: 'canvas_ai:get_component_content'
     label: 'Should review user-written content for violations'
     tool_rules: should_be_run
   rule_2:
-    tool: 'ai_agents::governance::flag_violation'
+    tool: 'ai_agents::ai_agent::canvas_ai_orchestrator'
     label: 'Should flag competitive claim in user text'
     tool_rules: should_be_run
     parameters:

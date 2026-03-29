@@ -5,10 +5,10 @@ messages:
   - role: user
     content: 'What context do you have loaded for this page?'
 triggering_instructions: 'What context do you have loaded for this page?'
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::ccc::context_loader'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should load Brand Guidelines (Global)'
     tool_rules: should_be_run
     parameters:
@@ -16,7 +16,7 @@ rules:
         type_of_check: contains
         value: 'brand_guidelines'
   rule_2:
-    tool: 'ai_agents::ccc::context_loader'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should load Content Strategy: Product Pages'
     tool_rules: should_be_run
     parameters:
@@ -24,7 +24,7 @@ rules:
         type_of_check: contains
         value: 'content_strategy_product_pages'
   rule_3:
-    tool: 'ai_agents::ccc::context_loader'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should NOT load Content Strategy: Articles'
     tool_rules: should_not_be_run
     parameters:
@@ -32,7 +32,7 @@ rules:
         type_of_check: contains
         value: 'content_strategy_articles'
   rule_4:
-    tool: 'ai_agents::ccc::context_loader'
+    tool: 'ai_context:get_relevant_context_items'
     label: 'Should NOT load Content Strategy: Landing Pages'
     tool_rules: should_not_be_run
     parameters:

@@ -1,0 +1,97 @@
+---
+# drupal-intent-testing manifest
+# Tier 1 — Pattern Match: heading text replacement via DirectEditMatcher
+
+issue:
+  title: "Tier 1 deterministic edit: heading text change"
+  reference: "docs/proposals/tiered-deterministic-edit-routing.md"
+  adr:
+    - "ADR-004: Simple operations bypass LLM"
+    - "ADR-006: Selection-first editing"
+  description: >
+    A content author selects a heading component and types a plain-language
+    rename instruction. The DirectEditMatcher should resolve the message
+    to {heading_text: "Welcome to FinDrop"} without invoking any AI agent.
+    The DirectEditController returns 200 with direct_edit: true and
+    tokens_used: 0.
+
+environment:
+  base_url: "https://c2026.ddev.site"
+  credentials:
+    username: admin
+    password: admin
+  canvas_page: "/canvas-demo"
+  component:
+    name: "sdc.byte_theme.heading"
+    uuid: "{{HEADING_UUID}}"
+    # Replace {{HEADING_UUID}} with the actual UUID of a heading component
+    # visible on the canvas_page above. Obtain via: ddev drush canvas:list-components
+
+setup:
+  description: >
+    Navigate to the Canvas editor for the demo page. Select the main heading
+    component to populate the server-side tempstore with the current page layout.
+    The DirectEditController requires a valid Canvas editor session — the
+    component must exist in CanvasAiTempStore before the endpoint is called.
+  steps:
+    - action: navigate
+      url: "{{environment.base_url}}/canvas-demo?canvas=true"
+    - action: wait_for
+      selector: ".canvas-editor"
+    - action: click
+      selector: "[data-component-uuid='{{HEADING_UUID}}']"
+
+steps:
+  - id: "direct-edit-heading"
+    description: "POST to the DirectEditController with a heading text change message"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "change the heading to Welcome to FinDrop"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "returns-200"
+        description: "Endpoint returns HTTP 200 — match was found"
+        assert: http_status
+        expected: 200
+      - id: "direct-edit-flag"
+        description: "Response signals deterministic edit (no AI invoked)"
+        assert: response_json
+        path: "direct_edit"
+        expected: true
+      - id: "zero-tokens"
+        description: "No tokens consumed"
+        assert: response_json
+        path: "tokens_used"
+        expected: 0
+      - id: "prop-matched"
+        description: "Matcher identified the correct prop"
+        assert: response_json
+        path: "matched_prop"
+        expected: "heading_text"
+      - id: "value-in-operations"
+        description: "The update operations include the new heading text"
+        assert: response_body_contains
+        value: "Welcome to FinDrop"
+
+assertions:
+  text_present:
+    - "Welcome to FinDrop"
+    - "direct_edit"
+    - "tokens_used"
+  text_absent:
+    - "ai_agent"
+    - "canvas_ai_orchestrator"
+    - "error"
+    - "no_match"
+
+ai_agent_invoked: false
+expected_http_status: 200
+tier: 1
+tokens_expected: 0
+latency_budget_ms: 100

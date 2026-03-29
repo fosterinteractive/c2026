@@ -11,10 +11,10 @@ messages:
   - role: assistant
     content: "Heading structure looks good — all levels nest correctly. H1 > H2 > H3 throughout."
 triggering_instructions: "Create an AEO schema for this page."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::seo::generate_schema'
+    tool: 'canvas_ai_seo:add_schema_org_json'
     label: 'Should generate FAQPage schema from accordions'
     tool_rules: should_be_run
     parameters:
@@ -22,7 +22,7 @@ rules:
         type_of_check: contains
         value: 'FAQPage'
   rule_2:
-    tool: 'ai_agents::seo::generate_schema'
+    tool: 'canvas_ai_seo:add_schema_org_json'
     label: 'Should also generate Product schema'
     tool_rules: should_be_run
     parameters:

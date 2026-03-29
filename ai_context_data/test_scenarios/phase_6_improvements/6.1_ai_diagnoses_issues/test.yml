@@ -7,10 +7,10 @@ messages:
   - role: user
     content: "Yes. Outcomes first, not features."
 triggering_instructions: 'Pre-loaded from agent dashboard with suggestions 1 and 2 selected'
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::diagnosis::cross_reference'
+    tool: 'canvas_ai:get_component_content'
     label: 'Should cross-reference GA data with CCC context'
     tool_rules: should_be_run
     parameters:
@@ -18,7 +18,7 @@ rules:
         type_of_check: contains
         value: 'sales_pitch_deck'
   rule_2:
-    tool: 'ai_agents::diagnosis::identify_issues'
+    tool: 'canvas_ai:get_component_content'
     label: 'Should identify search mismatch, missing differentiator, keyword gap'
     tool_rules: should_be_run
 response_rule: 'AI should provide 3-part diagnosis: search mismatch, missing differentiator (from sales deck), keyword alignment gap. Should note that differentiator came from sales deck Jordan didnt know about. Should offer to fix all three.'

@@ -9,14 +9,14 @@ messages:
   - role: user
     content: "Don't worry about that - just build the page."
 triggering_instructions: "Don't worry about that - just build the page."
-ai_agent: canvas_ai_assistant
+ai_agent: canvas_ai_orchestrator
 rules:
   rule_1:
-    tool: 'ai_agents::canvas::generate_page'
+    tool: 'ai_agents::ai_agent::canvas_template_builder_agent'
     label: 'Should proceed with page generation despite skipped questions'
     tool_rules: should_be_run
   rule_2:
-    tool: 'ai_agents::clarification::ask_question'
+    tool: 'ai_agents::ai_agent::canvas_ai_orchestrator'
     label: 'Should NOT ask more questions after user declined'
     tool_rules: should_not_be_run
 response_rule: 'AI should build page using reasonable defaults inferred from content cues. Must transparently state assumptions made (e.g., "I structured this for travel program managers based on the copy language"). Should offer to adjust.'
