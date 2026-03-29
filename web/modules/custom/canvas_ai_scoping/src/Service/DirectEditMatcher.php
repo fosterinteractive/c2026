@@ -75,18 +75,52 @@ final class DirectEditMatcher {
   ) {}
 
   /**
+   * Comparative adjective map for relative adjustments.
+   *
+   * Maps adjective stems to direction (+1 = next in ordinal, -1 = previous).
+   */
+  private const RELATIVE_ADJECTIVES = [
+    'bigger' => +1,
+    'larger' => +1,
+    'smaller' => -1,
+    'tinier' => -1,
+    'bolder' => +1,
+    'lighter' => -1,
+    'darker' => +1,
+  ];
+
+  /**
+   * Maps relative adjective categories to which prop types they target.
+   *
+   * When a user says "bigger", we need to know which prop to adjust.
+   * This maps adjective stems to the prop name categories they apply to.
+   */
+  private const RELATIVE_PROP_CATEGORIES = [
+    'bigger' => ['text_size', 'size', 'icon_size', 'tile_size', 'image_size'],
+    'larger' => ['text_size', 'size', 'icon_size', 'tile_size', 'image_size'],
+    'smaller' => ['text_size', 'size', 'icon_size', 'tile_size', 'image_size'],
+    'tinier' => ['text_size', 'size', 'icon_size', 'tile_size', 'image_size'],
+    'bolder' => ['text_size'],
+    'lighter' => ['text_color', 'background_color'],
+    'darker' => ['text_color', 'background_color'],
+  ];
+
+  /**
    * Attempts to match a user message to a deterministic prop edit.
    *
    * @param string $message
    *   The user's chat message.
    * @param string $componentName
    *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   * @param array|null $currentPropValues
+   *   Current prop values for the selected component, keyed by prop name.
+   *   Needed for relative adjustments (Phase 3). NULL if unavailable.
    *
    * @return array{prop: string, value: mixed}|array{changes: array<int, array{prop: string, value: mixed}>}|null
    *   A single matched prop change, a list of matched changes for a compound
    *   deterministic edit, or NULL if no deterministic match.
    */
-  public function match(string $message, string $componentName): ?array {
+  public function match(string $message, string $componentName, ?array $currentPropValues = NULL): ?array {
     $message = trim($message);
     // Deterministic edit commands are short. Messages beyond 500 chars are
     // almost certainly content generation or multi-paragraph instructions
@@ -101,7 +135,7 @@ final class DirectEditMatcher {
     if (count($fragments) > 1) {
       $changes = [];
       foreach ($fragments as $fragment) {
-        $result = $this->matchSingle($fragment, $componentName);
+        $result = $this->matchSingle($fragment, $componentName, $currentPropValues);
         if ($result === NULL) {
           return NULL;
         }
@@ -116,13 +150,13 @@ final class DirectEditMatcher {
       return ['changes' => $changes];
     }
 
-    return $this->matchSingle($message, $componentName);
+    return $this->matchSingle($message, $componentName, $currentPropValues);
   }
 
   /**
    * Attempts to match a single deterministic prop edit.
    */
-  private function matchSingle(string $message, string $componentName): ?array {
+  private function matchSingle(string $message, string $componentName, ?array $currentPropValues = NULL): ?array {
     // Reject if the message contains add/create keywords or phrases.
     $messageLower = mb_strtolower($message);
     foreach (self::ADD_KEYWORDS as $keyword) {
@@ -175,7 +209,109 @@ final class DirectEditMatcher {
       return $result;
     }
 
+    // Phase 3: Relative adjustments.
+    // "bigger", "smaller", "make it bigger" — navigate enum ordinals.
+    // Requires current prop values to know which direction to move.
+    if ($currentPropValues !== NULL) {
+      $result = $this->matchRelativeAdjustment($messageLower, $componentName, $currentPropValues);
+      if ($result !== NULL) {
+        return $result;
+      }
+    }
+
     return NULL;
+  }
+
+  /**
+   * Matches relative adjustment patterns (bigger/smaller/lighter/darker).
+   *
+   * Navigates enum ordinals based on the current prop value. Direction is
+   * determined by the adjective and the enum's ascending/descending metadata.
+   *
+   * @param string $messageLower
+   *   Lowercased, trimmed user message.
+   * @param string $componentName
+   *   The SDC component name.
+   * @param array $currentPropValues
+   *   Current prop values keyed by prop name.
+   *
+   * @return array{prop: string, value: mixed}|null
+   *   Resolved prop and new value, or NULL if no match.
+   */
+  private function matchRelativeAdjustment(string $messageLower, string $componentName, array $currentPropValues): ?array {
+    // Strip "make it/this/the" prefix.
+    $stripped = preg_replace('/^(?:make\s+(?:it|this|the)\s+)/i', '', $messageLower);
+    $stripped = trim($stripped);
+
+    // Check if the (possibly stripped) message is a known comparative adjective.
+    $direction = self::RELATIVE_ADJECTIVES[$stripped] ?? NULL;
+    if ($direction === NULL) {
+      return NULL;
+    }
+
+    // Find which prop categories this adjective targets.
+    $targetProps = self::RELATIVE_PROP_CATEGORIES[$stripped] ?? [];
+    if (empty($targetProps)) {
+      return NULL;
+    }
+
+    // Get the ordinals for this component.
+    $ordinals = $this->schemaLoader->getEnumOrdinals($componentName);
+    if (empty($ordinals)) {
+      return NULL;
+    }
+
+    // Find a matching prop: must be in the target category AND have a current value.
+    $matchedProp = NULL;
+    $matchedOrdinal = NULL;
+    foreach ($targetProps as $propName) {
+      if (isset($ordinals[$propName]) && array_key_exists($propName, $currentPropValues)) {
+        if ($matchedProp !== NULL) {
+          // Ambiguous: multiple target props exist on this component.
+          return NULL;
+        }
+        $matchedProp = $propName;
+        $matchedOrdinal = $ordinals[$propName];
+      }
+    }
+
+    if ($matchedProp === NULL || $matchedOrdinal === NULL) {
+      return NULL;
+    }
+
+    $values = $matchedOrdinal['values'] ?? [];
+    $ordinalDirection = $matchedOrdinal['direction'] ?? 'ascending';
+    $currentValue = $currentPropValues[$matchedProp];
+
+    // Find current position in the ordinal sequence.
+    $currentIndex = array_search($currentValue, $values, TRUE);
+    if ($currentIndex === FALSE) {
+      return NULL;
+    }
+
+    // For descending ordinals (e.g., text_size: 8xl first = biggest),
+    // "bigger" means moving toward index 0 (lower index = bigger).
+    // For ascending ordinals (e.g., button size: small first),
+    // "bigger" means moving toward higher index.
+    $step = $direction;
+    if ($ordinalDirection === 'descending') {
+      $step = -$direction;
+    }
+
+    $newIndex = $currentIndex + $step;
+
+    // Skip the 'default' value in ordinal navigation — it's a reset,
+    // not a position in the scale.
+    if (isset($values[$newIndex]) && $values[$newIndex] === 'default') {
+      $newIndex += $step;
+    }
+
+    if ($newIndex < 0 || $newIndex >= count($values)) {
+      // At boundary — can't go further. Reject.
+      return NULL;
+    }
+
+    return ['prop' => $matchedProp, 'value' => $values[$newIndex]];
   }
 
   /**
