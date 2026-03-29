@@ -35,7 +35,22 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   private const CACHE_CID_ENUMS = 'canvas_ai_scoping:enum_values';
 
   /**
-   * Cache tag used to invalidate both maps together.
+   * Cache ID for the reverse enum index.
+   */
+  private const CACHE_CID_REVERSE_ENUM = 'canvas_ai_scoping:reverse_enum_index';
+
+  /**
+   * Cache ID for the boolean props map.
+   */
+  private const CACHE_CID_BOOLEAN_PROPS = 'canvas_ai_scoping:boolean_props';
+
+  /**
+   * Cache ID for the enum ordinals map.
+   */
+  private const CACHE_CID_ENUM_ORDINALS = 'canvas_ai_scoping:enum_ordinals';
+
+  /**
+   * Cache tag used to invalidate all maps together.
    */
   private const CACHE_TAG = 'canvas_ai_scoping';
 
@@ -43,6 +58,25 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
    * The Byte theme machine name.
    */
   private const THEME_NAME = 'byte_theme';
+
+  /**
+   * Props where "enable" means FALSE (inverted boolean semantics).
+   */
+  private const INVERTED_BOOLEAN_PROPS = [
+    'disabled' => TRUE,
+    'overlap_navbar' => TRUE,
+  ];
+
+  /**
+   * Size-category props where the first enum value is the largest (descending).
+   */
+  private const DESCENDING_ORDINAL_PROPS = [
+    'text_size',
+    'icon_size',
+    'size',
+    'tile_size',
+    'image_size',
+  ];
 
   /**
    * Cached prop alias map: {sdc_name => {alias => prop_name}}.
@@ -57,6 +91,27 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
    * @var array<string, array<string, array<string, string>>>|null
    */
   private ?array $enumValues = NULL;
+
+  /**
+   * Cached reverse enum index: {sdc_name => {normalized_value => [prop, ...]}}.
+   *
+   * @var array<string, array<string, list<string>>>|null
+   */
+  private ?array $reverseEnumIndex = NULL;
+
+  /**
+   * Cached boolean props: {sdc_name => {prop => {aliases => [], inverted => bool}}}.
+   *
+   * @var array<string, array<string, array{aliases: list<string>, inverted: bool}>>|null
+   */
+  private ?array $booleanProps = NULL;
+
+  /**
+   * Cached enum ordinals: {sdc_name => {prop => {values => [], direction => string}}}.
+   *
+   * @var array<string, array<string, array{values: list<string>, direction: string}>>|null
+   */
+  private ?array $enumOrdinals = NULL;
 
   /**
    * Constructs a ComponentSchemaLoader.
@@ -116,6 +171,53 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function getReverseEnumIndex(string $componentName): array {
+    $this->ensureLoaded();
+    return $this->reverseEnumIndex[$componentName] ?? [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getBooleanProps(string $componentName): array {
+    $this->ensureLoaded();
+    return $this->booleanProps[$componentName] ?? [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEnumOrdinals(string $componentName): array {
+    $this->ensureLoaded();
+    return $this->enumOrdinals[$componentName] ?? [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getOrthogonalityReport(): array {
+    $this->ensureLoaded();
+    $report = [];
+
+    foreach ($this->reverseEnumIndex ?? [] as $sdcName => $valueMap) {
+      $collisions = [];
+      foreach ($valueMap as $value => $props) {
+        if (count($props) > 1) {
+          $collisions[] = ['value' => $value, 'props' => $props];
+        }
+      }
+      $report[$sdcName] = [
+        'orthogonal' => empty($collisions),
+        'collisions' => $collisions,
+      ];
+    }
+
+    return $report;
+  }
+
+  /**
    * Ensures the alias and enum maps are loaded (from cache or built fresh).
    */
   private function ensureLoaded(): void {
@@ -125,27 +227,38 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
 
     $cachedAliases = $this->cache->get(self::CACHE_CID_ALIASES);
     $cachedEnums = $this->cache->get(self::CACHE_CID_ENUMS);
+    $cachedReverseEnum = $this->cache->get(self::CACHE_CID_REVERSE_ENUM);
+    $cachedBooleanProps = $this->cache->get(self::CACHE_CID_BOOLEAN_PROPS);
+    $cachedEnumOrdinals = $this->cache->get(self::CACHE_CID_ENUM_ORDINALS);
 
-    if ($cachedAliases !== FALSE && $cachedEnums !== FALSE) {
+    if ($cachedAliases !== FALSE && $cachedEnums !== FALSE
+      && $cachedReverseEnum !== FALSE && $cachedBooleanProps !== FALSE
+      && $cachedEnumOrdinals !== FALSE) {
       $this->propAliases = $cachedAliases->data;
       $this->enumValues = $cachedEnums->data;
+      $this->reverseEnumIndex = $cachedReverseEnum->data;
+      $this->booleanProps = $cachedBooleanProps->data;
+      $this->enumOrdinals = $cachedEnumOrdinals->data;
       return;
     }
 
     $this->buildMaps();
 
-    $this->cache->set(
-      self::CACHE_CID_ALIASES,
-      $this->propAliases,
-      CacheBackendInterface::CACHE_PERMANENT,
-      [self::CACHE_TAG],
-    );
-    $this->cache->set(
-      self::CACHE_CID_ENUMS,
-      $this->enumValues,
-      CacheBackendInterface::CACHE_PERMANENT,
-      [self::CACHE_TAG],
-    );
+    $cacheSets = [
+      self::CACHE_CID_ALIASES => $this->propAliases,
+      self::CACHE_CID_ENUMS => $this->enumValues,
+      self::CACHE_CID_REVERSE_ENUM => $this->reverseEnumIndex,
+      self::CACHE_CID_BOOLEAN_PROPS => $this->booleanProps,
+      self::CACHE_CID_ENUM_ORDINALS => $this->enumOrdinals,
+    ];
+    foreach ($cacheSets as $cid => $data) {
+      $this->cache->set(
+        $cid,
+        $data,
+        CacheBackendInterface::CACHE_PERMANENT,
+        [self::CACHE_TAG],
+      );
+    }
   }
 
   /**
@@ -154,6 +267,9 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   private function buildMaps(): void {
     $this->propAliases = [];
     $this->enumValues = [];
+    $this->reverseEnumIndex = [];
+    $this->booleanProps = [];
+    $this->enumOrdinals = [];
 
     $themePath = $this->resolveThemePath();
     if ($themePath === NULL) {
@@ -230,6 +346,9 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
 
     $aliases = [];
     $enumMap = [];
+    $reverseEnum = [];
+    $boolProps = [];
+    $ordinals = [];
 
     foreach ($properties as $propName => $propDef) {
       if (!is_array($propDef)) {
@@ -243,6 +362,15 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
         if (!isset($aliases[$alias])) {
           $aliases[$alias] = $propName;
         }
+      }
+
+      // Detect boolean props.
+      $propType = $propDef['type'] ?? NULL;
+      if ($propType === 'boolean') {
+        $boolProps[$propName] = [
+          'aliases' => $generatedAliases,
+          'inverted' => isset(self::INVERTED_BOOLEAN_PROPS[$propName]),
+        ];
       }
 
       // Build enum map for props with enum constraints.
@@ -264,6 +392,27 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
       if (!empty($propEnumMap)) {
         $enumMap[$propName] = $propEnumMap;
       }
+
+      // Build reverse enum index: normalized_value => [prop_name, ...].
+      foreach ($enumValues as $value) {
+        if (!is_string($value)) {
+          continue;
+        }
+        $normalized = mb_strtolower($value);
+        $reverseEnum[$normalized][] = $propName;
+      }
+
+      // Build enum ordinals: ordered values with direction metadata.
+      $stringValues = array_values(array_filter($enumValues, 'is_string'));
+      if (!empty($stringValues)) {
+        $direction = in_array($propName, self::DESCENDING_ORDINAL_PROPS, TRUE)
+          ? 'descending'
+          : 'ascending';
+        $ordinals[$propName] = [
+          'values' => $stringValues,
+          'direction' => $direction,
+        ];
+      }
     }
 
     if (!empty($aliases)) {
@@ -271,6 +420,20 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     }
     if (!empty($enumMap)) {
       $this->enumValues[$sdcName] = $enumMap;
+    }
+
+    // De-duplicate reverse enum index prop lists.
+    if (!empty($reverseEnum)) {
+      foreach ($reverseEnum as $value => $props) {
+        $reverseEnum[$value] = array_values(array_unique($props));
+      }
+      $this->reverseEnumIndex[$sdcName] = $reverseEnum;
+    }
+    if (!empty($boolProps)) {
+      $this->booleanProps[$sdcName] = $boolProps;
+    }
+    if (!empty($ordinals)) {
+      $this->enumOrdinals[$sdcName] = $ordinals;
     }
   }
 

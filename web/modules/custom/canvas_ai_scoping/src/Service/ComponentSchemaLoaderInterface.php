@@ -44,4 +44,62 @@ interface ComponentSchemaLoaderInterface {
    */
   public function getSupportedComponents(): array;
 
+  /**
+   * Returns a reverse index mapping normalized enum values to prop names.
+   *
+   * For each enum value across all props on this component, maps the value
+   * back to which props accept it. Used by bare-value inference: values with
+   * exactly 1 prop match are unambiguous; multiple matches indicate collision.
+   *
+   * @param string $componentName
+   *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   *
+   * @return array<string, list<string>>
+   *   Map of normalized_value => [prop_name, ...]. Empty array if component
+   *   is not found or has no enum props.
+   */
+  public function getReverseEnumIndex(string $componentName): array;
+
+  /**
+   * Returns boolean prop metadata for a component.
+   *
+   * @param string $componentName
+   *   The SDC component name (e.g., 'sdc.byte_theme.section').
+   *
+   * @return array<string, array{aliases: list<string>, inverted: bool}>
+   *   Map of prop_name => ['aliases' => [...], 'inverted' => bool].
+   *   'inverted' is TRUE for props like 'disabled' where "enable" means FALSE.
+   *   Empty array if component is not found or has no boolean props.
+   */
+  public function getBooleanProps(string $componentName): array;
+
+  /**
+   * Returns enum ordinal metadata for relative adjustments.
+   *
+   * Provides ordered enum values and direction metadata used by relative
+   * adjustment logic ("bigger"/"smaller").
+   *
+   * @param string $componentName
+   *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   *
+   * @return array<string, array{values: list<string>, direction: string}>
+   *   Map of prop_name => ['values' => [ordered values], 'direction' =>
+   *   'ascending'|'descending']. Empty array if component is not found or
+   *   has no enum props.
+   */
+  public function getEnumOrdinals(string $componentName): array;
+
+  /**
+   * Returns per-component enum value collision data.
+   *
+   * Derived from the reverse enum index — any value mapping to 2+ props is
+   * a collision. Useful for diagnostics and deciding whether bare-value
+   * inference is safe for a component.
+   *
+   * @return array<string, array{orthogonal: bool, collisions: list<array{value: string, props: list<string>}>}>
+   *   Map of sdc_name => ['orthogonal' => bool, 'collisions' => [...]].
+   *   A component is orthogonal when it has zero collisions.
+   */
+  public function getOrthogonalityReport(): array;
+
 }

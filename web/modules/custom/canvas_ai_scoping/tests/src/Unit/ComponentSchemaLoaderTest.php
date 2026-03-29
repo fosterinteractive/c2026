@@ -1,0 +1,597 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Drupal\Tests\canvas_ai_scoping\Unit;
+
+use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Extension\Extension;
+use Drupal\Core\Extension\ThemeExtensionList;
+use Drupal\canvas_ai_scoping\Service\ComponentSchemaLoader;
+use Drupal\Tests\UnitTestCase;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\Yaml\Yaml;
+
+/**
+ * Tests the ComponentSchemaLoader service.
+ *
+ * Uses reflection to invoke processComponentFile on temporary YAML files,
+ * bypassing the theme path resolution and glob discovery.
+ *
+ * @group canvas_ai_scoping
+ * @coversDefaultClass \Drupal\canvas_ai_scoping\Service\ComponentSchemaLoader
+ */
+final class ComponentSchemaLoaderTest extends UnitTestCase {
+
+  /**
+   * Temporary directory for component YAML fixtures.
+   *
+   * @var string
+   */
+  private string $tmpDir;
+
+  /**
+   * The mock cache backend.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface&\PHPUnit\Framework\MockObject\MockObject
+   */
+  private CacheBackendInterface $cache;
+
+  /**
+   * The mock logger.
+   *
+   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\MockObject
+   */
+  private LoggerInterface $logger;
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function setUp(): void {
+    parent::setUp();
+
+    $this->tmpDir = sys_get_temp_dir() . '/canvas_ai_scoping_test_' . uniqid();
+    mkdir($this->tmpDir, 0777, TRUE);
+
+    $this->cache = $this->createMock(CacheBackendInterface::class);
+    $this->logger = $this->createMock(LoggerInterface::class);
+
+    // Cache always misses so buildMaps() runs each time.
+    $this->cache->method('get')->willReturn(FALSE);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown(): void {
+    // Clean up temporary files.
+    $this->removeDir($this->tmpDir);
+    parent::tearDown();
+  }
+
+  /**
+   * Recursively removes a directory.
+   */
+  private function removeDir(string $dir): void {
+    if (!is_dir($dir)) {
+      return;
+    }
+    $items = scandir($dir);
+    if ($items === FALSE) {
+      return;
+    }
+    foreach ($items as $item) {
+      if ($item === '.' || $item === '..') {
+        continue;
+      }
+      $path = $dir . '/' . $item;
+      is_dir($path) ? $this->removeDir($path) : unlink($path);
+    }
+    rmdir($dir);
+  }
+
+  /**
+   * Builds a ComponentSchemaLoader populated from fixture YAML files.
+   *
+   * @param array<string, array<string, mixed>> $components
+   *   Map of component_dir_name => props properties array.
+   *
+   * @return \Drupal\canvas_ai_scoping\Service\ComponentSchemaLoader
+   *   The loader instance with maps populated via reflection.
+   */
+  private function buildLoader(array $components): ComponentSchemaLoader {
+    $themeList = $this->createMock(ThemeExtensionList::class);
+    $loader = new ComponentSchemaLoader($themeList, $this->cache, $this->logger);
+
+    // Create temporary YAML files and invoke processComponentFile via reflection.
+    $reflection = new \ReflectionClass($loader);
+
+    // Initialize the internal arrays.
+    $arrayProps = ['propAliases', 'enumValues', 'reverseEnumIndex', 'booleanProps', 'enumOrdinals'];
+    foreach ($arrayProps as $prop) {
+      $rp = $reflection->getProperty($prop);
+      $rp->setAccessible(TRUE);
+      $rp->setValue($loader, []);
+    }
+
+    $method = $reflection->getMethod('processComponentFile');
+    $method->setAccessible(TRUE);
+
+    foreach ($components as $dirName => $properties) {
+      $componentDir = $this->tmpDir . '/' . $dirName;
+      mkdir($componentDir, 0777, TRUE);
+
+      $yamlData = [
+        'name' => $dirName,
+        'props' => [
+          'properties' => $properties,
+        ],
+      ];
+      $yamlPath = $componentDir . '/' . $dirName . '.component.yml';
+      file_put_contents($yamlPath, Yaml::dump($yamlData, 6));
+
+      $method->invoke($loader, $yamlPath);
+    }
+
+    return $loader;
+  }
+
+  /**
+   * @covers ::getReverseEnumIndex
+   */
+  public function testReverseEnumIndexUnambiguous(): void {
+    $loader = $this->buildLoader([
+      'heading' => [
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'inverted', 'primary'],
+        ],
+        'align' => [
+          'type' => 'string',
+          'enum' => ['left', 'center', 'right'],
+        ],
+      ],
+    ]);
+
+    $index = $loader->getReverseEnumIndex('sdc.byte_theme.heading');
+
+    // Each value maps to exactly 1 prop (no collisions).
+    $this->assertSame(['text_color'], $index['default']);
+    $this->assertSame(['text_color'], $index['inverted']);
+    $this->assertSame(['text_color'], $index['primary']);
+    $this->assertSame(['align'], $index['left']);
+    $this->assertSame(['align'], $index['center']);
+    $this->assertSame(['align'], $index['right']);
+  }
+
+  /**
+   * @covers ::getReverseEnumIndex
+   */
+  public function testReverseEnumIndexWithCollision(): void {
+    $loader = $this->buildLoader([
+      'card-icon' => [
+        'background_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'primary', 'secondary'],
+        ],
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'primary', 'inverted'],
+        ],
+      ],
+    ]);
+
+    $index = $loader->getReverseEnumIndex('sdc.byte_theme.card-icon');
+
+    // 'primary' maps to both props.
+    $this->assertContains('background_color', $index['primary']);
+    $this->assertContains('text_color', $index['primary']);
+    $this->assertCount(2, $index['primary']);
+
+    // 'default' also collides.
+    $this->assertCount(2, $index['default']);
+
+    // 'secondary' is unambiguous.
+    $this->assertSame(['background_color'], $index['secondary']);
+
+    // 'inverted' is unambiguous.
+    $this->assertSame(['text_color'], $index['inverted']);
+  }
+
+  /**
+   * @covers ::getReverseEnumIndex
+   */
+  public function testReverseEnumIndexEmptyForUnknownComponent(): void {
+    $loader = $this->buildLoader([
+      'heading' => [
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default'],
+        ],
+      ],
+    ]);
+
+    $this->assertSame([], $loader->getReverseEnumIndex('sdc.byte_theme.nonexistent'));
+  }
+
+  /**
+   * @covers ::getBooleanProps
+   */
+  public function testBooleanPropsDetected(): void {
+    $loader = $this->buildLoader([
+      'section' => [
+        'section_header' => [
+          'type' => 'boolean',
+        ],
+        'section_footer' => [
+          'type' => 'boolean',
+        ],
+        'overlap_navbar' => [
+          'type' => 'boolean',
+        ],
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'inverted'],
+        ],
+      ],
+    ]);
+
+    $boolProps = $loader->getBooleanProps('sdc.byte_theme.section');
+
+    // section_header and section_footer are non-inverted.
+    $this->assertArrayHasKey('section_header', $boolProps);
+    $this->assertFalse($boolProps['section_header']['inverted']);
+    $this->assertContains('section_header', $boolProps['section_header']['aliases']);
+
+    $this->assertArrayHasKey('section_footer', $boolProps);
+    $this->assertFalse($boolProps['section_footer']['inverted']);
+
+    // overlap_navbar is inverted.
+    $this->assertArrayHasKey('overlap_navbar', $boolProps);
+    $this->assertTrue($boolProps['overlap_navbar']['inverted']);
+
+    // text_color is NOT a boolean prop.
+    $this->assertArrayNotHasKey('text_color', $boolProps);
+  }
+
+  /**
+   * @covers ::getBooleanProps
+   */
+  public function testBooleanPropsDisabledIsInverted(): void {
+    $loader = $this->buildLoader([
+      'widget' => [
+        'disabled' => [
+          'type' => 'boolean',
+        ],
+        'visible' => [
+          'type' => 'boolean',
+        ],
+      ],
+    ]);
+
+    $boolProps = $loader->getBooleanProps('sdc.byte_theme.widget');
+    $this->assertTrue($boolProps['disabled']['inverted']);
+    $this->assertFalse($boolProps['visible']['inverted']);
+  }
+
+  /**
+   * @covers ::getBooleanProps
+   */
+  public function testBooleanPropsEmptyForUnknownComponent(): void {
+    $loader = $this->buildLoader([
+      'heading' => [
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default'],
+        ],
+      ],
+    ]);
+
+    $this->assertSame([], $loader->getBooleanProps('sdc.byte_theme.nonexistent'));
+  }
+
+  /**
+   * @covers ::getEnumOrdinals
+   */
+  public function testEnumOrdinalsAscendingDefault(): void {
+    $loader = $this->buildLoader([
+      'heading' => [
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'inverted', 'primary'],
+        ],
+        'align' => [
+          'type' => 'string',
+          'enum' => ['left', 'center', 'right'],
+        ],
+      ],
+    ]);
+
+    $ordinals = $loader->getEnumOrdinals('sdc.byte_theme.heading');
+
+    $this->assertSame(['default', 'inverted', 'primary'], $ordinals['text_color']['values']);
+    $this->assertSame('ascending', $ordinals['text_color']['direction']);
+
+    $this->assertSame(['left', 'center', 'right'], $ordinals['align']['values']);
+    $this->assertSame('ascending', $ordinals['align']['direction']);
+  }
+
+  /**
+   * @covers ::getEnumOrdinals
+   */
+  public function testEnumOrdinalsDescendingForSizeProps(): void {
+    $loader = $this->buildLoader([
+      'heading' => [
+        'text_size' => [
+          'type' => 'string',
+          'enum' => ['heading-responsive-8xl', 'heading-responsive-7xl', 'heading-responsive-6xl'],
+        ],
+      ],
+    ]);
+
+    $ordinals = $loader->getEnumOrdinals('sdc.byte_theme.heading');
+
+    $this->assertSame(
+      ['heading-responsive-8xl', 'heading-responsive-7xl', 'heading-responsive-6xl'],
+      $ordinals['text_size']['values']
+    );
+    $this->assertSame('descending', $ordinals['text_size']['direction']);
+  }
+
+  /**
+   * @covers ::getEnumOrdinals
+   */
+  public function testEnumOrdinalsDescendingForAllSizeCategories(): void {
+    $loader = $this->buildLoader([
+      'icon' => [
+        'icon_size' => [
+          'type' => 'string',
+          'enum' => ['extra-large', 'large', 'medium', 'small'],
+        ],
+        'size' => [
+          'type' => 'string',
+          'enum' => ['large', 'medium', 'small'],
+        ],
+      ],
+      'tile' => [
+        'tile_size' => [
+          'type' => 'string',
+          'enum' => ['16/9', '4/3', '1/1'],
+        ],
+        'image_size' => [
+          'type' => 'string',
+          'enum' => ['large', 'medium', 'small'],
+        ],
+      ],
+    ]);
+
+    $iconOrdinals = $loader->getEnumOrdinals('sdc.byte_theme.icon');
+    $this->assertSame('descending', $iconOrdinals['icon_size']['direction']);
+    $this->assertSame('descending', $iconOrdinals['size']['direction']);
+
+    $tileOrdinals = $loader->getEnumOrdinals('sdc.byte_theme.tile');
+    $this->assertSame('descending', $tileOrdinals['tile_size']['direction']);
+    $this->assertSame('descending', $tileOrdinals['image_size']['direction']);
+  }
+
+  /**
+   * @covers ::getEnumOrdinals
+   */
+  public function testEnumOrdinalsSkipsNumericOnlyEnums(): void {
+    $loader = $this->buildLoader([
+      'heading' => [
+        'level' => [
+          'type' => 'integer',
+          'enum' => [1, 2, 3, 4, 5, 6],
+        ],
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'inverted'],
+        ],
+      ],
+    ]);
+
+    $ordinals = $loader->getEnumOrdinals('sdc.byte_theme.heading');
+
+    // Numeric-only enums are skipped.
+    $this->assertArrayNotHasKey('level', $ordinals);
+    // String enums are present.
+    $this->assertArrayHasKey('text_color', $ordinals);
+  }
+
+  /**
+   * @covers ::getEnumOrdinals
+   */
+  public function testEnumOrdinalsEmptyForUnknownComponent(): void {
+    $loader = $this->buildLoader([
+      'heading' => [
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default'],
+        ],
+      ],
+    ]);
+
+    $this->assertSame([], $loader->getEnumOrdinals('sdc.byte_theme.nonexistent'));
+  }
+
+  /**
+   * @covers ::getOrthogonalityReport
+   */
+  public function testOrthogonalityReportOrthogonalComponent(): void {
+    $loader = $this->buildLoader([
+      'heading' => [
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'inverted', 'primary'],
+        ],
+        'align' => [
+          'type' => 'string',
+          'enum' => ['left', 'center', 'right'],
+        ],
+      ],
+    ]);
+
+    $report = $loader->getOrthogonalityReport();
+
+    $this->assertArrayHasKey('sdc.byte_theme.heading', $report);
+    $this->assertTrue($report['sdc.byte_theme.heading']['orthogonal']);
+    $this->assertEmpty($report['sdc.byte_theme.heading']['collisions']);
+  }
+
+  /**
+   * @covers ::getOrthogonalityReport
+   */
+  public function testOrthogonalityReportWithCollisions(): void {
+    $loader = $this->buildLoader([
+      'card-icon' => [
+        'background_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'primary', 'secondary'],
+        ],
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'primary', 'inverted'],
+        ],
+      ],
+    ]);
+
+    $report = $loader->getOrthogonalityReport();
+
+    $this->assertArrayHasKey('sdc.byte_theme.card-icon', $report);
+    $this->assertFalse($report['sdc.byte_theme.card-icon']['orthogonal']);
+    $this->assertNotEmpty($report['sdc.byte_theme.card-icon']['collisions']);
+
+    // Find the collision values.
+    $collisionValues = array_column(
+      $report['sdc.byte_theme.card-icon']['collisions'],
+      'value'
+    );
+    $this->assertContains('primary', $collisionValues);
+    $this->assertContains('default', $collisionValues);
+  }
+
+  /**
+   * @covers ::getOrthogonalityReport
+   */
+  public function testOrthogonalityReportMultipleComponents(): void {
+    $loader = $this->buildLoader([
+      'heading' => [
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'inverted'],
+        ],
+        'align' => [
+          'type' => 'string',
+          'enum' => ['left', 'center', 'right'],
+        ],
+      ],
+      'section' => [
+        'background_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'primary'],
+        ],
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'inverted'],
+        ],
+      ],
+    ]);
+
+    $report = $loader->getOrthogonalityReport();
+
+    // heading is orthogonal (no shared values between text_color and align).
+    $this->assertTrue($report['sdc.byte_theme.heading']['orthogonal']);
+
+    // section has 'default' collision between background_color and text_color.
+    $this->assertFalse($report['sdc.byte_theme.section']['orthogonal']);
+  }
+
+  /**
+   * Tests that getBooleanProps includes aliases from generateAliases.
+   *
+   * @covers ::getBooleanProps
+   */
+  public function testBooleanPropsIncludesAliases(): void {
+    $loader = $this->buildLoader([
+      'section' => [
+        'section_header' => [
+          'type' => 'boolean',
+        ],
+      ],
+    ]);
+
+    $boolProps = $loader->getBooleanProps('sdc.byte_theme.section');
+    $aliases = $boolProps['section_header']['aliases'];
+
+    // The prop name itself is always an alias.
+    $this->assertContains('section_header', $aliases);
+    // The semantic alias "show header" should be present.
+    $this->assertContains('show header', $aliases);
+  }
+
+  /**
+   * Tests reverse enum index with section component (3 enum props, collisions).
+   *
+   * @covers ::getReverseEnumIndex
+   */
+  public function testReverseEnumIndexSectionComponent(): void {
+    $loader = $this->buildLoader([
+      'section' => [
+        'background_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'primary', 'secondary', 'accent', 'muted'],
+        ],
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'inverted', 'primary'],
+        ],
+        'columns' => [
+          'type' => 'string',
+          'enum' => ['1', '2', '3', '4'],
+        ],
+      ],
+    ]);
+
+    $index = $loader->getReverseEnumIndex('sdc.byte_theme.section');
+
+    // 'default' collides between background_color and text_color.
+    $this->assertCount(2, $index['default']);
+    // 'primary' collides.
+    $this->assertCount(2, $index['primary']);
+    // 'inverted' is unique to text_color.
+    $this->assertSame(['text_color'], $index['inverted']);
+    // 'muted' is unique to background_color.
+    $this->assertSame(['background_color'], $index['muted']);
+    // columns values are numeric strings, so they are skipped by allNumeric.
+    $this->assertArrayNotHasKey('1', $index);
+  }
+
+  /**
+   * Tests that components with only boolean props return empty for enum methods.
+   *
+   * @covers ::getReverseEnumIndex
+   * @covers ::getEnumOrdinals
+   */
+  public function testBooleanOnlyComponentHasNoEnumData(): void {
+    $loader = $this->buildLoader([
+      'toggle' => [
+        'active' => [
+          'type' => 'boolean',
+        ],
+        'disabled' => [
+          'type' => 'boolean',
+        ],
+      ],
+    ]);
+
+    $this->assertSame([], $loader->getReverseEnumIndex('sdc.byte_theme.toggle'));
+    $this->assertSame([], $loader->getEnumOrdinals('sdc.byte_theme.toggle'));
+
+    $boolProps = $loader->getBooleanProps('sdc.byte_theme.toggle');
+    $this->assertCount(2, $boolProps);
+    $this->assertTrue($boolProps['disabled']['inverted']);
+    $this->assertFalse($boolProps['active']['inverted']);
+  }
+
+}
