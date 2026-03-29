@@ -107,10 +107,26 @@ final class DirectEditMatcher {
 
   /**
    * Keywords that indicate the user wants to ADD or CREATE — not a simple edit.
+   *
+   * Note: "make" is intentionally excluded. It's a common edit verb
+   * ("make it blue", "make this bigger") and single-word blocking would
+   * reject valid edits. Add-intent with "make" is caught by the phrase
+   * patterns in ADD_PHRASES instead.
    */
   private const ADD_KEYWORDS = [
-    'add', 'create', 'insert', 'generate', 'build', 'make',
+    'add', 'create', 'insert', 'generate', 'build',
     'new', 'another', 'below', 'above', 'after', 'before',
+  ];
+
+  /**
+   * Phrase patterns that indicate add/create intent even with edit verbs.
+   *
+   * These catch "make a new...", "make me a...", etc. without blocking
+   * "make it blue" or "make the heading bigger".
+   */
+  private const ADD_PHRASES = [
+    '/\bmake\s+(?:a|me|us)\s+(?:new\b|another\b)/i',
+    '/\bmake\s+(?:a|an|some)\b/i',
   ];
 
   /**
@@ -130,11 +146,16 @@ final class DirectEditMatcher {
       return NULL;
     }
 
-    // Reject if the message contains add/create keywords.
+    // Reject if the message contains add/create keywords or phrases.
     $messageLower = mb_strtolower($message);
     foreach (self::ADD_KEYWORDS as $keyword) {
       // Match as whole word to avoid false positives (e.g., "address" contains "add").
       if (preg_match('/\b' . preg_quote($keyword, '/') . '\b/', $messageLower)) {
+        return NULL;
+      }
+    }
+    foreach (self::ADD_PHRASES as $pattern) {
+      if (preg_match($pattern, $messageLower)) {
         return NULL;
       }
     }
