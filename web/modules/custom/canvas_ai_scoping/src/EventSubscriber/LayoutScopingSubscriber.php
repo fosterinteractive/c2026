@@ -159,6 +159,38 @@ final class LayoutScopingSubscriber implements EventSubscriberInterface {
   }
 
   /**
+   * Generates a lightweight region index for cross-region awareness.
+   *
+   * The index gives the agent a map of all regions, their top-level component
+   * names, and node path prefixes — enough to validate cross-region operations
+   * (e.g., moves) without including full component trees.
+   *
+   * @param array $layout
+   *   The full parsed layout array with 'regions' key.
+   *
+   * @return array<int, array{region: string, node_path_prefix: array, components: array<int, array{name: string, uuid: string}>}>
+   *   Ordered list of region summaries.
+   */
+  public function generateRegionIndex(array $layout): array {
+    $index = [];
+    foreach ($layout['regions'] ?? [] as $regionName => $region) {
+      $components = [];
+      foreach ($region['components'] ?? [] as $component) {
+        $components[] = [
+          'name' => $component['name'] ?? 'unknown',
+          'uuid' => $component['uuid'] ?? '',
+        ];
+      }
+      $index[] = [
+        'region' => $regionName,
+        'node_path_prefix' => $region['nodePathPrefix'] ?? [],
+        'components' => $components,
+      ];
+    }
+    return $index;
+  }
+
+  /**
    * Builds a scoped layout with section-level granularity.
    *
    * - Active section (top-level component containing the selected UUID): full
@@ -166,9 +198,13 @@ final class LayoutScopingSubscriber implements EventSubscriberInterface {
    * - Sibling sections in the same region: name + UUID only (so the agent knows
    *   what's on the page without the full component tree).
    * - Other regions: component count only.
+   * - Region index: lightweight map of all regions for cross-region awareness.
    */
   private function buildScopedLayout(array $layout, string $activeRegion, string $activeUuid): array {
-    $scoped = ['regions' => []];
+    $scoped = [
+      'region_index' => $this->generateRegionIndex($layout),
+      'regions' => [],
+    ];
 
     foreach ($layout['regions'] as $regionName => $region) {
       if ($regionName !== $activeRegion) {
