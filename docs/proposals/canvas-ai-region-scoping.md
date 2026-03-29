@@ -3,193 +3,143 @@
 **Date:** March 2026
 **For:** Foster Interactive (Canvas Maintainers)
 **Status:** Technical Proposal for Discussion
+**Prototype:** Working `canvas_ai_scoping` module with measured results
 
 ---
 
 ## Problem Statement
 
-Canvas AI integration currently sends the **entire page layout JSON and all component prop values** to the LLM on every request, even when the user is editing a single component. This causes unsustainable token consumption that scales directly with page complexity.
+Canvas AI sends the entire page layout JSON and all component prop values to the LLM on every request, even when the user is editing a single component.
 
 ### Current Behavior
 
 When a user selects a component to edit:
 
-1. Frontend `AiWizard.tsx` calls `transformLayout()`, which serializes the full page tree including all 30+ components
+1. Frontend `AiWizard.tsx` calls `transformLayout()`, which serializes the full page tree
 2. `textPropsMapString` includes every component's props across the entire page
 3. `CanvasBuilder.php` stores the complete layout in tempstore on every request
 4. Sub-agents re-read the full layout from tempstore on each loop iteration
-5. For a simple "change this heading color" edit on a 30-component page: **100-150K tokens consumed**
 
-### Why This Matters
+### Measured Cost
 
-Token consumption = API costs = real money. A modern marketing site with:
+On a FinDrop Travel demo page (15 components across 3 regions):
 
-- **20+ components per page** (hero, features, testimonials, footer sections, etc.)
-- **8-12KB of layout JSON** (full schema + all prop values)
-- **50+ editing operations** during a single content authoring session
+| Operation | Total tokens | Layout portion |
+|-----------|-------------|---------------|
+| Heading text edit | 111K | ~2.9K (layout JSON: 12,438 bytes) |
+| Full page build | 253K | ~2.9K |
 
-...generates **5-7.5M tokens per session** (~$75-150 per page authoring session at OpenAI pricing).
-
-The problem compounds as Canvas adoption grows and pages become more complex. Sites that make Canvas successful (feature-rich, modular) become the most expensive to edit with AI.
+Layout JSON is **~10% of total operation tokens**. System prompt, ai_context items, and chat history dominate the remaining ~90%. Region scoping addresses the layout portion; other optimizations (loop-aware context injection, deterministic edit bypass) address the larger cost centers.
 
 ---
 
 ## Proposed Solution: Progressive Region Scoping
 
-Implement native, opt-in **region-level scoping** in Canvas that:
+Implement native, opt-in **region-level scoping** in Canvas:
 
-1. When a user selects a component (`active_component_uuid` present), send only that component's region layout to the LLM
-2. Include a lightweight "region index" (region names + node path indices, ~50 bytes) so agents know what other regions exist without full layout data
+1. When `active_component_uuid` is present, send only the relevant region layout to the LLM
+2. Include a lightweight "region index" (region names + top-level component summaries, ~50-200 bytes) for cross-region awareness
 3. Keep full-layout mode for `template_builder_agent` and when no component is selected
-4. Add zero breaking changes to existing behavior
+4. Zero breaking changes to existing behavior
 
 ### What Gets Sent (Scoped vs. Current)
 
 **Current (Full Layout Mode):**
 ```json
 {
-  "layout": {
-    "nodes": [
-      {
-        "id": "uuid-1",
-        "type": "ComponentNode",
-        "props": { ... },
-        "children": [
-          { "id": "uuid-2", "type": "ComponentNode", "props": { ... }, ... },
-          { "id": "uuid-3", "type": "ComponentNode", "props": { ... }, ... }
-        ]
-      },
-      ... 28 more components ...
-    ]
-  },
-  "current_layout": "{ ... 8-12KB serialized layout ... }"
+  "regions": {
+    "hero": {
+      "nodePathPrefix": [0],
+      "components": [
+        { "name": "sdc.byte_theme.hero", "uuid": "...", "propValues": { ... }, "slots": [] }
+      ]
+    },
+    "content": {
+      "nodePathPrefix": [1],
+      "components": [
+        { "name": "sdc.byte_theme.heading", "uuid": "...", "propValues": { ... }, "slots": [] },
+        { "name": "sdc.byte_theme.card-grid", "uuid": "...", "propValues": { ... },
+          "slots": [{ "name": "cards", "components": [ ... 5 nested cards ... ] }]
+        },
+        "... 10 more top-level components ..."
+      ]
+    },
+    "footer": { "..." }
+  }
 }
 ```
 
-**Proposed (Component Scoped Mode):**
+**Proposed (Section Scoped Mode — when editing the heading):**
 ```json
 {
-  "layout": {
-    "nodes": [
-      {
-        "id": "uuid-42",
-        "type": "ComponentNode",
-        "props": { ... },
-        "children": []  // Only this component and direct children
-      }
-    ]
-  },
   "region_index": [
-    { "region_name": "hero", "node_path": "0" },
-    { "region_name": "features", "node_path": "1" },
-    { "region_name": "cta", "node_path": "2" },
-    ... other regions ...
+    { "region": "hero", "node_path_prefix": [0], "components": [{ "name": "sdc.byte_theme.hero", "uuid": "..." }] },
+    { "region": "content", "node_path_prefix": [1], "components": [{ "name": "sdc.byte_theme.heading", "uuid": "..." }, "..."] },
+    { "region": "footer", "node_path_prefix": [2], "components": [{ "name": "sdc.byte_theme.footer", "uuid": "..." }] }
   ],
-  "scope": "component",
-  "active_component_uuid": "uuid-42"
+  "regions": {
+    "hero": { "nodePathPrefix": [0], "components": [], "_note": "1 component(s) omitted (outside active region)" },
+    "content": {
+      "nodePathPrefix": [1],
+      "components": [
+        { "name": "sdc.byte_theme.heading", "uuid": "...", "propValues": { ... }, "slots": [] },
+        { "name": "sdc.byte_theme.card-grid", "uuid": "...", "_note": "sibling section (details omitted)" },
+        "... other siblings summarized ..."
+      ]
+    },
+    "footer": { "nodePathPrefix": [2], "components": [], "_note": "1 component(s) omitted (outside active region)" }
+  }
 }
 ```
 
 ---
 
-## Implementation Details
+## Measured Results
+
+Our `LayoutScopingSubscriber` prototype implements section-level scoping via `BuildSystemPromptEvent`:
+
+| Metric | Before | After | Reduction |
+|--------|--------|-------|-----------|
+| Layout JSON | 12,438 bytes | 2,611 bytes | 79% |
+| Total operation tokens (heading edit) | ~125K | ~111K | ~11% |
+
+**Why 79% layout reduction yields only ~11% total token reduction:** Layout JSON is a fraction of total cost. System prompt instructions (~14K), ai_context items (~86K on loop 0), and tool definitions (~12K) dominate. Region scoping is one layer of a multi-layer optimization strategy.
+
+Combined with other optimizations measured on the same page:
+
+| Optimization | Standalone effect | Cumulative |
+|--------------|------------------|------------|
+| Layout scoping (this proposal) | -11% (layout) | 101K → ~90K |
+| Loop-aware context injection | -52% (ai_context on loops 1+) | → 48K |
+| Context item filtering | -35% (non-edit ai_context) | → 31K |
+| Deterministic edit bypass | -100% (qualifying edits) | → 0K |
+
+---
+
+## Implementation Approach
 
 ### Files Modified
 
-#### 1. **Frontend: `ui/src/components/aiExtension/AiWizard.tsx`** (~60 lines changed)
+#### 1. Frontend: `ui/src/components/aiExtension/AiWizard.tsx`
 
-**Change 1: Add scope parameter to `transformLayout()`** (~30 lines)
-```typescript
-const transformLayout = (scope?: 'component' | 'page') => {
-  const layout = scope && activeComponentUuid
-    ? { nodes: [findNodeByUuid(layout.nodes, activeComponentUuid)] }
-    : layout;
-  return JSON.stringify(layout);
-};
-```
+- Add `scope` parameter to `transformLayout()` — when `activeComponentUuid` is present, serialize only the containing region
+- Filter `textPropsMapString` to scoped region
+- Generate region index from full layout before scoping
 
-**Change 2: Filter `textPropsMapString` to scoped region** (~20 lines)
-```typescript
-const scopedTextPropsMap = scope && activeComponentUuid
-  ? Object.fromEntries(
-      Object.entries(textPropsMap).filter(([uuid]) =>
-        isUuidInNode(uuid, findNodeByUuid(layout.nodes, activeComponentUuid))
-      )
-    )
-  : textPropsMap;
-```
+#### 2. Backend: `modules/canvas_ai/src/Controller/CanvasBuilder.php`
 
-**Change 3: Add scope detection and request payload** (~5 lines)
-```typescript
-const scope = activeComponentUuid ? 'component' : 'page';
-const body = {
-  layout: scopedTextPropsMap,
-  current_layout: transformLayout(scope),
-  scope,
-  active_component_uuid: activeComponentUuid,
-};
-```
+- Accept and validate `scope` parameter (defaults to `'page'` for backward compatibility)
+- Store scoped layout in tempstore conditionally
 
-**Change 4: Region lookup from selected UUID** (~5 lines)
-```typescript
-const regionIndex = generateRegionIndex(layout.nodes);
-```
+#### 3. Tempstore: `modules/canvas_ai/src/CanvasAiTempStore.php`
 
-#### 2. **Backend: `modules/canvas_ai/src/Controller/CanvasBuilder.php`** (~40 lines changed)
+- Add `REGION_INDEX_KEY` constant and `setRegionIndex()`/`getRegionIndex()` methods
 
-**Change 1: Accept and validate `scope` param** (~15 lines)
-```php
-$scope = $request->request->get('scope', 'page');
-if (!in_array($scope, ['component', 'page'])) {
-  $scope = 'page';
-}
-$activeComponentUuid = $request->request->get('active_component_uuid');
-```
+#### 4. Validation Tools
 
-**Change 2: Store scoped layout in tempstore** (~25 lines)
-```php
-if ($scope === 'component' && $activeComponentUuid) {
-  $this->canvasAiTempStore->setCurrentLayout($layout, $activeComponentUuid);
-  $this->canvasAiTempStore->setRegionIndex($regionIndex);
-} else {
-  $this->canvasAiTempStore->setCurrentLayout($layout);
-}
-```
-
-#### 3. **Tempstore: `modules/canvas_ai/src/CanvasAiTempStore.php`** (~20 lines changed)
-
-**Addition: Region index constant and methods** (~20 lines)
-```php
-const REGION_INDEX_KEY = 'canvas_ai.region_index';
-
-public function setRegionIndex(array $index): void {
-  $this->tempStore->set(self::REGION_INDEX_KEY, $index);
-}
-
-public function getRegionIndex(): array {
-  return $this->tempStore->get(self::REGION_INDEX_KEY) ?? [];
-}
-```
-
-#### 4. **Validation Tools** (~30 lines changed across 3 files)
-
-**`SetAIGeneratedTemplateData.php`:** Read region index instead of full layout
-```php
-$regionIndex = $this->canvasAiTempStore->getRegionIndex();
-// Validate within region bounds, not full page bounds
-```
-
-**`MoveComponentInPage.php`:** Use region index for cross-region boundary detection
-```php
-$regions = $this->canvasAiTempStore->getRegionIndex();
-if ($targetRegion && !isset($regions[$targetRegion])) {
-  throw new \Exception("Target region not found in index");
-}
-```
-
-**`GetCurrentLayout.php`:** No changes (already reads from tempstore)
-
-**`UpdateComponentData.php`:** No changes (already reads from tempstore)
+- `SetAIGeneratedTemplateData.php`: Read region index for boundary validation
+- `MoveComponentInPage.php`: Use region index for cross-region boundary detection
+- `GetCurrentLayout.php` and `UpdateComponentData.php`: No changes needed
 
 ### No Changes Required
 
@@ -203,149 +153,36 @@ if ($targetRegion && !isset($regions[$targetRegion])) {
 
 | Scenario | Behavior |
 |----------|----------|
-| Cross-region move ("move this to footer") | Region index provides all region names + paths; agent can construct full move |
-| Template builder requests | Always receives full layout (no `scope` filtering applied) |
+| Cross-region move ("move this to footer") | Region index provides all region names + paths; agent can construct move |
+| Template builder requests | Always receives full layout (no scoping applied) |
 | No component selected | Full layout sent (backward compatible) |
-| Legacy Canvas code | Works unchanged (scope param is optional, defaults to full layout) |
-| Nested components | Scoped layout includes full subtree of selected component |
+| Nested components | Scoped layout includes full subtree of containing section |
+| Component not found in any region | Full layout (fail-open) |
 
 ---
 
-## Estimated Impact
+## Our Workaround
 
-### Token Reduction
+We built `canvas_ai_scoping` — a custom Drupal module that subscribes to `BuildSystemPromptEvent` and scopes layout data before it reaches the LLM. This works without modifying Canvas but has limitations:
 
-**Scenario:** Editing a single component's text on a 30-component page (e.g., changing a heading)
-
-- **Current consumption:** 100-150K tokens
-  - Full layout: 8-12KB = ~2,000-3,000 tokens
-  - Component props (all 30): 4-6KB = ~1,000-1,500 tokens
-  - System prompt & agent context: ~4K tokens
-  - History/conversation loop iterations: multiplied by 3-5 loops
-
-- **Proposed (scoped) consumption:** 15-30K tokens (~90% reduction)
-  - Scoped layout (1 component): 200-400 bytes = ~50-100 tokens
-  - Region index: ~50 bytes = ~10 tokens
-  - System prompt & agent context: ~4K tokens
-  - Same loop iterations, but operating on 1/30th the layout data
-
-### Real Cost Impact
-
-- **Per-page editing session (50 operations):** $75-150 → $8-16
-- **Monthly budget (10 authors, 5 pages each):** $3,750 → $400
-- **Annual savings:** $40,000+
-
----
-
-## Effort Estimate
-
-| Task | Files | LOC | Complexity | Duration |
-|------|-------|-----|-----------|----------|
-| Frontend scoping logic | AiWizard.tsx | ~60 | Low | 1-2 days |
-| Backend scope handling | CanvasBuilder.php | ~40 | Low | 1 day |
-| Tempstore region index | CanvasAiTempStore.php | ~20 | Low | 0.5 day |
-| Validation tool updates | 3 files | ~30 | Low | 1 day |
-| Testing (unit + integration) | test files | ~200 | Medium | 2-3 days |
-| Documentation & examples | docs | ~150 | Low | 1 day |
-
-**Total: 3-5 days** (with testing)
-
-### Testing Matrix
-
-- [ ] Scoped requests (component selected) serialize layout correctly
-- [ ] Unscoped requests (no selection) send full layout (backward compatible)
-- [ ] Region index is accurate and complete
-- [ ] Cross-region moves work correctly with region index only
-- [ ] Template builder always receives full layout
-- [ ] Nested component selection includes full subtree
-- [ ] Multiple loop iterations maintain scope consistency
-- [ ] Legacy Canvas installations work unchanged
-
----
-
-## Our Workaround (Context)
-
-We've built **`canvas_ai_scoping`** — a custom Drupal module that subscribes to `BuildSystemPromptEvent` and scopes layout data before it reaches the LLM. This works without modifying Canvas but has limitations:
-
-- Only scopes data already in the system prompt (can't scope context missing from prompt)
-- Uses fragile string replacement on serialized layout JSON
-- Can't influence frontend (region index, scope detection) without Canvas changes
+- Only scopes data already in the system prompt (can't scope data missing from it)
+- Uses string replacement on serialized layout JSON (fragile)
+- Can't influence frontend layout serialization without Canvas patches
 - Requires custom code per deployment
 
-Native Canvas support would be cleaner, more robust, and benefit all Canvas users.
+Native Canvas support would be more robust and benefit all Canvas users.
 
 ---
 
-## Why This Should Be in Canvas Core
+## For Discussion
 
-1. **Universal benefit:** Every Canvas site with complex pages faces this token cost
-2. **Sustainability:** Scoping is required for Canvas to scale to enterprise page complexity
-3. **Backward compatible:** Existing behavior unchanged; scoping is opt-in and progressive
-4. **Low risk:** Isolated to layout serialization; doesn't touch core component logic
-5. **Community contribution:** Zivtech can contribute reference implementation + tests
-
----
-
-## Next Steps
-
-### For Discussion
-
-1. **Architecture review:** Does progressive region scoping align with Canvas's direction?
-2. **API design:** Should `scope` be a request param, or inferred from `active_component_uuid`?
-3. **Integration:** Should region index be generated by Canvas or by consuming agents?
-4. **Backward compatibility:** Do we need a feature flag, or is opt-in param sufficient?
+1. **Scope inference:** Should scoping be automatic when `active_component_uuid` is present, or opted in via a separate `scope` parameter?
+2. **Region index ownership:** Should the region index be generated by the frontend (where the layout tree lives) or by the backend (closer to the agent)?
+3. **Envelope mode:** Our prototype also implements a component-level envelope (only the selected component + neighbors + section metadata). Should Canvas support this as a more aggressive scoping level, or is section-level sufficient for the agent?
+4. **Backward compatibility:** Is an opt-in parameter sufficient, or does this need a feature flag in Canvas settings?
 
 ### Proposed Path Forward
 
-1. **Drupal.org issue:** File a feature request on canvas.drupal.org with this proposal
-2. **RFC discussion:** Gather feedback from Canvas maintainers and community
-3. **Reference implementation:** We can contribute code as a patch for review
-4. **Testing & documentation:** Community review cycle before merge
-
----
-
-## Appendix: Code Examples
-
-### Frontend Helper: Find Node by UUID
-
-```typescript
-const findNodeByUuid = (nodes: ComponentNode[], uuid: string): ComponentNode | null => {
-  for (const node of nodes) {
-    if (node.id === uuid) return node;
-    if (node.children) {
-      const found = findNodeByUuid(node.children, uuid);
-      if (found) return found;
-    }
-  }
-  return null;
-};
-```
-
-### Frontend Helper: Generate Region Index
-
-```typescript
-const generateRegionIndex = (nodes: ComponentNode[]): RegionIndexEntry[] => {
-  return nodes.map((node, index) => ({
-    region_name: node.props?.region || `region_${index}`,
-    node_path: String(index),
-  }));
-};
-```
-
-### Backend: Extract Scoped Layout in CanvasBuilder
-
-```php
-private function extractScopedLayout(array $layout, string $uuid): array {
-  $helper = new LayoutHelper();
-  return $helper->findNodeByUuid($layout['nodes'], $uuid);
-}
-```
-
----
-
-## References
-
-- Canvas Module: drupal.org/project/canvas
-- Canvas AI Module: drupal.org/project/canvas_ai
-- Issue tracker: drupal.org/project/issues/canvas
-- Related: Token optimization patterns for LLM-integrated page builders
+1. Discuss architecture with Canvas maintainers
+2. Contribute the `LayoutScopingSubscriber` as a reference implementation with test coverage
+3. Iterate on frontend integration based on maintainer feedback
