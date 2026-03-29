@@ -284,6 +284,8 @@ default_information_tools: |-
     description: 'The current layout of the page is:'
     tool: 'canvas_ai:get_current_layout'
     parameters: {  }
+    available_on_loop:
+      - 1
   available_components:
     label: 'Available components'
     description: 'These are the Components available to use'

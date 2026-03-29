@@ -47,13 +47,30 @@ final class AiContextPromptParser {
    *   - content: the text between the two separators
    */
   public static function findBlock(string $prompt): ?array {
-    $startPos = strpos($prompt, self::SEPARATOR);
-    if ($startPos === FALSE) {
+    // The ai_context separator is exactly 47 dashes on its own line.
+    // Markdown table rows inside context items also contain runs of dashes
+    // but are embedded in table syntax (e.g., "| --- | --- |"). We must
+    // match the separator as a standalone line: preceded by a newline and
+    // followed by a newline, with no surrounding pipe characters.
+    $pattern = '/\n' . preg_quote(self::SEPARATOR, '/') . '\n/';
+    $matches = [];
+    preg_match_all($pattern, $prompt, $matches, PREG_OFFSET_CAPTURE);
+
+    if (empty($matches[0]) || count($matches[0]) < 2) {
       return NULL;
     }
 
-    $endPos = strpos($prompt, self::SEPARATOR, $startPos + strlen(self::SEPARATOR));
-    if ($endPos === FALSE) {
+    // The ai_context block uses the FIRST standalone separator as the opener
+    // and the LAST standalone separator as the closer. This handles content
+    // items that contain standalone dash lines (rare but possible).
+    $firstMatch = $matches[0][0];
+    $lastMatch = $matches[0][count($matches[0]) - 1];
+
+    // +1 to skip the leading \n in our match.
+    $startPos = $firstMatch[1] + 1;
+    $endPos = $lastMatch[1] + 1;
+
+    if ($endPos <= $startPos) {
       return NULL;
     }
 

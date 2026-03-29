@@ -88,6 +88,8 @@ final class TokenBreakdownSubscriber implements EventSubscriberInterface {
     $systemPrompt = $event->getSystemPrompt();
     $totalBytes = strlen($systemPrompt);
 
+
+
     $breakdown = $this->analyzePrompt($systemPrompt);
 
     $this->logger->info(
