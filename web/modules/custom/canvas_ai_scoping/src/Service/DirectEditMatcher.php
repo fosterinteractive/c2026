@@ -137,7 +137,7 @@ final class DirectEditMatcher {
       }
     }
 
-    // Try to match "change/set/update X to Y" patterns.
+    // Try to match "change/set/update X to Y" patterns (Tier 1).
     $patterns = [
       // "change the heading to New Title"
       '/(?:change|set|update|modify|make)\s+(?:the\s+)?(.+?)\s+to\s+["\']?(.+?)["\']?\s*$/i',
@@ -159,7 +159,151 @@ final class DirectEditMatcher {
       }
     }
 
+    // Phase 1: Bare value type inference.
+    // If the message is a bare value or "make it/this {value}", attempt to
+    // resolve by scanning all enum props on the component. Only resolves
+    // when exactly one prop accepts the value (unambiguous).
+    $result = $this->matchBareValue($messageLower, $componentName);
+    if ($result !== NULL) {
+      return $result;
+    }
+
+    // Phase 2: Boolean toggle patterns.
+    // "show the header", "hide the footer", "enable overlap", "disable it"
+    $result = $this->matchBooleanToggle($messageLower, $componentName);
+    if ($result !== NULL) {
+      return $result;
+    }
+
     return NULL;
+  }
+
+  /**
+   * Matches boolean toggle patterns (show/hide/enable/disable).
+   *
+   * @param string $messageLower
+   *   Lowercased, trimmed user message.
+   * @param string $componentName
+   *   The SDC component name.
+   *
+   * @return array{prop: string, value: bool}|null
+   *   Resolved prop and boolean value, or NULL if no match.
+   */
+  private function matchBooleanToggle(string $messageLower, string $componentName): ?array {
+    $booleanProps = $this->schemaLoader->getBooleanProps($componentName);
+    if (empty($booleanProps)) {
+      return NULL;
+    }
+
+    // Match toggle verb patterns.
+    // Group 1: verb (determines true/false)
+    // Group 2: optional "the" article
+    // Group 3: the prop reference
+    $pattern = '/^(show|hide|enable|disable|turn\s+on|turn\s+off|activate|deactivate)\s+(?:the\s+)?(.+?)\s*$/i';
+    if (!preg_match($pattern, $messageLower, $matches)) {
+      return NULL;
+    }
+
+    $verb = mb_strtolower(trim($matches[1]));
+    $propRef = mb_strtolower(trim($matches[2]));
+
+    // Determine intent from verb.
+    $enableVerbs = ['show', 'enable', 'turn on', 'activate'];
+    $wantsEnabled = in_array($verb, $enableVerbs, TRUE);
+
+    // Find which boolean prop matches the reference.
+    foreach ($booleanProps as $propName => $meta) {
+      $aliases = $meta['aliases'] ?? [];
+      if (in_array($propRef, $aliases, TRUE) || $propRef === $propName) {
+        // Apply polarity inversion (e.g., "enable" on "disabled" = false).
+        $inverted = $meta['inverted'] ?? FALSE;
+        $value = $inverted ? !$wantsEnabled : $wantsEnabled;
+        return ['prop' => $propName, 'value' => $value];
+      }
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Attempts to resolve a bare value or "make it/this {value}" pattern.
+   *
+   * Strips implicit prefixes ("make it", "make this", "make the"),
+   * then checks the component's reverse enum index for unambiguous matches.
+   *
+   * @param string $messageLower
+   *   Lowercased, trimmed user message.
+   * @param string $componentName
+   *   The SDC component name.
+   *
+   * @return array{prop: string, value: mixed}|null
+   *   Resolved prop and value, or NULL if ambiguous or no match.
+   */
+  private function matchBareValue(string $messageLower, string $componentName): ?array {
+    // Strip "make it/this/the" prefix to extract the bare value.
+    // "make it blue" → "blue", "make this centered" → "centered"
+    // Must not match "make a"/"make me" (those are ADD_PHRASES, already rejected).
+    $bareValue = preg_replace(
+      '/^(?:make\s+(?:it|this|the)\s+)/i',
+      '',
+      $messageLower
+    );
+    $bareValue = trim($bareValue);
+
+    if ($bareValue === '' || $bareValue === $messageLower) {
+      // If nothing was stripped and the message has multiple words with spaces,
+      // it's likely a sentence — don't treat it as a bare value.
+      // Single words or hyphenated values (like "extra-large") are fine.
+      if (str_contains($messageLower, ' ')) {
+        return NULL;
+      }
+      $bareValue = $messageLower;
+    }
+
+    return $this->resolveByTypeInference($bareValue, $componentName);
+  }
+
+  /**
+   * Resolves a value by scanning the component's reverse enum index.
+   *
+   * If the value maps to exactly one prop, it's unambiguous — resolve.
+   * If it maps to zero or multiple props, reject.
+   *
+   * @param string $value
+   *   Normalized (lowercase, trimmed) value string.
+   * @param string $componentName
+   *   The SDC component name.
+   *
+   * @return array{prop: string, value: mixed}|null
+   *   Resolved prop and value, or NULL if ambiguous or no match.
+   */
+  private function resolveByTypeInference(string $value, string $componentName): ?array {
+    $reverseIndex = $this->schemaLoader->getReverseEnumIndex($componentName);
+    if (empty($reverseIndex)) {
+      return NULL;
+    }
+
+    $matchingProps = $reverseIndex[$value] ?? [];
+
+    if (count($matchingProps) !== 1) {
+      // Zero matches (unknown value) or multiple matches (ambiguous) — reject.
+      return NULL;
+    }
+
+    $propName = $matchingProps[0];
+
+    // Resolve to the canonical enum value via the existing enum map.
+    $enumValues = $this->schemaLoader->getEnumValues($propName, $componentName);
+    if ($enumValues === NULL) {
+      return NULL;
+    }
+
+    $canonicalValue = $enumValues[$value] ?? NULL;
+    if ($canonicalValue === NULL) {
+      return NULL;
+    }
+
+    return ['prop' => $propName, 'value' => $canonicalValue];
   }
 
   /**
