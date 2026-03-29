@@ -111,6 +111,17 @@ final class DirectEditController extends ControllerBase {
       );
     }
 
+    // Store component prop values map for validateComponentExistsInPage().
+    // This mirrors CanvasBuilder::render() which stores prompt['layout']
+    // (the flat {uuid: props} map) in COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY.
+    $componentProps = $body['layout'] ?? NULL;
+    if ($componentProps !== NULL) {
+      $this->canvasAiTempStore->setData(
+        CanvasAiTempStore::COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY,
+        Json::encode($componentProps)
+      );
+    }
+
     // Attempt pattern match.
     $match = $this->matcher->match($message, $componentName);
     if ($match === NULL) {
