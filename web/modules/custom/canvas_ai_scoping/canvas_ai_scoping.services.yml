@@ -4,10 +4,14 @@ services:
     parent: logger.channel_base
     arguments: ['canvas_ai_scoping']
 
+  canvas_ai_scoping.context_envelope_builder:
+    class: Drupal\canvas_ai_scoping\Service\ContextEnvelopeBuilder
+
   canvas_ai_scoping.layout_scoping_subscriber:
     class: Drupal\canvas_ai_scoping\EventSubscriber\LayoutScopingSubscriber
     arguments:
       - '@canvas_ai.tempstore'
+      - '@canvas_ai_scoping.context_envelope_builder'
       - '@logger.channel.canvas_ai_scoping'
     tags:
       - { name: event_subscriber }
