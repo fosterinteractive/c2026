@@ -1,0 +1,341 @@
+diff --git a/ui/src/components/aiExtension/AiWizard.tsx b/ui/src/components/aiExtension/AiWizard.tsx
+index 467a1e9..0c5d646 100644
+--- a/ui/src/components/aiExtension/AiWizard.tsx
++++ b/ui/src/components/aiExtension/AiWizard.tsx
+@@ -35,6 +35,12 @@ import {
+ } from '@/services/componentAndLayout';
+ import { getBaseUrl, getDrupalSettings } from '@/utils/drupal-globals';
+ 
++import {
++  buildDirectEditPayload,
++  buildDirectEditResponseText,
++  isDirectEditResponse,
++} from './directEdit';
++
+ import fixtureProps from '../../../../modules/canvas_ai/src/PropsSchema.json';
+ 
+ import type {
+@@ -725,6 +731,58 @@ const AiWizard = () => {
+     ],
+   );
+ 
++  const attemptDirectEdit = useCallback(
++    async (body: Record<string, any>) => {
++      if (!csrfToken) {
++        return null;
++      }
++
++      const directEditPayload = buildDirectEditPayload(
++        body,
++        theLayoutModel.layout || [],
++        selectedComponent,
++      );
++
++      if (!directEditPayload) {
++        return null;
++      }
++
++      try {
++        const response = await fetch('/admin/api/canvas/direct-edit', {
++          method: 'POST',
++          headers: {
++            'Content-Type': 'application/json',
++            'X-CSRF-Token': csrfToken,
++          },
++          body: JSON.stringify(directEditPayload),
++        });
++
++        if (!response.ok) {
++          if (response.status !== 422) {
++            console.warn(
++              `Direct edit attempt fell back to AI. Status: ${response.status}`,
++            );
++          }
++          return null;
++        }
++
++        const data = await response.json();
++        if (!isDirectEditResponse(data)) {
++          return null;
++        }
++
++        return {
++          ...data,
++          message: buildDirectEditResponseText(data),
++        };
++      } catch (error) {
++        console.warn('Direct edit attempt failed, falling back to AI:', error);
++        return null;
++      }
++    },
++    [csrfToken, selectedComponent, theLayoutModel],
++  );
++
+   useEffect(() => {
+     const chatEl = chatElementRef.current;
+     if (!chatEl) return;
+@@ -885,7 +943,7 @@ const AiWizard = () => {
+                     JSON.stringify(fixtureProps),
+                   );
+                 } else {
+-                  requestBody = JSON.stringify({
++                  const requestPayload = {
+                     ...body,
+                     entity_type: currentValuesRef.current.params.entityType,
+                     entity_id: currentValuesRef.current.params.entityId,
+@@ -904,7 +962,21 @@ const AiWizard = () => {
+                       currentValuesRef.current.pageData[
+                         'description[0][value]'
+                       ],
+-                  });
++                  };
++
++                  const directEditResponse =
++                    await attemptDirectEdit(requestPayload);
++                  if (directEditResponse) {
++                    const processedMessage =
++                      await receiveMessage(directEditResponse);
++                    await signals.onResponse(processedMessage);
++                    setTimeout(() => {
++                      chatElementRef.current?.disableSubmitButton();
++                    }, 0);
++                    return;
++                  }
++
++                  requestBody = JSON.stringify(requestPayload);
+                   headers['Content-Type'] = 'application/json';
+                 }
+                 // Generate a unique request ID
+diff --git a/ui/src/components/aiExtension/directEdit.test.ts b/ui/src/components/aiExtension/directEdit.test.ts
+new file mode 100644
+index 0000000..1f2e793
+--- /dev/null
++++ b/ui/src/components/aiExtension/directEdit.test.ts
+@@ -0,0 +1,109 @@
++import { describe, expect, it } from 'vitest';
++
++import {
++  buildDirectEditPayload,
++  buildDirectEditResponseText,
++  isDirectEditResponse,
++} from '@/components/aiExtension/directEdit';
++import { NodeType } from '@/features/layout/layoutModelSlice';
++
++import type { RegionNode } from '@/features/layout/layoutModelSlice';
++
++const layout: RegionNode[] = [
++  {
++    name: 'Content',
++    id: 'content',
++    nodeType: NodeType.Region,
++    components: [
++      {
++        nodeType: NodeType.Component,
++        uuid: 'heading-uuid',
++        type: 'sdc.byte_theme.heading@1',
++        slots: [],
++      },
++      {
++        nodeType: NodeType.Component,
++        uuid: 'code-uuid',
++        type: 'js.hero_banner@1',
++        slots: [],
++      },
++    ],
++  },
++];
++
++describe('direct edit helpers', () => {
++  it('builds a payload for selected SDC components', () => {
++    expect(
++      buildDirectEditPayload(
++        {
++          messages: [{ role: 'user', text: 'Change the heading to Welcome' }],
++          layout: '{\"heading-uuid\":{\"heading_text\":\"Old\"}}',
++        },
++        layout,
++        'heading-uuid',
++      ),
++    ).toEqual({
++      message: 'Change the heading to Welcome',
++      component_uuid: 'heading-uuid',
++      component_name: 'sdc.byte_theme.heading',
++      layout: '{\"heading-uuid\":{\"heading_text\":\"Old\"}}',
++    });
++  });
++
++  it('skips direct edit when the selected component is not an SDC', () => {
++    expect(
++      buildDirectEditPayload(
++        {
++          messages: [{ role: 'user', text: 'Change the heading to Welcome' }],
++        },
++        layout,
++        'code-uuid',
++      ),
++    ).toBeNull();
++  });
++
++  it('skips direct edit when there is no selected component', () => {
++    expect(
++      buildDirectEditPayload(
++        {
++          messages: [{ role: 'user', text: 'Change the heading to Welcome' }],
++        },
++        layout,
++      ),
++    ).toBeNull();
++  });
++
++  it('skips direct edit when the latest message is not from the user', () => {
++    expect(
++      buildDirectEditPayload(
++        {
++          messages: [{ role: 'ai', text: 'Change the heading to Welcome' }],
++        },
++        layout,
++        'heading-uuid',
++      ),
++    ).toBeNull();
++  });
++
++  it('formats a readable fallback message from the matched prop', () => {
++    expect(
++      buildDirectEditResponseText({
++        matched_prop: 'heading_text',
++      }),
++    ).toBe('Updated heading text.');
++  });
++
++  it('only treats shaped deterministic responses as direct edit success', () => {
++    expect(
++      isDirectEditResponse({
++        status: true,
++        direct_edit: true,
++        operations: [],
++      }),
++    ).toBe(true);
++    expect(
++      isDirectEditResponse({
++        status: true,
++        operations: [],
++      }),
++    ).toBe(false);
++  });
++});
+diff --git a/ui/src/components/aiExtension/directEdit.ts b/ui/src/components/aiExtension/directEdit.ts
+new file mode 100644
+index 0000000..6abcbc7
+--- /dev/null
++++ b/ui/src/components/aiExtension/directEdit.ts
+@@ -0,0 +1,105 @@
++import { findComponentByUuid } from '@/features/layout/layoutUtils';
++
++import type { RegionNode } from '@/features/layout/layoutModelSlice';
++
++interface ChatMessageBody {
++  role?: string;
++  text?: string;
++}
++
++interface DirectEditResponse {
++  status?: boolean;
++  direct_edit?: boolean;
++  matched_prop?: string;
++  message?: string;
++  operations?: unknown[];
++}
++
++export interface DirectEditPayload {
++  message: string;
++  component_uuid: string;
++  component_name: string;
++  layout?: string;
++}
++
++const getLatestMessageText = (messages: unknown): string | null => {
++  if (!Array.isArray(messages) || messages.length === 0) {
++    return null;
++  }
++
++  const latestMessage = messages[messages.length - 1] as ChatMessageBody;
++  if (typeof latestMessage?.text !== 'string') {
++    return null;
++  }
++  if (
++    typeof latestMessage.role === 'string' &&
++    latestMessage.role !== 'user'
++  ) {
++    return null;
++  }
++
++  const text = latestMessage.text.trim();
++  return text === '' ? null : text;
++};
++
++export const buildDirectEditPayload = (
++  body: Record<string, any>,
++  layout: RegionNode[],
++  selectedComponentUuid?: string,
++): DirectEditPayload | null => {
++  if (!selectedComponentUuid) {
++    return null;
++  }
++
++  const component = findComponentByUuid(layout, selectedComponentUuid);
++  if (!component) {
++    return null;
++  }
++
++  const componentName = component.type?.split('@')[0] || '';
++  if (!componentName.startsWith('sdc.')) {
++    return null;
++  }
++
++  const message = getLatestMessageText(body.messages);
++  if (!message) {
++    return null;
++  }
++
++  return {
++    message,
++    component_uuid: selectedComponentUuid,
++    component_name: componentName,
++    layout: typeof body.layout === 'string' ? body.layout : undefined,
++  };
++};
++
++export const isDirectEditResponse = (
++  response: unknown,
++): response is DirectEditResponse => {
++  if (typeof response !== 'object' || response === null) {
++    return false;
++  }
++
++  const candidate = response as DirectEditResponse;
++  return (
++    candidate.status === true &&
++    candidate.direct_edit === true &&
++    Array.isArray(candidate.operations)
++  );
++};
++
++export const buildDirectEditResponseText = (
++  response: DirectEditResponse,
++): string => {
++  if (typeof response.message === 'string' && response.message.trim() !== '') {
++    return response.message;
++  }
++
++  if (
++    typeof response.matched_prop === 'string' &&
++    response.matched_prop !== ''
++  ) {
++    return `Updated ${response.matched_prop.replace(/_/g, ' ')}.`;
++  }
++
++  return 'Updated the selected component.';
++};
++
++  return 'Updated the selected component.';
++};

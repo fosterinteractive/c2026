@@ -21,6 +21,23 @@ namespace Drupal\canvas_ai_scoping\Service;
 final class DirectEditMatcher {
 
   /**
+   * Markers used to conservatively split compound deterministic edits.
+   */
+  private const COMPOUND_DELIMITER = "\n__DIRECT_EDIT_SPLIT__\n";
+
+  /**
+   * Compound split patterns.
+   *
+   * Only split when the next fragment begins with an edit verb to avoid
+   * splitting ordinary text values like "apples and oranges".
+   */
+  private const COMPOUND_SPLIT_PATTERNS = [
+    '/,\s*(?:and\s+)?(?=(?:change|set|update|modify|make)\b)/i',
+    '/;\s*(?=(?:change|set|update|modify|make)\b)/i',
+    '/\s+(?:and|also|plus|then)\s+(?=(?:change|set|update|modify|make)\b)/i',
+  ];
+
+  /**
    * Keywords that indicate the user wants to ADD or CREATE — not a simple edit.
    *
    * Note: "make" is intentionally excluded. It's a common edit verb
@@ -65,8 +82,9 @@ final class DirectEditMatcher {
    * @param string $componentName
    *   The SDC component name (e.g., 'sdc.byte_theme.heading').
    *
-   * @return array{prop: string, value: mixed}|null
-   *   The matched prop name and value, or NULL if no deterministic match.
+   * @return array{prop: string, value: mixed}|array{changes: array<int, array{prop: string, value: mixed}>}|null
+   *   A single matched prop change, a list of matched changes for a compound
+   *   deterministic edit, or NULL if no deterministic match.
    */
   public function match(string $message, string $componentName): ?array {
     $message = trim($message);
@@ -79,6 +97,32 @@ final class DirectEditMatcher {
       return NULL;
     }
 
+    $fragments = $this->splitCompoundMessage($message);
+    if (count($fragments) > 1) {
+      $changes = [];
+      foreach ($fragments as $fragment) {
+        $result = $this->matchSingle($fragment, $componentName);
+        if ($result === NULL) {
+          return NULL;
+        }
+        $changes[] = $result;
+      }
+
+      $props = array_column($changes, 'prop');
+      if (count($props) !== count(array_unique($props))) {
+        return NULL;
+      }
+
+      return ['changes' => $changes];
+    }
+
+    return $this->matchSingle($message, $componentName);
+  }
+
+  /**
+   * Attempts to match a single deterministic prop edit.
+   */
+  private function matchSingle(string $message, string $componentName): ?array {
     // Reject if the message contains add/create keywords or phrases.
     $messageLower = mb_strtolower($message);
     foreach (self::ADD_KEYWORDS as $keyword) {
@@ -116,6 +160,34 @@ final class DirectEditMatcher {
     }
 
     return NULL;
+  }
+
+  /**
+   * Splits a compound deterministic edit into fragments.
+   *
+   * @return string[]
+   *   One or more trimmed fragments. A single-fragment result means "do not
+   *   treat this as a compound edit".
+   */
+  private function splitCompoundMessage(string $message): array {
+    $normalized = preg_replace(
+      self::COMPOUND_SPLIT_PATTERNS,
+      self::COMPOUND_DELIMITER,
+      $message
+    );
+
+    if (!is_string($normalized) || $normalized === $message) {
+      return [$message];
+    }
+
+    $fragments = array_values(
+      array_filter(
+        array_map('trim', explode(self::COMPOUND_DELIMITER, $normalized)),
+        static fn(string $fragment): bool => $fragment !== ''
+      )
+    );
+
+    return count($fragments) > 1 ? $fragments : [$message];
   }
 
   /**

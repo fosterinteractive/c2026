@@ -1,5 +1,5 @@
 {
-    "_hash": "b41a96e11b088bd51c378af4af888c61bc7c5bff28e5c421ac2b2ede72fd64d4",
+    "_hash": "5161c685869749054db167c1f346460a3696ca3dfe202ccaa0313348b6b74176",
     "patches": {
         "drupal/core": [
             {
@@ -29,6 +29,16 @@
                 "description": "Update AiPanel and AiWizard components",
                 "url": "patches/canvas/canvas-content-performance.patch",
                 "sha256": "bd87ee7dd0cee567667d66b3b7d144545aecb677b290d20bfbab6b8c5405b5d5",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "drupal/canvas",
+                "description": "Route deterministic Canvas AI edits through direct-edit first",
+                "url": "patches/canvas/canvas-direct-edit-ui-routing.patch",
+                "sha256": "a5234b72d988cde4f3955198609fc5fa8aa32a086d47d92617cd315482aa307c",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

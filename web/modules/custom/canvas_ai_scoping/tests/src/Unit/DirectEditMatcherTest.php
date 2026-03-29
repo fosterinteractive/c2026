@@ -149,6 +149,17 @@ class DirectEditMatcherTest extends UnitTestCase {
   }
 
   /**
+   * @covers ::match
+   * @dataProvider compoundMatchProvider
+   */
+  public function testCompoundMatches(string $message, string $component, array $expectedChanges): void {
+    $result = $this->matcher->match($message, $component);
+    $this->assertNotNull($result, "Expected compound match for: \"$message\"");
+    $this->assertArrayHasKey('changes', $result);
+    $this->assertSame($expectedChanges, $result['changes']);
+  }
+
+  /**
    * Data provider for single-prop matches.
    */
   public static function singlePropMatchProvider(): array {
@@ -262,6 +273,39 @@ class DirectEditMatcherTest extends UnitTestCase {
   }
 
   /**
+   * Data provider for compound deterministic edits.
+   */
+  public static function compoundMatchProvider(): array {
+    return [
+      'heading and color' => [
+        'change the heading to Welcome and set the color to blue',
+        'sdc.byte_theme.heading',
+        [
+          ['prop' => 'heading_text', 'value' => 'Welcome'],
+          ['prop' => 'text_color', 'value' => 'primary'],
+        ],
+      ],
+      'alignment level and color' => [
+        'set alignment to center, change the level to 3, and make the color to white',
+        'sdc.byte_theme.heading',
+        [
+          ['prop' => 'align', 'value' => 'center'],
+          ['prop' => 'level', 'value' => 3],
+          ['prop' => 'text_color', 'value' => 'inverted'],
+        ],
+      ],
+      'semicolon split' => [
+        'change the heading to Welcome; set the alignment to right',
+        'sdc.byte_theme.heading',
+        [
+          ['prop' => 'heading_text', 'value' => 'Welcome'],
+          ['prop' => 'align', 'value' => 'right'],
+        ],
+      ],
+    ];
+  }
+
+  /**
    * @covers ::match
    * @dataProvider rejectProvider
    */
@@ -302,6 +346,23 @@ class DirectEditMatcherTest extends UnitTestCase {
       'level too high' => ['set the level to 7', 'sdc.byte_theme.heading', 'level out of range'],
       'level zero' => ['set the level to 0', 'sdc.byte_theme.heading', 'level out of range'],
       'level text' => ['set the level to big', 'sdc.byte_theme.heading', 'level non-numeric'],
+
+      // Compound rejections.
+      'compound duplicate prop' => [
+        'set the color to blue and set the color to white',
+        'sdc.byte_theme.heading',
+        'same prop set twice',
+      ],
+      'compound partial deterministic' => [
+        'change the heading to Welcome and add a card below',
+        'sdc.byte_theme.heading',
+        'all-or-nothing compound rejection',
+      ],
+      'compound false positive guard' => [
+        'change the heading to Welcome and set the color to blue',
+        'sdc.byte_theme.button',
+        'do not treat compound as a single raw text update',
+      ],
 
       // Empty and too-long messages.
       'empty message' => ['', 'sdc.byte_theme.heading', 'empty message'],

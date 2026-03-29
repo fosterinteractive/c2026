@@ -90,6 +90,7 @@ final class DirectEditController extends ControllerBase {
     $message = $body['message'] ?? '';
     $componentUuid = $body['component_uuid'] ?? '';
     $componentName = $body['component_name'] ?? '';
+    $layout = $body['layout'] ?? NULL;
 
     if ($message === '' || $componentUuid === '' || $componentName === '') {
       return new JsonResponse([
@@ -123,6 +124,20 @@ final class DirectEditController extends ControllerBase {
     // contrib bug (tracked for upstream report). Our endpoint relies on the
     // tempstore being correctly populated by the page load flow.
 
+    // The standard AI endpoint seeds the same tempstore from the client-side
+    // `layout` payload before validation. Mirror that here so a first direct
+    // edit does not depend on a previous fallback request having populated the
+    // tempstore already.
+    if (is_string($layout) && $layout !== '') {
+      $layoutDecoded = Json::decode($layout);
+      if (is_array($layoutDecoded) && array_key_exists($componentUuid, $layoutDecoded)) {
+        $this->canvasAiTempStore->setData(
+          CanvasAiTempStore::COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY,
+          $layout
+        );
+      }
+    }
+
     // Attempt pattern match.
     $match = $this->matcher->match($message, $componentName);
     if ($match === NULL) {
@@ -133,7 +148,6 @@ final class DirectEditController extends ControllerBase {
       ], 422);
     }
 
-    // Validate that the component exists in the page.
     try {
       $this->responseValidator->validateComponentExistsInPage($componentUuid);
     }
@@ -148,15 +162,20 @@ final class DirectEditController extends ControllerBase {
       ], 400);
     }
 
-    // Validate the prop value against the component schema.
-    $propValues = [$match['prop'] => $match['value']];
+    $changes = isset($match['changes']) ? $match['changes'] : [$match];
+    $propValues = [];
+    foreach ($changes as $change) {
+      $propValues[$change['prop']] = $change['value'];
+    }
+
+    // Validate the prop values against the component schema.
     try {
       $this->responseValidator->validateComponentPropUpdate($componentName, $propValues);
     }
     catch (\Exception $e) {
       $this->logger->error('DirectEdit: prop validation failed for @component/@prop: @msg', [
         '@component' => $componentName,
-        '@prop' => $match['prop'],
+        '@prop' => implode(', ', array_keys($propValues)),
         '@msg' => $e->getMessage(),
       ]);
       return new JsonResponse([
@@ -191,15 +210,24 @@ final class DirectEditController extends ControllerBase {
     // consumed by JavaScript — not rendered as HTML.
     $response['direct_edit'] = TRUE;
     $response['tokens_used'] = 0;
-    $response['matched_prop'] = $match['prop'];
-    $response['matched_value'] = $match['value'];
+    if (count($changes) === 1) {
+      $response['matched_prop'] = $changes[0]['prop'];
+      $response['matched_value'] = $changes[0]['value'];
+    }
+    else {
+      $response['matched_props'] = array_column($changes, 'prop');
+      $response['matched_values'] = $propValues;
+      $response['message'] = sprintf(
+        'Updated %d properties on the selected component.',
+        count($changes)
+      );
+    }
 
     $this->logger->notice(
-      'DirectEdit: @component.@prop = @value (0 tokens, deterministic)',
+      'DirectEdit: @component props updated deterministically: @props',
       [
         '@component' => $componentName,
-        '@prop' => $match['prop'],
-        '@value' => is_scalar($match['value']) ? (string) $match['value'] : Json::encode($match['value']),
+        '@props' => Json::encode($propValues),
       ]
     );
 

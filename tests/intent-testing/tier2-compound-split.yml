@@ -1,0 +1,50 @@
+---
+# drupal-intent-testing manifest
+# Tier 2 — Compound Split: multiple deterministic prop updates in one message
+
+issue:
+  title: "Tier 2 deterministic edit: compound prop split"
+  reference: "docs/proposals/tiered-deterministic-edit-routing.md"
+  adr:
+    - "ADR-004: Simple operations bypass LLM"
+    - "ADR-007: Maximize deterministic surface area"
+  description: >
+    A content author selects a heading component and issues a compound edit
+    request. The matcher should split the message into deterministic fragments,
+    resolve both through Tier 1 logic, and return a single deterministic
+    response without invoking any AI agent.
+
+environment:
+  base_url: "https://c2026.ddev.site"
+
+steps:
+  - id: "compound-direct-edit-heading"
+    description: "POST to the DirectEditController with a compound heading edit"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/admin/api/canvas/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "change the heading to Welcome and set the color to blue"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+      layout: "{\"{{HEADING_UUID}}\":{\"heading_text\":\"Old heading\",\"text_color\":\"default\"}}"
+    checkpoints:
+      - id: "returns-200"
+        description: "Endpoint returns HTTP 200"
+        assert: http_status
+        expected: 200
+      - id: "direct-edit-flag"
+        description: "Response signals deterministic edit"
+        assert: response_json
+        path: "direct_edit"
+        expected: true
+      - id: "multiple-props"
+        description: "Response records both props"
+        assert: response_body_contains
+        value: "matched_props"
+
+tier: 2
+tokens_expected: 0
