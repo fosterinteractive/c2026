@@ -1,0 +1,130 @@
+---
+# drupal-intent-testing manifest
+# Tier boundary: "make" keyword disambiguation
+#
+# Background: "make" was intentionally removed from ADD_KEYWORDS because it is
+# a valid edit verb ("make it blue", "make the color primary"). The matcher uses
+# ADD_PHRASES to catch creation-intent uses of "make" (e.g., "make a new
+# section", "make me another card"). This test validates both sides of that
+# boundary in a single manifest.
+
+issue:
+  title: "Tier boundary: 'make' routes deterministically for edits, to AI for creation"
+  reference: "docs/proposals/tiered-deterministic-edit-routing.md"
+  adr:
+    - "ADR-004: Simple operations bypass LLM"
+  description: >
+    The word "make" sits on the boundary between deterministic edit intent
+    ("make the color to blue") and add/create intent ("make a new section").
+    The DirectEditMatcher handles this via ADD_PHRASES rather than ADD_KEYWORDS
+    so that edit-intent uses of "make" succeed at Tier 1 while creation-intent
+    uses are correctly rejected.
+    This manifest verifies both paths using the same component.
+
+environment:
+  base_url: "https://c2026.ddev.site"
+  credentials:
+    username: admin
+    password: admin
+  canvas_page: "/canvas-demo"
+  component:
+    name: "sdc.byte_theme.heading"
+    uuid: "{{HEADING_UUID}}"
+
+setup:
+  steps:
+    - action: navigate
+      url: "{{environment.base_url}}/canvas-demo?canvas=true"
+    - action: wait_for
+      selector: ".canvas-editor"
+    - action: click
+      selector: "[data-component-uuid='{{HEADING_UUID}}']"
+
+steps:
+  - id: "make-edit-intent-resolves"
+    description: "'make the color to blue' — edit intent, should resolve at Tier 1"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "make the color to blue"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "make-edit-returns-200"
+        description: "Edit-intent 'make' resolves deterministically at Tier 1"
+        assert: http_status
+        expected: 200
+      - id: "make-edit-direct-flag"
+        description: "direct_edit is true — no AI invoked"
+        assert: response_json
+        path: "direct_edit"
+        expected: true
+      - id: "make-edit-prop-resolved"
+        description: "Prop resolved to text_color with value primary"
+        assert: response_json
+        path: "matched_prop"
+        expected: "text_color"
+      - id: "make-edit-value-resolved"
+        description: "'blue' alias resolved to canonical 'primary'"
+        assert: response_json
+        path: "matched_value"
+        expected: "primary"
+
+  - id: "make-create-intent-rejected"
+    description: "'make a new section' — creation intent, must return 422"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "make a new section"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "make-create-returns-422"
+        description: "ADD_PHRASES catches 'make a new ...' and rejects it"
+        assert: http_status
+        expected: 422
+      - id: "make-create-reason"
+        description: "reason is no_match"
+        assert: response_json
+        path: "reason"
+        expected: "no_match"
+
+  - id: "make-me-another-rejected"
+    description: "'make me another card' — ADD_PHRASE match, must return 422"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "make me another card"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "make-me-another-returns-422"
+        description: "'make me another' matches ADD_PHRASE pattern, rejected"
+        assert: http_status
+        expected: 422
+
+assertions:
+  # First step should produce these; second/third should not
+  text_present:
+    - "primary"
+  text_absent:
+    - "no_match"
+  # Note: assertions apply to the LAST step in the sequence.
+  # Individual step checkpoints above are the primary mechanism for this test.
+
+ai_agent_invoked: false
+tier: 1
+tokens_expected: 0
+latency_budget_ms: 100

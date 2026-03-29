@@ -1,0 +1,142 @@
+---
+# drupal-intent-testing manifest
+# Phase 4 measurement: token breakdown baseline via full AI path
+#
+# This manifest does NOT test the deterministic tiers. Its purpose is to
+# establish a token usage baseline for a standard heading edit routed through
+# the full Canvas AI agent chain, and to verify that the TokenBreakdownSubscriber
+# is logging segment sizes correctly for Phase 4 coverage analysis.
+#
+# Reference: tiered-deterministic-edit-routing.md §Phase 4: Measurement and tuning
+# "Use drupal-intent-testing to build a regression suite with intent manifests
+#  for each tier's boundary cases. Add structured logging to Tiers 1-3 for
+#  coverage analysis."
+
+issue:
+  title: "Phase 4 measurement: token breakdown baseline for full AI path heading edit"
+  reference: "docs/proposals/tiered-deterministic-edit-routing.md#phase-4-measurement-and-tuning"
+  adr:
+    - "ADR-008: Show and prove — Track B P4 prototype"
+  description: >
+    Captures the token cost of a heading edit routed through the standard Canvas
+    AI endpoint (not the direct-edit endpoint). This establishes the 111K-token
+    baseline figure referenced in the proposal for comparison against Tier 1-3
+    costs. The test also verifies that the TokenBreakdownSubscriber correctly
+    logs segment breakdown data (system_prompt, ai_context, layout, chat_history,
+    tool_definitions) so Phase 4 measurement can compute real tier distribution.
+    Run this manifest before deploying tiered routing changes to capture the
+    unoptimized baseline, then run again after deployment to measure actual
+    reduction.
+
+environment:
+  base_url: "https://c2026.ddev.site"
+  credentials:
+    username: admin
+    password: admin
+  canvas_page: "/canvas-demo"
+  component:
+    name: "sdc.byte_theme.heading"
+    uuid: "{{HEADING_UUID}}"
+  # Observability: set CANVAS_AI_LOG_TOKENS=1 in .ddev/.env before running
+  # this manifest, or ensure canvas_ai_scoping token logging is enabled.
+  observability:
+    log_channel: "canvas_ai_scoping"
+    log_level: "notice"
+
+setup:
+  description: >
+    Navigate to Canvas editor so the full page layout is loaded into the AI
+    agent's context. This is required for the full agent chain (the orchestrator
+    reads the full layout). Enable token logging before this step.
+  steps:
+    - action: navigate
+      url: "{{environment.base_url}}/canvas-demo?canvas=true"
+    - action: wait_for
+      selector: ".canvas-editor"
+    - action: click
+      selector: "[data-component-uuid='{{HEADING_UUID}}']"
+
+steps:
+  - id: "full-ai-heading-edit"
+    description: >
+      Send a heading edit through the standard Canvas AI chat endpoint
+      (not the direct-edit endpoint) to capture the full agent chain token cost.
+      Use the standard /canvas-ai/chat endpoint or equivalent Canvas AI API.
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/chat"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "change the heading to Welcome to FinDrop"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "full-ai-returns-200"
+        description: "Full AI chain processes the request successfully"
+        assert: http_status
+        expected: 200
+      - id: "heading-text-updated"
+        description: "The AI agent applied the heading change"
+        assert: response_body_contains
+        value: "Welcome to FinDrop"
+      - id: "no-direct-edit-flag"
+        description: "This path does NOT set direct_edit — confirm AI was used"
+        assert: response_json_absent
+        path: "direct_edit"
+
+  - id: "verify-token-logging"
+    description: >
+      Check that TokenBreakdownSubscriber logged segment sizes to the
+      canvas_ai_scoping log channel. This requires access to the Drupal watchdog
+      or the structured log output. Adjust the log_check_url to match your
+      observability setup (dblog admin, log aggregator API, or file tail).
+    action: http_request
+    method: GET
+    url: "{{environment.base_url}}/admin/reports/dblog?type[]=canvas_ai_scoping&severity[]=5"
+    headers:
+      Accept: "text/html"
+    checkpoints:
+      - id: "token-breakdown-logged"
+        description: "TokenBreakdownSubscriber log entry is present"
+        assert: response_body_contains
+        value: "tokens"
+      - id: "segment-data-present"
+        description: "Log contains segment breakdown fields"
+        assert: response_body_contains
+        value: "system_prompt"
+
+assertions:
+  text_present:
+    - "Welcome to FinDrop"
+  text_absent:
+    - "direct_edit"
+    - "no_match"
+
+# Measurement targets (not pass/fail assertions — used for baseline comparison)
+measurement:
+  baseline_tokens_expected: 111000
+  segments:
+    system_prompt_tokens: ~8500
+    ai_context_tokens: ~11000
+    layout_tokens: ~2500
+    chat_history_tokens: ~4000
+    tool_definitions_tokens: ~3500
+    # Per-call subtotal × 3 orchestrator loops = ~30K × 3 = ~90K input tokens
+    # Plus output tokens ~15-20K
+    # Total: ~111K as documented in the proposal
+  latency_budget_ms: 30000
+  # After Tier 1 deployment, the same message sent to /canvas-ai/direct-edit
+  # should show tokens_used: 0 and latency < 100ms.
+  # That delta (111K → 0 for this message class) is the Phase 4 measurement goal.
+
+ai_agent_invoked: true
+expected_http_status: 200
+tier: 4
+notes: >
+  This manifest establishes the pre-optimization baseline. Run it with
+  ANTHROPIC_API_KEY or OPENAI_API_KEY configured in .ddev/.env. The token
+  counts logged by TokenBreakdownSubscriber are the ground truth for Phase 4
+  analysis — do not rely on estimates from the proposal document alone.
+  Re-run after deploying each tier to measure the actual reduction.

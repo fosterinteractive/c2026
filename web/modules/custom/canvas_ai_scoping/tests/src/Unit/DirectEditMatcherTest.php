@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\canvas_ai_scoping\Unit;
 
+use Drupal\canvas_ai_scoping\Service\ComponentSchemaLoaderInterface;
 use Drupal\canvas_ai_scoping\Service\DirectEditMatcher;
 use Drupal\Tests\UnitTestCase;
 
@@ -18,11 +19,122 @@ class DirectEditMatcherTest extends UnitTestCase {
   private DirectEditMatcher $matcher;
 
   /**
+   * Prop alias map equivalent to the previous hardcoded PROP_ALIASES constant.
+   *
+   * Keyed by SDC component name; values are alias => prop_name maps.
+   *
+   * @var array<string, array<string, string>>
+   */
+  private static array $propAliases = [
+    'sdc.byte_theme.heading' => [
+      'heading' => 'heading_text',
+      'title' => 'heading_text',
+      'text' => 'heading_text',
+      'level' => 'level',
+      'heading level' => 'level',
+      'size' => 'text_size',
+      'text size' => 'text_size',
+      'font size' => 'text_size',
+      'color' => 'text_color',
+      'text color' => 'text_color',
+      'alignment' => 'align',
+      'align' => 'align',
+    ],
+    'sdc.byte_theme.button' => [
+      'label' => 'label',
+      'text' => 'label',
+      'button text' => 'label',
+      'style' => 'variant',
+      'variant' => 'variant',
+      'size' => 'size',
+      'icon' => 'icon',
+      'link' => 'href',
+      'url' => 'href',
+      'href' => 'href',
+    ],
+    'sdc.byte_theme.card-icon' => [
+      'title' => 'text',
+      'heading' => 'text',
+      'text' => 'text',
+      'description' => 'description',
+      'icon' => 'icon',
+      'background' => 'background_color',
+      'background color' => 'background_color',
+    ],
+    'sdc.byte_theme.badge' => [
+      'label' => 'label',
+      'text' => 'label',
+    ],
+    'sdc.byte_theme.icon' => [
+      'icon' => 'icon',
+      'name' => 'icon',
+      'size' => 'size',
+      'color' => 'color',
+    ],
+  ];
+
+  /**
+   * Enum value map equivalent to the previous hardcoded ENUM_VALUES constant.
+   *
+   * Keyed by SDC component name, then prop name; values are alias => canonical.
+   *
+   * @var array<string, array<string, array<string, string>>>
+   */
+  private static array $enumValues = [
+    'sdc.byte_theme.heading' => [
+      'text_color' => [
+        'default' => 'default',
+        'white' => 'inverted',
+        'inverted' => 'inverted',
+        'light' => 'inverted',
+        'primary' => 'primary',
+        'blue' => 'primary',
+      ],
+      'align' => [
+        'left' => 'left',
+        'center' => 'center',
+        'centered' => 'center',
+        'middle' => 'center',
+        'right' => 'right',
+      ],
+    ],
+    'sdc.byte_theme.button' => [
+      'variant' => [
+        'primary' => 'primary',
+        'secondary' => 'secondary',
+        'primary inverted' => 'primary-inverted',
+        'secondary inverted' => 'secondary-inverted',
+      ],
+      'size' => [
+        'small' => 'small',
+        'medium' => 'medium',
+        'large' => 'large',
+      ],
+    ],
+  ];
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
-    $this->matcher = new DirectEditMatcher();
+
+    $schemaLoader = $this->createMock(ComponentSchemaLoaderInterface::class);
+
+    $schemaLoader->method('getPropAliases')
+      ->willReturnCallback(static function (string $componentName): array {
+        return self::$propAliases[$componentName] ?? [];
+      });
+
+    $schemaLoader->method('getEnumValues')
+      ->willReturnCallback(static function (string $propName, string $componentName): ?array {
+        return self::$enumValues[$componentName][$propName] ?? NULL;
+      });
+
+    $schemaLoader->method('getSupportedComponents')
+      ->willReturn(array_keys(self::$propAliases));
+
+    $this->matcher = new DirectEditMatcher($schemaLoader);
   }
 
   /**

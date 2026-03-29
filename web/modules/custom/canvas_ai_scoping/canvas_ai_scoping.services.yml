@@ -33,5 +33,14 @@ services:
     tags:
       - { name: event_subscriber }
 
+  canvas_ai_scoping.component_schema_loader:
+    class: Drupal\canvas_ai_scoping\Service\ComponentSchemaLoader
+    arguments:
+      - '@extension.list.theme'
+      - '@cache.default'
+      - '@logger.channel.canvas_ai_scoping'
+
   canvas_ai_scoping.direct_edit_matcher:
     class: Drupal\canvas_ai_scoping\Service\DirectEditMatcher
+    arguments:
+      - '@canvas_ai_scoping.component_schema_loader'

@@ -14,96 +14,11 @@ namespace Drupal\canvas_ai_scoping\Service;
  * Only matches unambiguous, single-prop edits. Returns NULL for anything
  * that requires LLM reasoning (multi-prop changes, ambiguous references,
  * content generation, add/remove operations).
+ *
+ * Prop aliases and enum value maps are loaded dynamically from the Byte theme
+ * component YAML schemas via ComponentSchemaLoader, covering all 23 components.
  */
 final class DirectEditMatcher {
-
-  /**
-   * Natural language aliases mapped to canonical prop names per component.
-   *
-   * Format: component_name => [alias => prop_name].
-   * Aliases are lowercase. The matcher normalizes user input before matching.
-   */
-  private const PROP_ALIASES = [
-    'sdc.byte_theme.heading' => [
-      'heading' => 'heading_text',
-      'title' => 'heading_text',
-      'text' => 'heading_text',
-      'level' => 'level',
-      'heading level' => 'level',
-      'size' => 'text_size',
-      'text size' => 'text_size',
-      'font size' => 'text_size',
-      'color' => 'text_color',
-      'text color' => 'text_color',
-      'alignment' => 'align',
-      'align' => 'align',
-    ],
-    'sdc.byte_theme.button' => [
-      'label' => 'label',
-      'text' => 'label',
-      'button text' => 'label',
-      'style' => 'variant',
-      'variant' => 'variant',
-      'size' => 'size',
-      'icon' => 'icon',
-      'link' => 'href',
-      'url' => 'href',
-      'href' => 'href',
-    ],
-    'sdc.byte_theme.card-icon' => [
-      'title' => 'text',
-      'heading' => 'text',
-      'text' => 'text',
-      'description' => 'description',
-      'icon' => 'icon',
-      'background' => 'background_color',
-      'background color' => 'background_color',
-    ],
-    'sdc.byte_theme.badge' => [
-      'label' => 'label',
-      'text' => 'label',
-    ],
-    'sdc.byte_theme.icon' => [
-      'icon' => 'icon',
-      'name' => 'icon',
-      'size' => 'size',
-      'color' => 'color',
-    ],
-  ];
-
-  /**
-   * Enum values for props that only accept specific values.
-   *
-   * Format: prop_name => [normalized_alias => canonical_value].
-   */
-  private const ENUM_VALUES = [
-    'text_color' => [
-      'default' => 'default',
-      'white' => 'inverted',
-      'inverted' => 'inverted',
-      'light' => 'inverted',
-      'primary' => 'primary',
-      'blue' => 'primary',
-    ],
-    'align' => [
-      'left' => 'left',
-      'center' => 'center',
-      'centered' => 'center',
-      'middle' => 'center',
-      'right' => 'right',
-    ],
-    'variant' => [
-      'primary' => 'primary',
-      'secondary' => 'secondary',
-      'primary inverted' => 'primary-inverted',
-      'secondary inverted' => 'secondary-inverted',
-    ],
-    'size' => [
-      'small' => 'small',
-      'medium' => 'medium',
-      'large' => 'large',
-    ],
-  ];
 
   /**
    * Keywords that indicate the user wants to ADD or CREATE — not a simple edit.
@@ -131,6 +46,16 @@ final class DirectEditMatcher {
     '/\b(?:a|an)\s+new\b/i',
     '/\bnew\s+(?:section|component|card|heading|button|image|row|column|block)\b/i',
   ];
+
+  /**
+   * Constructs a DirectEditMatcher.
+   *
+   * @param \Drupal\canvas_ai_scoping\Service\ComponentSchemaLoaderInterface $schemaLoader
+   *   The component schema loader, providing dynamic prop alias and enum maps.
+   */
+  public function __construct(
+    private readonly ComponentSchemaLoaderInterface $schemaLoader,
+  ) {}
 
   /**
    * Attempts to match a user message to a deterministic prop edit.
@@ -207,7 +132,7 @@ final class DirectEditMatcher {
    *   Resolved prop and value, or NULL if unresolvable.
    */
   private function resolveEdit(string $propAlias, string $rawValue, string $componentName): ?array {
-    $aliases = self::PROP_ALIASES[$componentName] ?? [];
+    $aliases = $this->schemaLoader->getPropAliases($componentName);
     if (empty($aliases)) {
       return NULL;
     }
@@ -217,24 +142,26 @@ final class DirectEditMatcher {
       return NULL;
     }
 
-    // If the prop has enum constraints, resolve the value.
-    if (isset(self::ENUM_VALUES[$propName])) {
-      $normalizedValue = mb_strtolower(trim($rawValue));
-      $canonicalValue = self::ENUM_VALUES[$propName][$normalizedValue] ?? NULL;
-      if ($canonicalValue === NULL) {
-        // Value doesn't match any known enum — can't resolve deterministically.
-        return NULL;
-      }
-      return ['prop' => $propName, 'value' => $canonicalValue];
-    }
-
     // For the 'level' prop (heading), accept numeric values 1-6.
+    // This is not derivable from schema alone since level is a numeric enum.
     if ($propName === 'level') {
       $numericValue = (int) $rawValue;
       if ($numericValue >= 1 && $numericValue <= 6 && (string) $numericValue === trim($rawValue)) {
         return ['prop' => $propName, 'value' => $numericValue];
       }
       return NULL;
+    }
+
+    // If the prop has enum constraints, resolve the value.
+    $enumValues = $this->schemaLoader->getEnumValues($propName, $componentName);
+    if ($enumValues !== NULL) {
+      $normalizedValue = mb_strtolower(trim($rawValue));
+      $canonicalValue = $enumValues[$normalizedValue] ?? NULL;
+      if ($canonicalValue === NULL) {
+        // Value doesn't match any known enum — can't resolve deterministically.
+        return NULL;
+      }
+      return ['prop' => $propName, 'value' => $canonicalValue];
     }
 
     // For string props (heading_text, label, etc.), accept the raw value.
@@ -248,7 +175,7 @@ final class DirectEditMatcher {
    *   Component SDC names.
    */
   public function getSupportedComponents(): array {
-    return array_keys(self::PROP_ALIASES);
+    return $this->schemaLoader->getSupportedComponents();
   }
 
 }

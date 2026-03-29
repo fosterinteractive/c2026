@@ -1,0 +1,116 @@
+---
+# drupal-intent-testing manifest
+# Tier 1 — Pattern Match: enum value resolution for text_color
+
+issue:
+  title: "Tier 1 deterministic edit: color enum resolution"
+  reference: "docs/proposals/tiered-deterministic-edit-routing.md"
+  adr:
+    - "ADR-004: Simple operations bypass LLM"
+  description: >
+    A content author selects a heading component and says "set the color to
+    blue". The DirectEditMatcher must resolve the alias "blue" → "primary"
+    via the ENUM_VALUES map and return a validated prop update. This tests
+    that enum normalization works correctly: the user's natural-language color
+    name is translated to the canonical schema value before the response is
+    returned.
+
+environment:
+  base_url: "https://c2026.ddev.site"
+  credentials:
+    username: admin
+    password: admin
+  canvas_page: "/canvas-demo"
+  component:
+    name: "sdc.byte_theme.heading"
+    uuid: "{{HEADING_UUID}}"
+
+setup:
+  description: >
+    Navigate to the Canvas editor, select the heading component to populate
+    the server-side tempstore.
+  steps:
+    - action: navigate
+      url: "{{environment.base_url}}/canvas-demo?canvas=true"
+    - action: wait_for
+      selector: ".canvas-editor"
+    - action: click
+      selector: "[data-component-uuid='{{HEADING_UUID}}']"
+
+steps:
+  - id: "direct-edit-color"
+    description: "POST with a color alias that must resolve to a canonical enum value"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "set the color to blue"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "returns-200"
+        description: "Endpoint returns HTTP 200"
+        assert: http_status
+        expected: 200
+      - id: "direct-edit-flag"
+        description: "Response signals deterministic resolution"
+        assert: response_json
+        path: "direct_edit"
+        expected: true
+      - id: "zero-tokens"
+        description: "No LLM tokens used"
+        assert: response_json
+        path: "tokens_used"
+        expected: 0
+      - id: "prop-is-text-color"
+        description: "Matched prop is text_color, not the alias 'color'"
+        assert: response_json
+        path: "matched_prop"
+        expected: "text_color"
+      - id: "value-is-primary"
+        description: "Alias 'blue' resolved to canonical enum value 'primary'"
+        assert: response_json
+        path: "matched_value"
+        expected: "primary"
+      - id: "operations-contain-primary"
+        description: "Update operations carry the resolved value"
+        assert: response_body_contains
+        value: "primary"
+
+  - id: "verify-alternate-alias-white"
+    description: "Verify 'white' also resolves to 'inverted' (separate enum alias)"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "set the color to white"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "white-resolves-to-inverted"
+        description: "'white' alias maps to canonical 'inverted' value"
+        assert: response_json
+        path: "matched_value"
+        expected: "inverted"
+
+assertions:
+  text_present:
+    - "primary"
+    - "direct_edit"
+    - "tokens_used"
+  text_absent:
+    - "blue"
+    - "no_match"
+    - "ai_agent"
+
+ai_agent_invoked: false
+expected_http_status: 200
+tier: 1
+tokens_expected: 0
+latency_budget_ms: 100

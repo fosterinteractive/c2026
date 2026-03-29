@@ -1,0 +1,129 @@
+---
+# drupal-intent-testing manifest
+# Tier 1 — Rejection: ambiguous messages that require LLM reasoning
+
+issue:
+  title: "Tier 1 rejection: ambiguous creative instructions route to AI"
+  reference: "docs/proposals/tiered-deterministic-edit-routing.md"
+  adr:
+    - "ADR-004: Simple operations bypass LLM"
+  description: >
+    When a content author says "make this look more professional", there is no
+    deterministic prop/value pair to extract — the instruction requires LLM
+    reasoning to interpret what "professional" means in terms of component
+    props. The DirectEditMatcher must return NULL (no pattern match against
+    any known PROP_ALIASES + ENUM_VALUES combination), causing the controller
+    to return 422 so the frontend routes to the full Canvas AI agent chain.
+    This validates the critical boundary: ambiguous creative language must
+    never short-circuit to a deterministic edit.
+
+environment:
+  base_url: "https://c2026.ddev.site"
+  credentials:
+    username: admin
+    password: admin
+  canvas_page: "/canvas-demo"
+  component:
+    name: "sdc.byte_theme.heading"
+    uuid: "{{HEADING_UUID}}"
+
+setup:
+  steps:
+    - action: navigate
+      url: "{{environment.base_url}}/canvas-demo?canvas=true"
+    - action: wait_for
+      selector: ".canvas-editor"
+    - action: click
+      selector: "[data-component-uuid='{{HEADING_UUID}}']"
+
+steps:
+  - id: "reject-vague-aesthetic"
+    description: "Vague aesthetic instruction — no prop/value can be extracted"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "make this look more professional"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "returns-422"
+        description: "Endpoint returns 422: route to AI"
+        assert: http_status
+        expected: 422
+      - id: "reason-no-match"
+        description: "reason is no_match, not a validation error"
+        assert: response_json
+        path: "reason"
+        expected: "no_match"
+
+  - id: "reject-content-rewrite"
+    description: "Content generation request — no deterministic edit possible"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "rewrite this to be more engaging for enterprise customers"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "rewrite-returns-422"
+        description: "Content rewrite is creative work — must route to AI"
+        assert: http_status
+        expected: 422
+
+  - id: "reject-relative-size"
+    description: "'make it bigger' is relative — no canonical enum value"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "make it bigger"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "relative-size-returns-422"
+        description: "'bigger' is not a recognized text_size enum value"
+        assert: http_status
+        expected: 422
+
+  - id: "reject-unknown-prop"
+    description: "Prop name not in PROP_ALIASES for this component"
+    action: http_request
+    method: POST
+    url: "{{environment.base_url}}/canvas-ai/direct-edit"
+    headers:
+      Content-Type: "application/json"
+      X-CSRF-Token: "{{csrf_token}}"
+    body:
+      message: "change the shadow to large"
+      component_uuid: "{{HEADING_UUID}}"
+      component_name: "sdc.byte_theme.heading"
+    checkpoints:
+      - id: "unknown-prop-returns-422"
+        description: "'shadow' is not in PROP_ALIASES for sdc.byte_theme.heading"
+        assert: http_status
+        expected: 422
+
+assertions:
+  text_present:
+    - "no_match"
+  text_absent:
+    - "direct_edit"
+    - "matched_prop"
+    - "matched_value"
+
+ai_agent_invoked: false
+expected_http_status: 422
+tier: 1
+tokens_expected: 0
+latency_budget_ms: 100
