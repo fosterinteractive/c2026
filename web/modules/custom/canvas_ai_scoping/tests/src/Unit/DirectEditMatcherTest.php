@@ -71,6 +71,14 @@ class DirectEditMatcherTest extends UnitTestCase {
       'size' => 'size',
       'color' => 'color',
     ],
+    // Collision component: group has overlapping enum values.
+    'sdc.byte_theme.group' => [
+      'gap' => 'flex_gap',
+      'flex gap' => 'flex_gap',
+      'radius' => 'radius',
+      'corner radius' => 'radius',
+      'padding' => 'padding',
+    ],
   ];
 
   /**
@@ -111,6 +119,27 @@ class DirectEditMatcherTest extends UnitTestCase {
         'large' => 'large',
       ],
     ],
+    // Collision: sm/md/lg/xl map to 3 props each.
+    'sdc.byte_theme.group' => [
+      'flex_gap' => [
+        'sm' => 'sm',
+        'md' => 'md',
+        'lg' => 'lg',
+        'xl' => 'xl',
+      ],
+      'radius' => [
+        'sm' => 'sm',
+        'md' => 'md',
+        'lg' => 'lg',
+        'xl' => 'xl',
+      ],
+      'padding' => [
+        'sm' => 'sm',
+        'md' => 'md',
+        'lg' => 'lg',
+        'xl' => 'xl',
+      ],
+    ],
   ];
 
   /**
@@ -133,6 +162,24 @@ class DirectEditMatcherTest extends UnitTestCase {
 
     $schemaLoader->method('getSupportedComponents')
       ->willReturn(array_keys(self::$propAliases));
+
+    // Build reverse enum index from the test enum data.
+    // {componentName => {normalizedValue => [propName, ...]}}
+    $schemaLoader->method('getReverseEnumIndex')
+      ->willReturnCallback(static function (string $componentName): array {
+        $enums = self::$enumValues[$componentName] ?? [];
+        $reverse = [];
+        foreach ($enums as $propName => $valueMap) {
+          foreach ($valueMap as $alias => $canonical) {
+            $reverse[$alias][] = $propName;
+          }
+        }
+        // Deduplicate props per value.
+        foreach ($reverse as $value => $props) {
+          $reverse[$value] = array_values(array_unique($props));
+        }
+        return $reverse;
+      });
 
     $this->matcher = new DirectEditMatcher($schemaLoader);
   }
@@ -269,6 +316,56 @@ class DirectEditMatcherTest extends UnitTestCase {
         'text_color',
         'primary',
       ],
+
+      // Phase 1: Bare value type inference.
+      'bare value blue on heading' => [
+        'blue',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'primary',
+      ],
+      'bare value center on heading' => [
+        'center',
+        'sdc.byte_theme.heading',
+        'align',
+        'center',
+      ],
+      'bare value inverted on heading' => [
+        'inverted',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'inverted',
+      ],
+      'make it blue on heading' => [
+        'make it blue',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'primary',
+      ],
+      'make this centered on heading' => [
+        'make this centered',
+        'sdc.byte_theme.heading',
+        'align',
+        'center',
+      ],
+      'make the primary on heading' => [
+        'make the primary',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'primary',
+      ],
+      'bare value secondary on button' => [
+        'secondary',
+        'sdc.byte_theme.button',
+        'variant',
+        'secondary',
+      ],
+      'make it large on button' => [
+        'make it large',
+        'sdc.byte_theme.button',
+        'size',
+        'large',
+      ],
     ];
   }
 
@@ -362,6 +459,38 @@ class DirectEditMatcherTest extends UnitTestCase {
         'change the heading to Welcome and set the color to blue',
         'sdc.byte_theme.button',
         'do not treat compound as a single raw text update',
+      ],
+
+      // Phase 1: Bare value rejections.
+      'bare value collision on group' => [
+        'lg',
+        'sdc.byte_theme.group',
+        'ambiguous: lg maps to flex_gap, radius, padding',
+      ],
+      'bare value collision sm on group' => [
+        'sm',
+        'sdc.byte_theme.group',
+        'ambiguous: sm maps to 3 props',
+      ],
+      'make it lg on group' => [
+        'make it lg',
+        'sdc.byte_theme.group',
+        'ambiguous even with prefix strip',
+      ],
+      'bare value unknown' => [
+        'rainbow',
+        'sdc.byte_theme.heading',
+        'value not in any enum',
+      ],
+      'multi-word bare value rejected' => [
+        'something entirely different',
+        'sdc.byte_theme.heading',
+        'multi-word messages not treated as bare values',
+      ],
+      'make it look better' => [
+        'make it look better',
+        'sdc.byte_theme.heading',
+        'stripped value has spaces, not a bare enum',
       ],
 
       // Empty and too-long messages.
