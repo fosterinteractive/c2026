@@ -51,17 +51,18 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
    * Mapped to human-readable names for logging.
    */
   private const STRIP_FINGERPRINTS = [
-    // Content Structure: Product Pages — heading in the content body.
+    // Content Structure: Product Pages — heading in the rendered content body.
     'Content Strategy: Product Pages v4' => 'Content Structure: Product Pages',
-    // General Page Building Guidelines — global text/color rules.
-    'Global rules for text color, eyebrow labels, and contrast' => 'General Page Building Guidelines',
-    // FinDrop Key Facts & Value Propositions — approved stats.
-    'single source of truth for approved statistics, value propositions' => 'FinDrop Key Facts',
-    // Visuals & Imagery — not needed for text/prop edits.
-    // Use a unique string from its content body, not the title (which appears in other items).
+    // General Page Building Guidelines (Typography & Contrast Rules) —
+    // rendered content starts with "# Typography & Contrast Rules v2".
+    'Typography & Contrast Rules v2' => 'General Page Building Guidelines',
+    // FinDrop Key Facts & Value Propositions — rendered content starts with
+    // the heading, not the purpose frontmatter.
+    'Mandatory Phrasing Rules' => 'FinDrop Key Facts',
+    // Visuals & Imagery — unique heading from the content body.
     'Three Visual Approaches' => 'Visuals & Imagery',
-    // Sales Training Deck — competitive positioning, not needed for edits.
-    'outcome-focused buyer positioning' => 'Sales Training Deck',
+    // Sales Training Deck — rendered content contains this warning banner.
+    'INTERNAL SALES TRAINING ONLY' => 'Sales Training Deck',
   ];
 
   public function __construct(
