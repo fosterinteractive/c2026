@@ -168,6 +168,60 @@ final class DirectEditMatcher {
       return $result;
     }
 
+    // Phase 2: Boolean toggle patterns.
+    // "show the header", "hide the footer", "enable overlap", "disable it"
+    $result = $this->matchBooleanToggle($messageLower, $componentName);
+    if ($result !== NULL) {
+      return $result;
+    }
+
+    return NULL;
+  }
+
+  /**
+   * Matches boolean toggle patterns (show/hide/enable/disable).
+   *
+   * @param string $messageLower
+   *   Lowercased, trimmed user message.
+   * @param string $componentName
+   *   The SDC component name.
+   *
+   * @return array{prop: string, value: bool}|null
+   *   Resolved prop and boolean value, or NULL if no match.
+   */
+  private function matchBooleanToggle(string $messageLower, string $componentName): ?array {
+    $booleanProps = $this->schemaLoader->getBooleanProps($componentName);
+    if (empty($booleanProps)) {
+      return NULL;
+    }
+
+    // Match toggle verb patterns.
+    // Group 1: verb (determines true/false)
+    // Group 2: optional "the" article
+    // Group 3: the prop reference
+    $pattern = '/^(show|hide|enable|disable|turn\s+on|turn\s+off|activate|deactivate)\s+(?:the\s+)?(.+?)\s*$/i';
+    if (!preg_match($pattern, $messageLower, $matches)) {
+      return NULL;
+    }
+
+    $verb = mb_strtolower(trim($matches[1]));
+    $propRef = mb_strtolower(trim($matches[2]));
+
+    // Determine intent from verb.
+    $enableVerbs = ['show', 'enable', 'turn on', 'activate'];
+    $wantsEnabled = in_array($verb, $enableVerbs, TRUE);
+
+    // Find which boolean prop matches the reference.
+    foreach ($booleanProps as $propName => $meta) {
+      $aliases = $meta['aliases'] ?? [];
+      if (in_array($propRef, $aliases, TRUE) || $propRef === $propName) {
+        // Apply polarity inversion (e.g., "enable" on "disabled" = false).
+        $inverted = $meta['inverted'] ?? FALSE;
+        $value = $inverted ? !$wantsEnabled : $wantsEnabled;
+        return ['prop' => $propName, 'value' => $value];
+      }
+    }
+
     return NULL;
   }
 

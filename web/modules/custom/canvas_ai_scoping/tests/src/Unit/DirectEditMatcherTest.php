@@ -71,6 +71,12 @@ class DirectEditMatcherTest extends UnitTestCase {
       'size' => 'size',
       'color' => 'color',
     ],
+    'sdc.byte_theme.section' => [
+      'header' => 'section_header',
+      'show header' => 'section_header',
+      'footer' => 'section_footer',
+      'show footer' => 'section_footer',
+    ],
     // Collision component: group has overlapping enum values.
     'sdc.byte_theme.group' => [
       'gap' => 'flex_gap',
@@ -165,6 +171,27 @@ class DirectEditMatcherTest extends UnitTestCase {
 
     // Build reverse enum index from the test enum data.
     // {componentName => {normalizedValue => [propName, ...]}}
+    // Boolean props mock.
+    $booleanProps = [
+      'sdc.byte_theme.heading' => [],
+      'sdc.byte_theme.button' => [
+        'disabled' => ['aliases' => ['disabled'], 'inverted' => TRUE],
+        'icon_first' => ['aliases' => ['icon_first', 'icon first'], 'inverted' => FALSE],
+      ],
+      'sdc.byte_theme.card-icon' => [],
+      'sdc.byte_theme.badge' => [],
+      'sdc.byte_theme.icon' => [],
+      'sdc.byte_theme.group' => [],
+      'sdc.byte_theme.section' => [
+        'section_header' => ['aliases' => ['section_header', 'show header', 'header'], 'inverted' => FALSE],
+        'section_footer' => ['aliases' => ['section_footer', 'show footer', 'footer'], 'inverted' => FALSE],
+      ],
+    ];
+    $schemaLoader->method('getBooleanProps')
+      ->willReturnCallback(static function (string $componentName) use ($booleanProps): array {
+        return $booleanProps[$componentName] ?? [];
+      });
+
     $schemaLoader->method('getReverseEnumIndex')
       ->willReturnCallback(static function (string $componentName): array {
         $enums = self::$enumValues[$componentName] ?? [];
@@ -365,6 +392,57 @@ class DirectEditMatcherTest extends UnitTestCase {
         'sdc.byte_theme.button',
         'size',
         'large',
+      ],
+
+      // Phase 2: Boolean toggle matches.
+      'show header on section' => [
+        'show the header',
+        'sdc.byte_theme.section',
+        'section_header',
+        TRUE,
+      ],
+      'hide footer on section' => [
+        'hide the footer',
+        'sdc.byte_theme.section',
+        'section_footer',
+        FALSE,
+      ],
+      'enable icon first on button' => [
+        'enable icon first',
+        'sdc.byte_theme.button',
+        'icon_first',
+        TRUE,
+      ],
+      'disable icon first on button' => [
+        'disable icon first',
+        'sdc.byte_theme.button',
+        'icon_first',
+        FALSE,
+      ],
+      // Inverted polarity: "enable" on "disabled" = false.
+      'enable disabled button (inverted)' => [
+        'enable disabled',
+        'sdc.byte_theme.button',
+        'disabled',
+        FALSE,
+      ],
+      'disable disabled button (inverted)' => [
+        'disable disabled',
+        'sdc.byte_theme.button',
+        'disabled',
+        TRUE,
+      ],
+      'turn on header' => [
+        'turn on the header',
+        'sdc.byte_theme.section',
+        'section_header',
+        TRUE,
+      ],
+      'turn off footer' => [
+        'turn off the footer',
+        'sdc.byte_theme.section',
+        'section_footer',
+        FALSE,
       ],
     ];
   }
