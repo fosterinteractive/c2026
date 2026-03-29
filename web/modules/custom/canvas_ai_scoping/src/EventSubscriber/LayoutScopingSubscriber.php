@@ -97,6 +97,17 @@ final class LayoutScopingSubscriber implements EventSubscriberInterface {
         ]
       );
     }
+    else {
+      // Layout JSON not found in the system prompt — may have been
+      // pretty-printed or encoded differently. Full layout passes through.
+      $this->logger->warning(
+        'LayoutScopingSubscriber: layout JSON not found in system prompt for @agent (layout @len bytes). Scoping skipped — full layout passes through.',
+        [
+          '@agent' => $event->getAgentId(),
+          '@len' => strlen($layoutJson),
+        ]
+      );
+    }
   }
 
   /**

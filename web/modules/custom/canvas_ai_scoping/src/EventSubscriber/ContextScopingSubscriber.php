@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\canvas_ai_scoping\EventSubscriber;
 
 use Drupal\ai_agents\Event\BuildSystemPromptEvent;
+use Drupal\canvas_ai_scoping\AiContextPromptParser;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -30,9 +31,14 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
 
   /**
    * Agents whose ai_context should be scoped during edit operations.
+   *
+   * Both page_builder and component_agent handle component edits. Without
+   * scoping on both, the component_agent would receive the full ai_context
+   * block (10-12K tokens) for every single-component edit.
    */
   private const SCOPED_AGENTS = [
     'canvas_page_builder_agent',
+    'canvas_component_agent',
   ];
 
   /**
@@ -88,23 +94,15 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
 
     $systemPrompt = $event->getSystemPrompt();
 
-    // Find the ai_context block between dashed separators.
-    $separator = '-----------------------------------------------';
-    $startPos = strpos($systemPrompt, $separator);
-    if ($startPos === FALSE) {
-      return;
-    }
-    $endPos = strpos($systemPrompt, $separator, $startPos + strlen($separator));
-    if ($endPos === FALSE) {
+    // Find the ai_context block using the shared parser.
+    $block = AiContextPromptParser::findBlock($systemPrompt);
+    if ($block === NULL) {
       return;
     }
 
-    // Extract the context block between the two separator lines.
-    $blockStart = $startPos + strlen($separator) + 1;
-    $blockLength = $endPos - $blockStart;
-    $contextBlock = substr($systemPrompt, $blockStart, $blockLength);
-    $beforeContext = substr($systemPrompt, 0, $blockStart);
-    $afterContext = substr($systemPrompt, $endPos);
+    $contextBlock = $block['content'];
+    $beforeContext = substr($systemPrompt, 0, $block['content_start']);
+    $afterContext = substr($systemPrompt, $block['content_end']);
 
     // Split into individual context items by "- ID: " markers.
     // The renderer outputs: "- ID: <numeric>\n  Tags: ...\n  Guidance:\n    <content>"
@@ -136,6 +134,17 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
     }
 
     if ($strippedCount === 0) {
+      // No fingerprints matched — either the items aren't in the prompt
+      // (expected on non-edit operations) or the fingerprints are stale
+      // (content entities were edited in the Drupal UI). Log a warning
+      // so stale fingerprints are detectable in logs.
+      $this->logger->warning(
+        'ContextScopingSubscriber: 0 of @count fingerprints matched for @agent. Fingerprints may be stale if ai_context items were recently edited.',
+        [
+          '@count' => count(self::STRIP_FINGERPRINTS),
+          '@agent' => $event->getAgentId(),
+        ]
+      );
       return;
     }
 

@@ -50,24 +50,31 @@ final class DirectEditController extends ControllerBase {
       $container->get('canvas_ai.page_builder_helper'),
       $container->get('canvas_ai.tempstore'),
       $container->get('csrf_token'),
-      $container->get('logger.factory')->get('canvas_ai_scoping'),
+      $container->get('logger.channel.canvas_ai_scoping'),
     );
   }
 
   /**
    * Attempts a deterministic edit on the selected component.
    *
+   * This endpoint expects the Canvas frontend to have already loaded the page
+   * in the editor, which populates CanvasAiTempStore via CanvasBuilder::render().
+   * The tempstore contains the authoritative component list — we never accept
+   * it from the client to prevent authorization bypass.
+   *
    * Request body (JSON):
    * - message: string — the user's chat message
    * - component_uuid: string — UUID of the selected component
    * - component_name: string — SDC name (e.g., 'sdc.byte_theme.heading')
-   * - current_layout: object — the full page layout (for tempstore)
    *
    * Returns:
    * - 200 with update operations if the edit was applied deterministically.
    * - 422 if the message doesn't match a deterministic pattern (route to AI).
    * - 400 for validation errors.
    * - 403 for CSRF or permission errors.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException
+   *   If the CSRF token is invalid.
    */
   public function edit(Request $request): JsonResponse {
     $token = $request->headers->get('X-CSRF-Token') ?? '';
@@ -83,7 +90,6 @@ final class DirectEditController extends ControllerBase {
     $message = $body['message'] ?? '';
     $componentUuid = $body['component_uuid'] ?? '';
     $componentName = $body['component_name'] ?? '';
-    $currentLayout = $body['current_layout'] ?? NULL;
 
     if ($message === '' || $componentUuid === '' || $componentName === '') {
       return new JsonResponse([
@@ -103,24 +109,19 @@ final class DirectEditController extends ControllerBase {
       return new JsonResponse(['status' => FALSE, 'message' => 'Message too long.'], 400);
     }
 
-    // Store layout in tempstore for validation.
-    if ($currentLayout !== NULL) {
-      $this->canvasAiTempStore->setData(
-        CanvasAiTempStore::CURRENT_LAYOUT_KEY,
-        Json::encode($currentLayout)
-      );
-    }
-
-    // Store component prop values map for validateComponentExistsInPage().
-    // This mirrors CanvasBuilder::render() which stores prompt['layout']
-    // (the flat {uuid: props} map) in COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY.
-    $componentProps = $body['layout'] ?? NULL;
-    if ($componentProps !== NULL) {
-      $this->canvasAiTempStore->setData(
-        CanvasAiTempStore::COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY,
-        Json::encode($componentProps)
-      );
-    }
+    // Component existence is validated against the server-side tempstore,
+    // populated by CanvasBuilder::render() when the page was loaded.
+    // We intentionally do NOT accept a 'layout' or component map from the
+    // client — that would let any Canvas AI editor fabricate which components
+    // "exist" and bypass the existence check.
+    //
+    // Note: CanvasBuilder::render() passes a raw PHP array to setData() for
+    // COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY, which is a type violation
+    // against the string-typed parameter. This causes Json::decode() in
+    // validateComponentExistsInPage() to receive an array and return null,
+    // making the check silently pass in the normal AI flow. This is a
+    // contrib bug (tracked for upstream report). Our endpoint relies on the
+    // tempstore being correctly populated by the page load flow.
 
     // Attempt pattern match.
     $match = $this->matcher->match($message, $componentName);
@@ -184,6 +185,10 @@ final class DirectEditController extends ControllerBase {
     $response = $this->pageBuilderHelper->includeUpdateOperations($updateComponents, $response);
 
     // Add metadata for tracking and measurement.
+    // matched_prop and matched_value are included intentionally for frontend
+    // display (e.g., "Changed heading_text to Welcome"). The value has already
+    // been schema-validated above, and the response is application/json
+    // consumed by JavaScript — not rendered as HTML.
     $response['direct_edit'] = TRUE;
     $response['tokens_used'] = 0;
     $response['matched_prop'] = $match['prop'];

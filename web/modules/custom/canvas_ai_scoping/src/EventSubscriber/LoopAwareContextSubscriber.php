@@ -6,6 +6,7 @@ namespace Drupal\canvas_ai_scoping\EventSubscriber;
 
 use Drupal\ai_agents\Event\AgentStartedExecutionEvent;
 use Drupal\ai_agents\Event\BuildSystemPromptEvent;
+use Drupal\canvas_ai_scoping\AiContextPromptParser;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -67,7 +68,13 @@ final class LoopAwareContextSubscriber implements EventSubscriberInterface {
   public function onAgentStarted(AgentStartedExecutionEvent $event): void {
     $agentId = $event->getAgentId();
     if (in_array($agentId, self::LOOP_GATED_AGENTS, TRUE)) {
-      $this->loopCounts[$agentId] = $event->getLoopCount();
+      $loopCount = $event->getLoopCount();
+      // Reset tracking on first loop to prevent cross-request data leakage
+      // in persistent PHP runtimes (FrankenPHP, RoadRunner, etc.).
+      if ($loopCount === 0) {
+        $this->loopCounts = [];
+      }
+      $this->loopCounts[$agentId] = $loopCount;
     }
   }
 
@@ -89,10 +96,9 @@ final class LoopAwareContextSubscriber implements EventSubscriberInterface {
 
     // Loop > 0: strip the ai_context block from the system prompt.
     $systemPrompt = $event->getSystemPrompt();
-    $stripped = $this->stripAiContextBlock($systemPrompt);
+    $stripped = AiContextPromptParser::stripBlock($systemPrompt);
 
     if ($stripped === NULL) {
-      // No context block found — nothing to strip.
       return;
     }
 
@@ -109,72 +115,13 @@ final class LoopAwareContextSubscriber implements EventSubscriberInterface {
   }
 
   /**
-   * Strips the ai_context block (between dashed separators) from the prompt.
-   *
-   * @param string $systemPrompt
-   *   The full system prompt.
-   *
-   * @return array{prompt: string, bytes_removed: int}|null
-   *   The modified prompt and bytes removed, or NULL if no block found.
-   */
-  private function stripAiContextBlock(string $systemPrompt): ?array {
-    $separator = '-----------------------------------------------';
-
-    // Find the context prefix line that precedes the separator.
-    // ai_context appends: "\n\n<prefix>\n-------\n<content>-------\n"
-    // We want to remove from the prefix through the closing separator.
-    $startPos = strpos($systemPrompt, $separator);
-    if ($startPos === FALSE) {
-      return NULL;
-    }
-
-    $endPos = strpos($systemPrompt, $separator, $startPos + strlen($separator));
-    if ($endPos === FALSE) {
-      return NULL;
-    }
-
-    // Find the context prefix before the first separator.
-    // Walk back from $startPos to find the "\n\n" that precedes the prefix.
-    $prefixSearchStart = max(0, $startPos - 300);
-    $beforeSeparator = substr($systemPrompt, $prefixSearchStart, $startPos - $prefixSearchStart);
-    $lastDoubleNewline = strrpos($beforeSeparator, "\n\n");
-
-    if ($lastDoubleNewline !== FALSE) {
-      $blockStart = $prefixSearchStart + $lastDoubleNewline;
-    }
-    else {
-      $blockStart = $startPos;
-    }
-
-    $blockEnd = $endPos + strlen($separator) + 1; // +1 for trailing newline.
-    $blockEnd = min($blockEnd, strlen($systemPrompt));
-
-    $originalLen = strlen($systemPrompt);
-    $newPrompt = substr($systemPrompt, 0, $blockStart) . substr($systemPrompt, $blockEnd);
-
-    return [
-      'prompt' => $newPrompt,
-      'bytes_removed' => $originalLen - strlen($newPrompt),
-    ];
-  }
-
-  /**
    * Logs the ai_context block size on the first loop for measurement.
    */
   private function logContextSize(BuildSystemPromptEvent $event, string $agentId, int $loopCount): void {
-    $systemPrompt = $event->getSystemPrompt();
-    $separator = '-----------------------------------------------';
-
-    $startPos = strpos($systemPrompt, $separator);
-    if ($startPos === FALSE) {
+    $contextSize = AiContextPromptParser::measureBlockSize($event->getSystemPrompt());
+    if ($contextSize === 0) {
       return;
     }
-    $endPos = strpos($systemPrompt, $separator, $startPos + strlen($separator));
-    if ($endPos === FALSE) {
-      return;
-    }
-
-    $contextSize = ($endPos + strlen($separator)) - $startPos;
 
     $this->logger->info(
       'LoopAwareContext: ai_context block size for @agent on loop @loop: @size bytes (~@tokens tokens)',

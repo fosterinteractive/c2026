@@ -115,18 +115,21 @@ final class DirectEditMatcher {
    */
   private const ADD_KEYWORDS = [
     'add', 'create', 'insert', 'generate', 'build',
-    'new', 'another', 'below', 'above', 'after', 'before',
+    'another', 'below', 'above', 'after', 'before',
   ];
 
   /**
-   * Phrase patterns that indicate add/create intent even with edit verbs.
+   * Phrase patterns that indicate add/create intent.
    *
-   * These catch "make a new...", "make me a...", etc. without blocking
-   * "make it blue" or "make the heading bigger".
+   * These catch phrases where context-dependent words ("make", "new")
+   * indicate creation rather than editing. Single-word blocking would
+   * reject valid edits like "make it blue" or "heading: New Title".
    */
   private const ADD_PHRASES = [
     '/\bmake\s+(?:a|me|us)\s+(?:new\b|another\b)/i',
     '/\bmake\s+(?:a|an|some)\b/i',
+    '/\b(?:a|an)\s+new\b/i',
+    '/\bnew\s+(?:section|component|card|heading|button|image|row|column|block)\b/i',
   ];
 
   /**
@@ -142,6 +145,11 @@ final class DirectEditMatcher {
    */
   public function match(string $message, string $componentName): ?array {
     $message = trim($message);
+    // Deterministic edit commands are short. Messages beyond 500 chars are
+    // almost certainly content generation or multi-paragraph instructions
+    // that need LLM reasoning. This limit is intentionally lower than the
+    // controller's 2000-char validation to fast-reject verbose messages
+    // before running regex patterns.
     if ($message === '' || mb_strlen($message) > 500) {
       return NULL;
     }

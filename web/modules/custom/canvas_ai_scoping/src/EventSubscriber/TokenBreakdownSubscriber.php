@@ -6,6 +6,7 @@ namespace Drupal\canvas_ai_scoping\EventSubscriber;
 
 use Drupal\ai_agents\Event\AgentStartedExecutionEvent;
 use Drupal\ai_agents\Event\BuildSystemPromptEvent;
+use Drupal\canvas_ai_scoping\AiContextPromptParser;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -64,7 +65,13 @@ final class TokenBreakdownSubscriber implements EventSubscriberInterface {
   public function onAgentStarted(AgentStartedExecutionEvent $event): void {
     $agentId = $event->getAgentId();
     if (in_array($agentId, self::INSTRUMENTED_AGENTS, TRUE)) {
-      $this->loopCounts[$agentId] = $event->getLoopCount();
+      $loopCount = $event->getLoopCount();
+      // Reset on first loop to prevent cross-request leakage in persistent
+      // PHP runtimes (FrankenPHP, RoadRunner, etc.).
+      if ($loopCount === 0) {
+        $this->loopCounts = [];
+      }
+      $this->loopCounts[$agentId] = $loopCount;
     }
   }
 
@@ -112,7 +119,6 @@ final class TokenBreakdownSubscriber implements EventSubscriberInterface {
    *   Byte sizes for each segment.
    */
   private function analyzePrompt(string $prompt): array {
-    $separator = '-----------------------------------------------';
     $result = [
       'base_bytes' => strlen($prompt),
       'context_bytes' => 0,
@@ -120,28 +126,28 @@ final class TokenBreakdownSubscriber implements EventSubscriberInterface {
       'post_bytes' => 0,
     ];
 
-    // Find ai_context block.
-    $startPos = strpos($prompt, $separator);
-    if ($startPos !== FALSE) {
-      $endPos = strpos($prompt, $separator, $startPos + strlen($separator));
-      if ($endPos !== FALSE) {
-        $blockEnd = $endPos + strlen($separator);
-        // Walk back to find the context prefix ("\n\n" before the prefix text).
-        $prefixSearch = max(0, $startPos - 300);
-        $before = substr($prompt, $prefixSearch, $startPos - $prefixSearch);
-        $lastNl = strrpos($before, "\n\n");
-        $blockStart = $lastNl !== FALSE ? $prefixSearch + $lastNl : $startPos;
-
-        $result['context_bytes'] = $blockEnd - $blockStart;
-        $result['base_bytes'] = $blockStart;
-        $result['post_bytes'] = strlen($prompt) - $blockEnd;
-      }
+    // Find ai_context block using shared parser.
+    $block = AiContextPromptParser::findBlock($prompt);
+    if ($block !== NULL) {
+      $result['context_bytes'] = $block['block_end'] - $block['block_start'];
+      $result['base_bytes'] = $block['block_start'];
+      $result['post_bytes'] = strlen($prompt) - $block['block_end'];
     }
 
-    // Detect layout JSON within the base prompt or post-context.
-    // Layout is typically a large JSON block with "regions" key.
-    if (preg_match('/\{"regions":\{.+?\}\}/s', $prompt, $matches, PREG_OFFSET_CAPTURE)) {
-      $result['layout_bytes'] = strlen($matches[0][0]);
+    // Detect layout JSON by finding the {"regions": marker and using
+    // json_decode to measure the complete object (handles nested braces
+    // correctly, unlike regex which undercounts).
+    $layoutMarker = '{"regions":';
+    $layoutPos = strpos($prompt, $layoutMarker);
+    if ($layoutPos !== FALSE) {
+      // Try to decode from the marker position to find the full JSON object.
+      // Use progressively larger substrings until json_decode succeeds.
+      $remaining = substr($prompt, $layoutPos);
+      $decoded = json_decode($remaining, TRUE);
+      if ($decoded !== NULL && isset($decoded['regions'])) {
+        // Re-encode to get the canonical length of the parsed object.
+        $result['layout_bytes'] = strlen(json_encode($decoded, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+      }
     }
 
     return $result;
