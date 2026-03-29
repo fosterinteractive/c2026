@@ -68,6 +68,18 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   ];
 
   /**
+   * Boolean props that are NOT show/hide toggles.
+   *
+   * These control semantics other than visibility (e.g., alignment direction,
+   * layout reversal) and should not be exposed to the BooleanToggleResolver.
+   */
+  private const NON_TOGGLE_BOOLEAN_PROPS = [
+    'align' => TRUE,
+    'reverse' => TRUE,
+    'flip' => TRUE,
+  ];
+
+  /**
    * Size-category props where the first enum value is the largest (descending).
    */
   private const DESCENDING_ORDINAL_PROPS = [
@@ -364,9 +376,9 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
         }
       }
 
-      // Detect boolean props.
+      // Detect boolean props (skip non-toggle booleans like align/reverse).
       $propType = $propDef['type'] ?? NULL;
-      if ($propType === 'boolean') {
+      if ($propType === 'boolean' && !isset(self::NON_TOGGLE_BOOLEAN_PROPS[$propName])) {
         $boolProps[$propName] = [
           'aliases' => $generatedAliases,
           'inverted' => isset(self::INVERTED_BOOLEAN_PROPS[$propName]),

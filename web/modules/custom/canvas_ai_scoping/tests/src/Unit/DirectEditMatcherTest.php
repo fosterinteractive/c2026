@@ -603,6 +603,18 @@ class DirectEditMatcherTest extends UnitTestCase {
         'stripped value has spaces, not a bare enum',
       ],
 
+      // Phase 2: Boolean toggle rejections — non-toggle boolean props.
+      'show align rejected (non-toggle boolean)' => [
+        'show the alignment',
+        'sdc.byte_theme.heading',
+        'align is not a show/hide toggle',
+      ],
+      'enable align rejected' => [
+        'enable align',
+        'sdc.byte_theme.heading',
+        'align is not a show/hide toggle',
+      ],
+
       // Empty and too-long messages.
       'empty message' => ['', 'sdc.byte_theme.heading', 'empty message'],
       'too long message' => [str_repeat('x', 501), 'sdc.byte_theme.heading', 'exceeds 500 chars'],
@@ -722,6 +734,72 @@ class DirectEditMatcherTest extends UnitTestCase {
     $this->assertContains('sdc.byte_theme.button', $components);
     $this->assertContains('sdc.byte_theme.card-icon', $components);
     $this->assertGreaterThanOrEqual(5, count($components));
+  }
+
+  /**
+   * Performance regression: individual matches must complete under 50ms each.
+   *
+   * @covers ::match
+   */
+  public function testIndividualMatchLatencyUnder50ms(): void {
+    $cases = [
+      // Tier 1: explicit pattern.
+      ['change the heading to Welcome', 'sdc.byte_theme.heading', NULL],
+      // Tier 1: colon format.
+      ['heading: New Title', 'sdc.byte_theme.heading', NULL],
+      // Tier 2: compound.
+      ['change the heading to Hi and set the color to blue', 'sdc.byte_theme.heading', NULL],
+      // Phase 1: bare value.
+      ['blue', 'sdc.byte_theme.heading', NULL],
+      // Phase 2: boolean toggle.
+      ['show the header', 'sdc.byte_theme.section', NULL],
+      // Phase 3: relative adjustment.
+      ['bigger', 'sdc.byte_theme.heading', ['text_size' => 'heading-responsive-5xl', 'text_color' => 'default']],
+    ];
+
+    foreach ($cases as [$message, $component, $currentValues]) {
+      $start = microtime(TRUE);
+      $this->matcher->match($message, $component, $currentValues);
+      $elapsed = (microtime(TRUE) - $start) * 1000;
+      $this->assertLessThan(50.0, $elapsed, "Match for \"$message\" took {$elapsed}ms (budget: 50ms)");
+    }
+  }
+
+  /**
+   * Performance regression: batch of 20 mixed matches under 1 second total.
+   *
+   * @covers ::match
+   */
+  public function testBatchOf20MatchesUnder1Second(): void {
+    $cases = [
+      ['change the heading to Welcome to FinDrop', 'sdc.byte_theme.heading', NULL],
+      ['set the title to Hello World', 'sdc.byte_theme.heading', NULL],
+      ['set the color to primary', 'sdc.byte_theme.heading', NULL],
+      ['change the color to blue', 'sdc.byte_theme.heading', NULL],
+      ['set the alignment to center', 'sdc.byte_theme.heading', NULL],
+      ['set the level to 3', 'sdc.byte_theme.heading', NULL],
+      ['change the label to Get Started', 'sdc.byte_theme.button', NULL],
+      ['set the variant to secondary', 'sdc.byte_theme.button', NULL],
+      ['heading: New Title Here', 'sdc.byte_theme.heading', NULL],
+      ['set color = primary', 'sdc.byte_theme.heading', NULL],
+      ['change the heading to Hi and set the color to blue', 'sdc.byte_theme.heading', NULL],
+      ['blue', 'sdc.byte_theme.heading', NULL],
+      ['center', 'sdc.byte_theme.heading', NULL],
+      ['make it blue', 'sdc.byte_theme.heading', NULL],
+      ['secondary', 'sdc.byte_theme.button', NULL],
+      ['show the header', 'sdc.byte_theme.section', NULL],
+      ['hide the footer', 'sdc.byte_theme.section', NULL],
+      ['enable icon first', 'sdc.byte_theme.button', NULL],
+      ['bigger', 'sdc.byte_theme.heading', ['text_size' => 'heading-responsive-5xl', 'text_color' => 'default']],
+      ['smaller', 'sdc.byte_theme.button', ['size' => 'large', 'variant' => 'primary']],
+    ];
+
+    $start = microtime(TRUE);
+    foreach ($cases as [$message, $component, $currentValues]) {
+      $this->matcher->match($message, $component, $currentValues);
+    }
+    $elapsed = (microtime(TRUE) - $start) * 1000;
+    $this->assertLessThan(1000.0, $elapsed, "Batch of 20 matches took {$elapsed}ms (budget: 1000ms)");
   }
 
 }

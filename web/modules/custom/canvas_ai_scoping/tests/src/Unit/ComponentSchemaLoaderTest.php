@@ -531,6 +531,41 @@ final class ComponentSchemaLoaderTest extends UnitTestCase {
   }
 
   /**
+   * Tests that non-toggle boolean props (align, reverse, flip) are excluded.
+   *
+   * @covers ::getBooleanProps
+   */
+  public function testBooleanPropsExcludesNonToggleProps(): void {
+    $loader = $this->buildLoader([
+      'footer' => [
+        'align' => [
+          'type' => 'boolean',
+        ],
+        'reverse' => [
+          'type' => 'boolean',
+        ],
+        'flip' => [
+          'type' => 'boolean',
+        ],
+        'section_footer' => [
+          'type' => 'boolean',
+        ],
+      ],
+    ]);
+
+    $boolProps = $loader->getBooleanProps('sdc.byte_theme.footer');
+
+    // Non-toggle booleans are excluded.
+    $this->assertArrayNotHasKey('align', $boolProps);
+    $this->assertArrayNotHasKey('reverse', $boolProps);
+    $this->assertArrayNotHasKey('flip', $boolProps);
+
+    // True toggles are still included.
+    $this->assertArrayHasKey('section_footer', $boolProps);
+    $this->assertFalse($boolProps['section_footer']['inverted']);
+  }
+
+  /**
    * Tests reverse enum index with section component (3 enum props, collisions).
    *
    * @covers ::getReverseEnumIndex
