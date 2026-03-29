@@ -192,6 +192,38 @@ class DirectEditMatcherTest extends UnitTestCase {
         return $booleanProps[$componentName] ?? [];
       });
 
+    // Enum ordinals mock.
+    $enumOrdinals = [
+      'sdc.byte_theme.heading' => [
+        'text_size' => [
+          'values' => ['default', 'heading-responsive-8xl', 'heading-responsive-7xl', 'heading-responsive-6xl', 'heading-responsive-5xl', 'heading-responsive-4xl', 'heading-responsive-3xl', 'heading-responsive-2xl', 'heading-responsive-xl'],
+          'direction' => 'descending',
+        ],
+        'text_color' => [
+          'values' => ['default', 'inverted', 'primary'],
+          'direction' => 'ascending',
+        ],
+        'align' => [
+          'values' => ['left', 'center', 'right'],
+          'direction' => 'ascending',
+        ],
+      ],
+      'sdc.byte_theme.button' => [
+        'variant' => [
+          'values' => ['primary', 'secondary', 'primary-inverted', 'secondary-inverted'],
+          'direction' => 'ascending',
+        ],
+        'size' => [
+          'values' => ['small', 'medium', 'large'],
+          'direction' => 'ascending',
+        ],
+      ],
+    ];
+    $schemaLoader->method('getEnumOrdinals')
+      ->willReturnCallback(static function (string $componentName) use ($enumOrdinals): array {
+        return $enumOrdinals[$componentName] ?? [];
+      });
+
     $schemaLoader->method('getReverseEnumIndex')
       ->willReturnCallback(static function (string $componentName): array {
         $enums = self::$enumValues[$componentName] ?? [];
@@ -574,6 +606,110 @@ class DirectEditMatcherTest extends UnitTestCase {
       // Empty and too-long messages.
       'empty message' => ['', 'sdc.byte_theme.heading', 'empty message'],
       'too long message' => [str_repeat('x', 501), 'sdc.byte_theme.heading', 'exceeds 500 chars'],
+    ];
+  }
+
+  /**
+   * @covers ::match
+   * @dataProvider relativeAdjustmentMatchProvider
+   */
+  public function testRelativeAdjustmentMatches(string $message, string $component, array $currentValues, string $expectedProp, mixed $expectedValue): void {
+    $result = $this->matcher->match($message, $component, $currentValues);
+    $this->assertNotNull($result, "Expected relative match for: \"$message\"");
+    $this->assertSame($expectedProp, $result['prop']);
+    $this->assertSame($expectedValue, $result['value']);
+  }
+
+  /**
+   * Data provider for relative adjustment matches.
+   */
+  public static function relativeAdjustmentMatchProvider(): array {
+    return [
+      // Heading text_size is descending: 8xl(biggest) → xl(smallest).
+      // "bigger" on heading at 5xl should go toward 6xl (lower index).
+      'bigger heading from 5xl' => [
+        'bigger',
+        'sdc.byte_theme.heading',
+        ['text_size' => 'heading-responsive-5xl', 'text_color' => 'default'],
+        'text_size',
+        'heading-responsive-6xl',
+      ],
+      'smaller heading from 5xl' => [
+        'smaller',
+        'sdc.byte_theme.heading',
+        ['text_size' => 'heading-responsive-5xl', 'text_color' => 'default'],
+        'text_size',
+        'heading-responsive-4xl',
+      ],
+      'make it bigger heading' => [
+        'make it bigger',
+        'sdc.byte_theme.heading',
+        ['text_size' => 'heading-responsive-3xl', 'text_color' => 'default'],
+        'text_size',
+        'heading-responsive-4xl',
+      ],
+      // Button size is ascending: small → medium → large.
+      'larger button from small' => [
+        'larger',
+        'sdc.byte_theme.button',
+        ['size' => 'small', 'variant' => 'primary'],
+        'size',
+        'medium',
+      ],
+      'smaller button from large' => [
+        'smaller',
+        'sdc.byte_theme.button',
+        ['size' => 'large', 'variant' => 'primary'],
+        'size',
+        'medium',
+      ],
+    ];
+  }
+
+  /**
+   * @covers ::match
+   * @dataProvider relativeAdjustmentRejectProvider
+   */
+  public function testRelativeAdjustmentRejects(string $message, string $component, ?array $currentValues, string $reason): void {
+    $result = $this->matcher->match($message, $component, $currentValues);
+    $this->assertNull($result, "Expected NULL (reject) for: \"$message\" ($reason)");
+  }
+
+  /**
+   * Data provider for relative adjustment rejections.
+   */
+  public static function relativeAdjustmentRejectProvider(): array {
+    return [
+      'bigger at max (8xl is biggest non-default)' => [
+        'bigger',
+        'sdc.byte_theme.heading',
+        ['text_size' => 'heading-responsive-8xl', 'text_color' => 'default'],
+        'at upper boundary',
+      ],
+      'smaller at min (xl is smallest)' => [
+        'smaller',
+        'sdc.byte_theme.heading',
+        ['text_size' => 'heading-responsive-xl', 'text_color' => 'default'],
+        'at lower boundary',
+      ],
+      'bigger without current values' => [
+        'bigger',
+        'sdc.byte_theme.heading',
+        NULL,
+        'no current prop values available',
+      ],
+      'bigger on component without size prop' => [
+        'bigger',
+        'sdc.byte_theme.card-icon',
+        ['text' => 'Card One'],
+        'no matching ordinal prop',
+      ],
+      'unknown adjective' => [
+        'fancier',
+        'sdc.byte_theme.heading',
+        ['text_size' => 'heading-responsive-5xl'],
+        'not a recognized comparative',
+      ],
     ];
   }
 

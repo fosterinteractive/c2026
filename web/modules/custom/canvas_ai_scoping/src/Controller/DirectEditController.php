@@ -141,9 +141,23 @@ final class DirectEditController extends ControllerBase {
       }
     }
 
+    // Extract current prop values for the selected component from tempstore.
+    // Needed for Phase 3 relative adjustments ("bigger"/"smaller").
+    $currentPropValues = NULL;
+    $componentsData = $this->canvasAiTempStore->getData(
+      CanvasAiTempStore::COMPONENTS_IN_PAGE_WITH_PROP_VALUES_KEY
+    );
+    if (!empty($componentsData)) {
+      $decoded = is_string($componentsData) ? Json::decode($componentsData) : $componentsData;
+      if (is_array($decoded) && isset($decoded[$componentUuid])) {
+        $componentData = $decoded[$componentUuid];
+        $currentPropValues = $componentData['propValues'] ?? $componentData;
+      }
+    }
+
     // Attempt pattern match with timing.
     $startUs = (int) (hrtime(TRUE) / 1000);
-    $match = $this->matcher->match($message, $componentName);
+    $match = $this->matcher->match($message, $componentName, $currentPropValues);
     $elapsedUs = (int) (hrtime(TRUE) / 1000) - $startUs;
 
     if ($match === NULL) {
