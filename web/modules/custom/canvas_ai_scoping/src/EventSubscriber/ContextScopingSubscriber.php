@@ -6,6 +6,7 @@ namespace Drupal\canvas_ai_scoping\EventSubscriber;
 
 use Drupal\ai_agents\Event\BuildSystemPromptEvent;
 use Drupal\canvas_ai_scoping\AiContextPromptParser;
+use Drupal\canvas_ai_scoping\Service\ContextEditScopeManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -17,15 +18,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  * guidelines, content strategy docs, product facts) while keeping items
  * needed for text quality (brand voice, writing tone, formatting rules).
  *
+ * Which items to strip is configured via ContextEditScopeManager, which
+ * auto-generates content fingerprints from ai_context_item entities on save.
+ * Site builders configure which items to strip — no hardcoded content strings.
+ *
  * This runs after ai_context's SystemPromptSubscriber (priority 0) and after
  * LayoutScopingSubscriber (priority -10), at priority -20.
- *
- * Format dependency: relies on ai_context's AiContextRenderer output format:
- *   "- ID: <numeric_id>\n  Tags: ...\n  Guidance:\n    <content>"
- * wrapped in "-------" separators. Items are matched by distinctive content
- * strings within the Guidance block, since the ID field is numeric (not the
- * entity label). If the format changes, stripping silently fails (items leak
- * back in) — fail-open by design.
  */
 final class ContextScopingSubscriber implements EventSubscriberInterface {
 
@@ -41,31 +39,8 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
     'canvas_component_agent',
   ];
 
-  /**
-   * Content fingerprints to match context items for REMOVAL during edits.
-   *
-   * Each entry is a distinctive string that appears in the Guidance content
-   * of a context item. Matched case-insensitively. Only one fingerprint per
-   * item is needed — pick the most stable/unique string.
-   *
-   * Mapped to human-readable names for logging.
-   */
-  private const STRIP_FINGERPRINTS = [
-    // Content Structure: Product Pages — heading in the rendered content body.
-    'Content Strategy: Product Pages v4' => 'Content Structure: Product Pages',
-    // General Page Building Guidelines (Typography & Contrast Rules) —
-    // rendered content starts with "# Typography & Contrast Rules v2".
-    'Typography & Contrast Rules v2' => 'General Page Building Guidelines',
-    // FinDrop Key Facts & Value Propositions — rendered content starts with
-    // the heading, not the purpose frontmatter.
-    'Mandatory Phrasing Rules' => 'FinDrop Key Facts',
-    // Visuals & Imagery — unique heading from the content body.
-    'Three Visual Approaches' => 'Visuals & Imagery',
-    // Sales Training Deck — rendered content contains this warning banner.
-    'INTERNAL SALES TRAINING ONLY' => 'Sales Training Deck',
-  ];
-
   public function __construct(
+    private readonly ContextEditScopeManager $scopeManager,
     private readonly LoggerInterface $logger,
   ) {}
 
@@ -116,12 +91,18 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
     $strippedCount = 0;
     $strippedNames = [];
 
+    // Get the fingerprint map from the scope manager.
+    $stripFingerprints = $this->scopeManager->getStripFingerprints();
+    if (empty($stripFingerprints)) {
+      return;
+    }
+
     // Filter out items whose Guidance content matches a strip fingerprint.
     $keptItems = [];
     foreach ($items as $item) {
       $shouldStrip = FALSE;
       $itemLower = mb_strtolower($item);
-      foreach (self::STRIP_FINGERPRINTS as $fingerprint => $name) {
+      foreach ($stripFingerprints as $fingerprint => $name) {
         if (str_contains($itemLower, mb_strtolower($fingerprint))) {
           $shouldStrip = TRUE;
           $strippedCount++;

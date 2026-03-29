@@ -1,0 +1,28 @@
+<?php
+
+/**
+ * @file
+ * Hooks for the Canvas AI Layout Scoping module.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_entity_update() for ai_context_item entities.
+ */
+function canvas_ai_scoping_entity_update($entity): void {
+  if ($entity->getEntityTypeId() === 'ai_context_item') {
+    \Drupal::service('canvas_ai_scoping.context_edit_scope_manager')
+      ->updateFingerprint((int) $entity->id());
+  }
+}
+
+/**
+ * Implements hook_entity_insert() for ai_context_item entities.
+ */
+function canvas_ai_scoping_entity_insert($entity): void {
+  if ($entity->getEntityTypeId() === 'ai_context_item') {
+    \Drupal::service('canvas_ai_scoping.context_edit_scope_manager')
+      ->updateFingerprint((int) $entity->id());
+  }
+}

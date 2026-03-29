@@ -19,9 +19,17 @@ services:
     tags:
       - { name: event_subscriber }
 
+  canvas_ai_scoping.context_edit_scope_manager:
+    class: Drupal\canvas_ai_scoping\Service\ContextEditScopeManager
+    arguments:
+      - '@entity_type.manager'
+      - '@state'
+      - '@logger.channel.canvas_ai_scoping'
+
   canvas_ai_scoping.context_scoping_subscriber:
     class: Drupal\canvas_ai_scoping\EventSubscriber\ContextScopingSubscriber
     arguments:
+      - '@canvas_ai_scoping.context_edit_scope_manager'
       - '@logger.channel.canvas_ai_scoping'
     tags:
       - { name: event_subscriber }
