@@ -494,11 +494,12 @@ final class DirectEditMatcher {
       return NULL;
     }
 
-    // For the 'level' prop (heading), accept numeric values 1-6.
-    // This is not derivable from schema alone since level is a numeric enum.
-    if ($propName === 'level') {
+    // For integer-typed enum props (e.g., heading level), validate against
+    // the schema's actual enum values instead of hardcoded ranges.
+    $integerValues = $this->schemaLoader->getIntegerEnumValues($propName, $componentName);
+    if ($integerValues !== NULL) {
       $numericValue = (int) $rawValue;
-      if ($numericValue >= 1 && $numericValue <= 6 && (string) $numericValue === trim($rawValue)) {
+      if ((string) $numericValue === trim($rawValue) && in_array($numericValue, $integerValues, TRUE)) {
         return ['prop' => $propName, 'value' => $numericValue];
       }
       return NULL;

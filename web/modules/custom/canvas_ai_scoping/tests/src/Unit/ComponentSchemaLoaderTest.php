@@ -393,7 +393,7 @@ final class ComponentSchemaLoaderTest extends UnitTestCase {
 
     $ordinals = $loader->getEnumOrdinals('sdc.byte_theme.heading');
 
-    // Numeric-only enums are skipped.
+    // Integer-typed enums are skipped (stored separately via getIntegerEnumValues).
     $this->assertArrayNotHasKey('level', $ordinals);
     // String enums are present.
     $this->assertArrayHasKey('text_color', $ordinals);
@@ -598,8 +598,10 @@ final class ComponentSchemaLoaderTest extends UnitTestCase {
     $this->assertSame(['text_color'], $index['inverted']);
     // 'muted' is unique to background_color.
     $this->assertSame(['background_color'], $index['muted']);
-    // columns values are numeric strings, so they are skipped by allNumeric.
-    $this->assertArrayNotHasKey('1', $index);
+    // columns values are string-typed, so they are included despite looking
+    // numeric (P0-1 fix: type check replaces is_numeric on values).
+    $this->assertArrayHasKey('1', $index);
+    $this->assertSame(['columns'], $index['1']);
   }
 
   /**
@@ -627,6 +629,76 @@ final class ComponentSchemaLoaderTest extends UnitTestCase {
     $this->assertCount(2, $boolProps);
     $this->assertTrue($boolProps['disabled']['inverted']);
     $this->assertFalse($boolProps['active']['inverted']);
+  }
+
+  /**
+   * Tests that numeric-string enums (spacing, columns) are included in maps.
+   *
+   * Regression test for P0-1: is_numeric() previously excluded string enums
+   * with numeric-looking values like ["0", "8", "16", "32"].
+   *
+   * @covers ::getReverseEnumIndex
+   * @covers ::getEnumOrdinals
+   */
+  public function testNumericStringEnumsIncluded(): void {
+    $loader = $this->buildLoader([
+      'section' => [
+        'columns' => [
+          'type' => 'string',
+          'enum' => ['1', '2', '3', '4'],
+        ],
+        'margin_block_start' => [
+          'type' => 'string',
+          'enum' => ['0', '8', '16', '32', '64'],
+        ],
+      ],
+    ]);
+
+    // String-typed numeric enums should be in the reverse index.
+    $index = $loader->getReverseEnumIndex('sdc.byte_theme.section');
+    $this->assertArrayHasKey('1', $index);
+    $this->assertSame(['columns'], $index['1']);
+    $this->assertArrayHasKey('0', $index);
+    $this->assertSame(['margin_block_start'], $index['0']);
+    $this->assertArrayHasKey('32', $index);
+    $this->assertSame(['margin_block_start'], $index['32']);
+
+    // They should also have ordinals.
+    $ordinals = $loader->getEnumOrdinals('sdc.byte_theme.section');
+    $this->assertArrayHasKey('columns', $ordinals);
+    $this->assertSame(['1', '2', '3', '4'], $ordinals['columns']['values']);
+    $this->assertArrayHasKey('margin_block_start', $ordinals);
+    $this->assertSame(['0', '8', '16', '32', '64'], $ordinals['margin_block_start']['values']);
+  }
+
+  /**
+   * Tests that integer-typed enums are stored via getIntegerEnumValues.
+   *
+   * @covers ::getIntegerEnumValues
+   */
+  public function testIntegerEnumValuesStored(): void {
+    $loader = $this->buildLoader([
+      'heading' => [
+        'level' => [
+          'type' => 'integer',
+          'enum' => [1, 2, 3, 4, 5, 6],
+        ],
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'inverted'],
+        ],
+      ],
+    ]);
+
+    // Integer enum values are stored separately.
+    $intValues = $loader->getIntegerEnumValues('level', 'sdc.byte_theme.heading');
+    $this->assertSame([1, 2, 3, 4, 5, 6], $intValues);
+
+    // String enums return NULL from getIntegerEnumValues.
+    $this->assertNull($loader->getIntegerEnumValues('text_color', 'sdc.byte_theme.heading'));
+
+    // Unknown prop returns NULL.
+    $this->assertNull($loader->getIntegerEnumValues('nonexistent', 'sdc.byte_theme.heading'));
   }
 
 }

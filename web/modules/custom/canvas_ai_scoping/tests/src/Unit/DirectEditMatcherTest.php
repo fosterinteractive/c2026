@@ -224,6 +224,17 @@ class DirectEditMatcherTest extends UnitTestCase {
         return $enumOrdinals[$componentName] ?? [];
       });
 
+    // Integer enum values mock.
+    $integerEnums = [
+      'sdc.byte_theme.heading' => [
+        'level' => [1, 2, 3, 4, 5, 6],
+      ],
+    ];
+    $schemaLoader->method('getIntegerEnumValues')
+      ->willReturnCallback(static function (string $propName, string $componentName) use ($integerEnums): ?array {
+        return $integerEnums[$componentName][$propName] ?? NULL;
+      });
+
     $schemaLoader->method('getReverseEnumIndex')
       ->willReturnCallback(static function (string $componentName): array {
         $enums = self::$enumValues[$componentName] ?? [];

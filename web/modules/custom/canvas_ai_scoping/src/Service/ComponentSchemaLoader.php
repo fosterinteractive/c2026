@@ -50,6 +50,11 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   private const CACHE_CID_ENUM_ORDINALS = 'canvas_ai_scoping:enum_ordinals';
 
   /**
+   * Cache ID for the integer enum values map.
+   */
+  private const CACHE_CID_INTEGER_ENUMS = 'canvas_ai_scoping:integer_enums';
+
+  /**
    * Cache tag used to invalidate all maps together.
    */
   private const CACHE_TAG = 'canvas_ai_scoping';
@@ -124,6 +129,13 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
    * @var array<string, array<string, array{values: list<string>, direction: string}>>|null
    */
   private ?array $enumOrdinals = NULL;
+
+  /**
+   * Cached integer enum values: {sdc_name => {prop_name => [int, ...]}}.
+   *
+   * @var array<string, array<string, list<int>>>|null
+   */
+  private ?array $integerEnums = NULL;
 
   /**
    * Constructs a ComponentSchemaLoader.
@@ -209,6 +221,14 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   /**
    * {@inheritdoc}
    */
+  public function getIntegerEnumValues(string $propName, string $componentName): ?array {
+    $this->ensureLoaded();
+    return $this->integerEnums[$componentName][$propName] ?? NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getOrthogonalityReport(): array {
     $this->ensureLoaded();
     $report = [];
@@ -242,15 +262,17 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     $cachedReverseEnum = $this->cache->get(self::CACHE_CID_REVERSE_ENUM);
     $cachedBooleanProps = $this->cache->get(self::CACHE_CID_BOOLEAN_PROPS);
     $cachedEnumOrdinals = $this->cache->get(self::CACHE_CID_ENUM_ORDINALS);
+    $cachedIntegerEnums = $this->cache->get(self::CACHE_CID_INTEGER_ENUMS);
 
     if ($cachedAliases !== FALSE && $cachedEnums !== FALSE
       && $cachedReverseEnum !== FALSE && $cachedBooleanProps !== FALSE
-      && $cachedEnumOrdinals !== FALSE) {
+      && $cachedEnumOrdinals !== FALSE && $cachedIntegerEnums !== FALSE) {
       $this->propAliases = $cachedAliases->data;
       $this->enumValues = $cachedEnums->data;
       $this->reverseEnumIndex = $cachedReverseEnum->data;
       $this->booleanProps = $cachedBooleanProps->data;
       $this->enumOrdinals = $cachedEnumOrdinals->data;
+      $this->integerEnums = $cachedIntegerEnums->data;
       return;
     }
 
@@ -262,6 +284,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
       self::CACHE_CID_REVERSE_ENUM => $this->reverseEnumIndex,
       self::CACHE_CID_BOOLEAN_PROPS => $this->booleanProps,
       self::CACHE_CID_ENUM_ORDINALS => $this->enumOrdinals,
+      self::CACHE_CID_INTEGER_ENUMS => $this->integerEnums,
     ];
     foreach ($cacheSets as $cid => $data) {
       $this->cache->set(
@@ -282,6 +305,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     $this->reverseEnumIndex = [];
     $this->booleanProps = [];
     $this->enumOrdinals = [];
+    $this->integerEnums = [];
 
     $themePath = $this->resolveThemePath();
     if ($themePath === NULL) {
@@ -361,6 +385,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     $reverseEnum = [];
     $boolProps = [];
     $ordinals = [];
+    $intEnums = [];
 
     foreach ($properties as $propName => $propDef) {
       if (!is_array($propDef)) {
@@ -390,12 +415,18 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
         continue;
       }
 
-      // Skip numeric-only enums (e.g., heading level — handled specially).
       $enumValues = $propDef['enum'];
-      $allNumeric = array_reduce($enumValues, static function (bool $carry, mixed $v): bool {
-        return $carry && is_numeric($v);
-      }, TRUE);
-      if ($allNumeric) {
+
+      // Integer/number-typed enums (e.g., heading level [1,2,3,4,5,6]) are
+      // stored separately for numeric resolution via getIntegerEnumValues().
+      // String-typed enums with numeric-looking values (e.g., columns
+      // ["1","2","3","4"] or spacing ["0","8","16","32"]) are kept in the
+      // string enum map — they were previously excluded by is_numeric().
+      if ($propType === 'integer' || $propType === 'number') {
+        $intValues = array_values(array_filter($enumValues, 'is_int'));
+        if (!empty($intValues)) {
+          $intEnums[$propName] = $intValues;
+        }
         continue;
       }
 
@@ -446,6 +477,9 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     }
     if (!empty($ordinals)) {
       $this->enumOrdinals[$sdcName] = $ordinals;
+    }
+    if (!empty($intEnums)) {
+      $this->integerEnums[$sdcName] = $intEnums;
     }
   }
 
@@ -529,7 +563,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
       'cite_name' => ['citation name', 'author'],
       'cite_text' => ['citation text'],
       'cite_url' => ['citation link'],
-      'text_align' => ['text align', 'align', 'alignment'],
+      'is_text_centered' => ['text centered', 'centered text'],
       'overlap_navbar' => ['overlap header'],
       'mobile_width' => ['mobile width'],
       'menu_align' => ['menu alignment', 'menu align'],
