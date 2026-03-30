@@ -39,7 +39,7 @@ Patches 1 and 2 are independent of each other. Patch 3 depends on Patch 1 (for t
 
 ---
 
-## Patch 1: `canvas` -- Structured Layout API on BuildSystemPromptEvent
+## Patch 1: `canvas_ai` -- Structured Layout Token on BuildSystemPromptEvent
 
 ### Scope
 
@@ -51,7 +51,7 @@ Patches 1 and 2 are independent of each other. Patch 3 depends on Patch 1 (for t
 
 ### What Changes
 
-**Module:** `canvas` (specifically `canvas_ai` submodule)
+**Module:** `canvas_ai` (submodule of `canvas`)
 
 **Files to modify:**
 
@@ -209,6 +209,14 @@ This is the largest patch. It adds two capabilities to `canvas_ai`:
 | Move semantic aliases to a config entity or settings YAML | The alias map is theme-specific knowledge. Hardcoding Byte theme aliases in `canvas_ai` couples the module to one theme. |
 | Alternative: Derive aliases algorithmically from prop names only | Simpler. `heading_text` produces `['heading_text', 'heading', 'text']` via underscore splitting. Loses domain aliases like `heading_text -> title` but works for any theme. |
 | **Recommended: Algorithmic + optional override** | Default: algorithmic alias generation (underscore split + common patterns). Override: `canvas_ai.direct_edit.settings` config with a `prop_aliases` mapping for theme-specific additions. |
+
+**Enum value aliases:** The same pattern applies to `getNaturalAliasesForEnumValue()`, which maps canonical enum values to natural language alternatives (e.g., "inverted" → ["white", "light"]). The prototype originally had a 50-entry hardcoded map with Byte-theme-specific values. This has been moved to `canvas_ai_scoping.settings` config under `enum_value_aliases`, with an algorithmic fallback that derives aliases from hyphenated values (e.g., "extra-large" → "extra large", "heading-responsive-4xl" → "4xl"). Theme developers can add theme-specific aliases via config without modifying module code.
+
+| Decision | Rationale |
+|----------|-----------|
+| Config-driven enum value aliases | Same rationale as prop aliases: "primary" → "blue" is a Byte design token, not a universal mapping. Config makes this theme-portable. |
+| Algorithmic fallback for hyphenated values | Covers the common case (enum values with hyphens) without requiring manual configuration. |
+| Ship sensible defaults in `config/install` | New installs get a set of common aliases (color names, alignment terms, size abbreviations) that work across themes. Theme developers extend or override via config. |
 
 #### Service: `DirectEditMatcher`
 

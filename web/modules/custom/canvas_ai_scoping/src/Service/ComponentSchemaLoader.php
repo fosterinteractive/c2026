@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\canvas_ai_scoping\Service;
 
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ThemeExtensionList;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Psr\Log\LoggerInterface;
@@ -162,6 +163,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     private readonly ThemeExtensionList $themeList,
     private readonly CacheBackendInterface $cache,
     private readonly LoggerInterface $logger,
+    private readonly ConfigFactoryInterface $configFactory,
   ) {}
 
   /**
@@ -694,9 +696,9 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   /**
    * Returns natural language aliases for a known enum value.
    *
-   * Covers color aliases (white → inverted, blue → primary), size aliases
-   * (big/large → large, small/tiny → small), alignment aliases
-   * (middle/centered → center), and style aliases.
+   * Reads aliases from canvas_ai_scoping.settings config (enum_value_aliases).
+   * Falls back to algorithmic derivation for values not in config: splits
+   * hyphenated values into words and generates size abbreviations.
    *
    * @param string $value
    *   The canonical enum value.
@@ -705,57 +707,28 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
    *   Additional aliases that map to this value.
    */
   private function getNaturalAliasesForEnumValue(string $value): array {
-    $naturalAliasMap = [
-      // Color aliases.
-      'inverted' => ['white', 'light', 'inverted text'],
-      'primary' => ['blue', 'brand'],
-      'secondary' => ['grey', 'gray'],
-      'accent' => ['highlight accent'],
-      'muted' => ['subtle', 'muted background'],
-      // Alignment aliases.
-      'center' => ['centered', 'middle'],
-      'left' => ['start'],
-      'right' => ['end'],
-      // Size aliases.
-      'large' => ['big'],
-      'small' => ['tiny'],
-      'medium' => ['mid', 'normal size'],
-      'extra-large' => ['xl', 'extra large'],
-      'extra-small' => ['xs', 'extra small'],
-      // Text size aliases (heading).
-      'heading-responsive-8xl' => ['8xl', 'extra extra extra large'],
-      'heading-responsive-7xl' => ['7xl'],
-      'heading-responsive-6xl' => ['6xl'],
-      'heading-responsive-5xl' => ['5xl'],
-      'heading-responsive-4xl' => ['4xl'],
-      'heading-responsive-3xl' => ['3xl'],
-      'heading-responsive-2xl' => ['2xl'],
-      'heading-responsive-xl' => ['xl heading'],
-      // Text size aliases (text component).
-      'text-xs' => ['xs', 'smallest', 'tiny text'],
-      'text-sm' => ['sm', 'small text'],
-      'normal' => ['default size', 'regular'],
-      'text-lg' => ['lg'],
-      'text-xl' => ['xl text'],
-      'text-2xl' => ['2xl text'],
-      'text-3xl' => ['3xl text'],
-      // Button variant aliases.
-      'primary-inverted' => ['primary inverted', 'inverted primary'],
-      'secondary-inverted' => ['secondary inverted', 'inverted secondary'],
-      // Button/badge style aliases.
-      'framed' => ['bordered', 'with border'],
-      'full' => ['full width', 'fullscreen', 'full screen'],
-      // Orientation / direction aliases.
-      'vertical' => ['portrait', 'top to bottom'],
-      'horizontal' => ['landscape', 'side by side'],
-      // Hero billboard height aliases (merged into 'full' entry above).
-      'ribbon' => ['thin', 'narrow'],
-      // Symbol position aliases.
-      'before' => ['prefix', 'in front'],
-      'after' => ['suffix', 'behind'],
-    ];
+    $config = $this->configFactory->get('canvas_ai_scoping.settings');
+    $configAliases = $config->get('enum_value_aliases') ?? [];
 
-    return $naturalAliasMap[$value] ?? [];
+    if (isset($configAliases[$value])) {
+      return $configAliases[$value];
+    }
+
+    // Algorithmic fallback: derive aliases from the value string itself.
+    $aliases = [];
+
+    // Hyphenated values get their parts as aliases (e.g., "extra-large" → "extra large").
+    if (str_contains($value, '-')) {
+      $aliases[] = str_replace('-', ' ', $value);
+      $parts = explode('-', $value);
+      // Last segment as standalone (e.g., "heading-responsive-4xl" → "4xl").
+      $lastPart = end($parts);
+      if (strlen($lastPart) <= 4) {
+        $aliases[] = $lastPart;
+      }
+    }
+
+    return $aliases;
   }
 
 }

@@ -11,3 +11,13 @@ canvas_ai_scoping.settings:
       sequence:
         type: string
         label: 'Verb'
+    enum_value_aliases:
+      type: mapping
+      label: 'Enum value aliases for the direct-edit matcher'
+      mapping:
+        '*':
+          type: sequence
+          label: 'Aliases for this enum value'
+          sequence:
+            type: string
+            label: 'Alias'

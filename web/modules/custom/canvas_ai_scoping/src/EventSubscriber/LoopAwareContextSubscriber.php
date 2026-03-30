@@ -69,10 +69,12 @@ final class LoopAwareContextSubscriber implements EventSubscriberInterface {
     $agentId = $event->getAgentId();
     if (in_array($agentId, self::LOOP_GATED_AGENTS, TRUE)) {
       $loopCount = $event->getLoopCount();
-      // Reset tracking on first loop to prevent cross-request data leakage
-      // in persistent PHP runtimes (FrankenPHP, RoadRunner, etc.).
+      // Reset this agent's tracking on first loop to prevent cross-request
+      // data leakage in persistent PHP runtimes (FrankenPHP, RoadRunner).
+      // Per-agent reset avoids wiping loop counts for concurrently executing
+      // agents (e.g., orchestrator spawning a sub-agent in the same process).
       if ($loopCount === 0) {
-        $this->loopCounts = [];
+        unset($this->loopCounts[$agentId]);
       }
       $this->loopCounts[$agentId] = $loopCount;
     }

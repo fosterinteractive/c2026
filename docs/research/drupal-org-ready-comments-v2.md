@@ -111,7 +111,7 @@ Layout is approximately 10% of total per-loop cost — system prompt instruction
 
 **Prototype:**
 
-Working `LayoutScopingSubscriber` in a custom module. Uses `CanvasAiTempStore` to read the current layout and `BuildSystemPromptEvent` to replace layout JSON in the system prompt. Falls back to full layout if the selected component can't be located. 13 unit tests covering region index generation, section scoping, nested components, and edge cases.
+Working `LayoutScopingSubscriber` in a custom module. Uses `CanvasAiTempStore` to read the current layout and `BuildSystemPromptEvent` to replace layout JSON in the system prompt. Falls back to full layout if the selected component can't be located. Unit tests covering region index generation, section scoping, nested components, and edge cases.
 
 We also prototyped a more aggressive "context envelope" mode for `canvas_component_agent` that sends only the selected component + neighbors + section metadata (~350 tokens vs ~3K for the full layout). Happy to share that work as well if there's interest.
 
@@ -169,12 +169,13 @@ The pattern matcher is intentionally conservative — it only resolves edits whe
 **Measured impact (N=1 heading edit, demo page):**
 
 - Deterministic path: 0 tokens, <7ms latency (median 3.2 microseconds for pattern matching alone, measured over 30 operations)
-- AI path (baseline): ~101K tokens
+- AI path (baseline): ~101K tokens, 16.4s mean latency (N=5, SD=838ms, 95% CI [15.3s, 17.4s])
 - Component catalog survey of 23 Byte theme SDC components (125 total props): 40% are enum-constrained, 8.8% are boolean — 48.8% of props are addressable by the deterministic path without requiring LLM reasoning. 12 of 17 enum-bearing components have fully orthogonal enum values (no bare-value ambiguity).
+- Hit rate: 60% on 20 mixed edits (12 deterministic, 8 AI fallback). All deterministic predictions correct.
 
 **Working prototype:**
 
-`DirectEditMatcher` + `DirectEditController` in a custom `canvas_ai_scoping` module. Uses the same `AiResponseValidator` and `CanvasAiPageBuilderHelper` services as the AI pipeline. 126 PHPUnit tests, 376 assertions across the module (matcher, controller, schema loader, layout scoping, context envelope). Playwright browser regression covering cold-start (empty tempstore) and compound multi-prop edits.
+`DirectEditMatcher` + `DirectEditController` in a custom `canvas_ai_scoping` module. Uses the same `AiResponseValidator` and `CanvasAiPageBuilderHelper` services as the AI pipeline. 144 PHPUnit tests, 541 assertions across the module (matcher, controller, schema loader, layout scoping, context envelope). 16 Playwright E2E specs covering cold-start (empty tempstore), compound multi-prop edits, all 5 matcher tiers, and 5 rejection tests.
 
 This complements agent chain optimizations by handling a category of edits that don't require agent reasoning — similar in principle to how Drupal's static page cache skips the full bootstrap for requests that don't need it.
 

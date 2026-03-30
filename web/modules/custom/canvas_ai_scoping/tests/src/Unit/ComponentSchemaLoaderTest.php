@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Drupal\Tests\canvas_ai_scoping\Unit;
 
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\Extension\Extension;
 use Drupal\Core\Extension\ThemeExtensionList;
 use Drupal\Core\Extension\ThemeHandlerInterface;
@@ -104,7 +106,33 @@ final class ComponentSchemaLoaderTest extends UnitTestCase {
     $themeHandler = $this->createMock(ThemeHandlerInterface::class);
     $themeHandler->method('getDefault')->willReturn('byte_theme');
     $themeList = $this->createMock(ThemeExtensionList::class);
-    $loader = new ComponentSchemaLoader($themeHandler, $themeList, $this->cache, $this->logger);
+    $configObj = $this->createMock(ImmutableConfig::class);
+    $configObj->method('get')->willReturnCallback(function ($key) {
+      if ($key === 'enum_value_aliases') {
+        return [
+          'inverted' => ['white', 'light'],
+          'primary' => ['blue', 'brand'],
+          'secondary' => ['grey', 'gray'],
+          'center' => ['centered', 'middle'],
+          'left' => ['start'],
+          'right' => ['end'],
+          'large' => ['big'],
+          'small' => ['tiny'],
+          'medium' => ['mid'],
+          'framed' => ['bordered'],
+          'full' => ['full width'],
+          'vertical' => ['portrait'],
+          'horizontal' => ['landscape', 'side by side'],
+          'ribbon' => ['thin', 'narrow'],
+          'before' => ['prefix'],
+          'after' => ['suffix'],
+        ];
+      }
+      return NULL;
+    });
+    $configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $configFactory->method('get')->with('canvas_ai_scoping.settings')->willReturn($configObj);
+    $loader = new ComponentSchemaLoader($themeHandler, $themeList, $this->cache, $this->logger, $configFactory);
 
     // Create temporary YAML files and invoke processComponentFile via reflection.
     $reflection = new \ReflectionClass($loader);

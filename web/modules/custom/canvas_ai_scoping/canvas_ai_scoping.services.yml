@@ -52,6 +52,7 @@ services:
       - '@extension.list.theme'
       - '@cache.default'
       - '@logger.channel.canvas_ai_scoping'
+      - '@config.factory'
 
   canvas_ai_scoping.direct_edit_matcher:
     class: Drupal\canvas_ai_scoping\Service\DirectEditMatcher
