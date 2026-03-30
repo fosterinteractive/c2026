@@ -31,6 +31,8 @@ The patches have different risk profiles and different audiences:
 
 **Filing order: P2 → P1 → P4** (established credibility → complementary evidence → ambitious proposal)
 
+**P2 filed:** https://www.drupal.org/project/ai_context/issues/3582288 (2026-03-30)
+
 ---
 
 ## Maintainer Intelligence (from Canvas Issue Queue Corpus)
