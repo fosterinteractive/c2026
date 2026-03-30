@@ -1,0 +1,19 @@
+--- a/modules/canvas_ai/src/Controller/CanvasBuilder.php
++++ b/modules/canvas_ai/src/Controller/CanvasBuilder.php
+@@ -164,6 +164,8 @@ final class CanvasBuilder extends ControllerBase {
+     // Store the current layout in the temp store. This will be later used by
+     // the ai agents.
+     // @see \Drupal\canvas_ai\Plugin\AiFunctionCall\GetCurrentLayout.
++    // Also expose the parsed layout array as a structured token so event
++    // subscribers can modify it without fragile string surgery on the prompt.
+     $current_layout = $prompt['current_layout'] ?? '';
+     if (!empty($current_layout)) {
+       $this->canvasAiTempStore->setData(CanvasAiTempStore::CURRENT_LAYOUT_KEY, Json::encode($current_layout));
+@@ -225,6 +227,7 @@ final class CanvasBuilder extends ControllerBase {
+     $agent->setTokenContexts([
+       'entity_type' => $prompt['entity_type'] ?? NULL,
+       'entity_id' => $prompt['entity_id'] ?? NULL,
++      'layout_data' => $prompt['current_layout'] ?? NULL,
+       'selected_component' => $prompt['selected_component'] ?? NULL,
+       'selected_component_required_props' => isset($prompt['selected_component_required_props']) ? Json::encode($prompt['selected_component_required_props']) : NULL,
+       'layout' => $prompt['layout'] ?? NULL,

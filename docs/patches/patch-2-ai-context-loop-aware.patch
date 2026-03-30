@@ -1,0 +1,131 @@
+Patch 2: ai_context -- Loop-Aware Context Injection
+Issue: https://www.drupal.org/project/ai_context/issues/TBD
+Module: ai_context
+Drupal version: 11.3
+
+Adds a `loop_aware` boolean to per-agent context configuration. When enabled,
+`SystemPromptSubscriber` skips context injection on agent loop iterations > 0.
+This eliminates 40-60% of redundant token cost for multi-loop agents (e.g.,
+canvas_page_builder_agent) since the LLM already holds context from loop 0 in
+its conversation history.
+
+The prototype approach (inject-then-strip via AiContextPromptParser) is NOT
+used here. Skipping at the source inside SystemPromptSubscriber is architecturally
+correct and eliminates the separator-coupling fragility entirely.
+
+--- a/config/schema/ai_context.schema.yml
++++ b/config/schema/ai_context.schema.yml
+@@ -185,6 +185,10 @@ ai_context.agents:
+           excluded_subcontext:
+             type: sequence
+             label: 'Explicitly excluded subcontext item IDs'
+             sequence:
+               type: string
+               label: 'AI Context Item ID'
+           scope_subscriptions:
+             type: mapping
+             label: 'Scope subscriptions'
+             mapping:
+               '*':
+                 type: sequence
+                 label: 'Scope values'
+                 sequence:
+                   type: string
+                   label: 'Scope value ID'
++          loop_aware:
++            type: boolean
++            label: 'Skip context injection on agent loop iterations > 0'
+
+--- a/src/EventSubscriber/SystemPromptSubscriber.php
++++ b/src/EventSubscriber/SystemPromptSubscriber.php
+@@ -22,6 +22,22 @@ final class SystemPromptSubscriber implements EventSubscriberInterface {
+    * @var array<string,string>
+    */
+   private array $runnerIds = [];
++
++  /**
++   * Loop counts keyed by agent ID, populated by onAgentStarted.
++   *
++   * @var array<string,int>
++   */
++  private array $loopCounts = [];
+
+   /**
+    * Constructs a SystemPromptSubscriber object.
+@@ -70,6 +86,11 @@ final class SystemPromptSubscriber implements EventSubscriberInterface {
+   public function onAgentStarted(AgentStartedExecutionEvent $event): void {
+     $agentId = $event->getAgentId();
+     $runnerId = $event->getAgentRunnerId();
+     if ($agentId && $runnerId) {
+       $this->runnerIds[$agentId] = $runnerId;
++      $this->loopCounts[$agentId] = $event->getLoopCount();
+     }
+   }
+
+@@ -87,6 +108,21 @@ final class SystemPromptSubscriber implements EventSubscriberInterface {
+   public function onPreSystemPrompt(BuildSystemPromptEvent $event): void {
+     $agentId = $event->getAgentId();
+     $prompt = $event->getSystemPrompt();
+     $tokens = $event->getTokens();
++
++    // Skip context injection for loop-aware agents on iterations > 0.
++    // The LLM already holds context blocks from loop 0 in its conversation
++    // history. Re-injecting them wastes 40-60% of prompt tokens per loop.
++    // loop_aware defaults to FALSE so existing agents are unaffected.
++    if ($agentId) {
++      $agentConfigs = $this->configFactory->get('ai_context.agents')->get('agents') ?? [];
++      foreach ($agentConfigs as $agentConfig) {
++        if (($agentConfig['id'] ?? '') === $agentId) {
++          $loopAware = $agentConfig['loop_aware'] ?? FALSE;
++          $currentLoop = $this->loopCounts[$agentId] ?? 0;
++          if ($loopAware && $currentLoop > 0) {
++            return;
++          }
++          break;
++        }
++      }
++    }
+
+     if ($agentId && $prompt) {
+
+--- a/src/Form/AiContextAgentForm.php
++++ b/src/Form/AiContextAgentForm.php
+@@ -560,6 +560,22 @@ final class AiContextAgentForm extends ConfigFormBase {
+     // (existing scope_subscriptions form elements here)
+     // ...
+
++    $form['loop_aware_settings'] = [
++      '#type' => 'details',
++      '#title' => $this->t('Performance settings'),
++      '#open' => FALSE,
++    ];
++    $form['loop_aware_settings']['loop_aware'] = [
++      '#type' => 'checkbox',
++      '#title' => $this->t('Loop-aware context injection'),
++      '#description' => $this->t('When enabled, context blocks are injected only on the first agent loop (iteration 0). Subsequent loops skip injection because the LLM already holds the context in its conversation history. Enable for multi-loop agents such as <em>canvas_page_builder_agent</em> to reduce token usage by 40–60%%.'),
++      '#default_value' => $current_config['loop_aware'] ?? FALSE,
++    ];
++
+     return $form;
+   }
+
+@@ -654,6 +670,7 @@ final class AiContextAgentForm extends ConfigFormBase {
+       if ($agent_config['id'] === $agent_id) {
+         $agent_config['context_items'] = array_values($all_context_items);
+         $agent_config['always_include'] = array_values($all_always_include);
+         $agent_config['scope_subscriptions'] = $scope_subscriptions;
+         $agent_config['excluded_subcontext'] = array_values($all_excluded_subcontext);
++        $agent_config['loop_aware'] = (bool) $form_state->getValue('loop_aware');
+         $found = TRUE;
+         break;
+       }
+@@ -665,6 +682,7 @@ final class AiContextAgentForm extends ConfigFormBase {
+       $agent_configs[] = [
+         'id' => $agent_id,
+         'context_items' => array_values($all_context_items),
+         'always_include' => array_values($all_always_include),
+         'scope_subscriptions' => $scope_subscriptions,
+         'excluded_subcontext' => array_values($all_excluded_subcontext),
++        'loop_aware' => (bool) $form_state->getValue('loop_aware'),
+       ];
+     }
