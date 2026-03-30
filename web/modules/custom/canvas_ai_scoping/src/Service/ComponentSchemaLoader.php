@@ -664,12 +664,11 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
       'secondary-inverted' => ['secondary inverted', 'inverted secondary'],
       // Button/badge style aliases.
       'framed' => ['bordered', 'with border'],
-      'full' => ['full width'],
+      'full' => ['full width', 'fullscreen', 'full screen'],
       // Orientation / direction aliases.
       'vertical' => ['portrait', 'top to bottom'],
       'horizontal' => ['landscape', 'side by side'],
-      // Hero billboard height aliases.
-      'full' => ['fullscreen', 'full screen'],
+      // Hero billboard height aliases (merged into 'full' entry above).
       'ribbon' => ['thin', 'narrow'],
       // Symbol position aliases.
       'before' => ['prefix', 'in front'],

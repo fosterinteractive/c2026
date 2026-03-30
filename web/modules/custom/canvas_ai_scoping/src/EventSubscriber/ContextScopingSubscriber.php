@@ -123,7 +123,7 @@ final class ContextScopingSubscriber implements EventSubscriberInterface {
       $this->logger->warning(
         'ContextScopingSubscriber: 0 of @count fingerprints matched for @agent. Fingerprints may be stale if ai_context items were recently edited.',
         [
-          '@count' => count(self::STRIP_FINGERPRINTS),
+          '@count' => count($this->scopeManager->getStripFingerprints()),
           '@agent' => $event->getAgentId(),
         ]
       );
