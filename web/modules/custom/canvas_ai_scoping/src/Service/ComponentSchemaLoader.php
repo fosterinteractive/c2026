@@ -6,6 +6,7 @@ namespace Drupal\canvas_ai_scoping\Service;
 
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ThemeExtensionList;
+use Drupal\Core\Extension\ThemeHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Yaml;
 
@@ -58,11 +59,6 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
    * Cache tag used to invalidate all maps together.
    */
   private const CACHE_TAG = 'canvas_ai_scoping';
-
-  /**
-   * The Byte theme machine name.
-   */
-  private const THEME_NAME = 'byte_theme';
 
   /**
    * Props where "enable" means FALSE (inverted boolean semantics).
@@ -140,14 +136,17 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   /**
    * Constructs a ComponentSchemaLoader.
    *
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
+   *   The theme handler, used to discover the active default theme.
    * @param \Drupal\Core\Extension\ThemeExtensionList $themeList
-   *   The theme extension list, used to resolve the byte_theme path.
+   *   The theme extension list, used to resolve the theme path.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The default cache backend.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger channel.
    */
   public function __construct(
+    private readonly ThemeHandlerInterface $themeHandler,
     private readonly ThemeExtensionList $themeList,
     private readonly CacheBackendInterface $cache,
     private readonly LoggerInterface $logger,
@@ -291,7 +290,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
         $cid,
         $data,
         CacheBackendInterface::CACHE_PERMANENT,
-        [self::CACHE_TAG],
+        [self::CACHE_TAG, 'config:system.theme'],
       );
     }
   }
@@ -309,7 +308,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
 
     $themePath = $this->resolveThemePath();
     if ($themePath === NULL) {
-      $this->logger->warning('ComponentSchemaLoader: byte_theme not found; alias map will be empty.');
+      $this->logger->warning('ComponentSchemaLoader: default theme not found; alias map will be empty.');
       return;
     }
 
@@ -335,13 +334,14 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
    */
   private function resolveThemePath(): ?string {
     try {
-      $theme = $this->themeList->get(self::THEME_NAME);
+      $themeName = $this->themeHandler->getDefault();
+      $theme = $this->themeList->get($themeName);
       $relativePath = $theme->getPath();
       // getPath() returns a path relative to the Drupal root (DRUPAL_ROOT).
       return DRUPAL_ROOT . '/' . $relativePath;
     }
     catch (\Exception $e) {
-      $this->logger->warning('ComponentSchemaLoader: could not resolve byte_theme path: @msg', [
+      $this->logger->warning('ComponentSchemaLoader: could not resolve default theme path: @msg', [
         '@msg' => $e->getMessage(),
       ]);
       return NULL;
@@ -371,9 +371,9 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     }
 
     // Derive the SDC name from the directory name.
-    // File: .../components/heading/heading.component.yml → sdc.byte_theme.heading
+    // File: .../components/heading/heading.component.yml → sdc.<theme>.heading
     $componentDir = basename(dirname($file));
-    $sdcName = 'sdc.' . self::THEME_NAME . '.' . $componentDir;
+    $sdcName = 'sdc.' . $this->themeHandler->getDefault() . '.' . $componentDir;
 
     $properties = $schema['props']['properties'] ?? [];
     if (empty($properties) || !is_array($properties)) {

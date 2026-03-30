@@ -7,6 +7,7 @@ namespace Drupal\Tests\canvas_ai_scoping\Unit;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\Extension;
 use Drupal\Core\Extension\ThemeExtensionList;
+use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\canvas_ai_scoping\Service\ComponentSchemaLoader;
 use Drupal\Tests\UnitTestCase;
 use Psr\Log\LoggerInterface;
@@ -100,8 +101,10 @@ final class ComponentSchemaLoaderTest extends UnitTestCase {
    *   The loader instance with maps populated via reflection.
    */
   private function buildLoader(array $components): ComponentSchemaLoader {
+    $themeHandler = $this->createMock(ThemeHandlerInterface::class);
+    $themeHandler->method('getDefault')->willReturn('byte_theme');
     $themeList = $this->createMock(ThemeExtensionList::class);
-    $loader = new ComponentSchemaLoader($themeList, $this->cache, $this->logger);
+    $loader = new ComponentSchemaLoader($themeHandler, $themeList, $this->cache, $this->logger);
 
     // Create temporary YAML files and invoke processComponentFile via reflection.
     $reflection = new \ReflectionClass($loader);

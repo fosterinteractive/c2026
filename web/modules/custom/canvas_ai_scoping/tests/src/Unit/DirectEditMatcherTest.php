@@ -105,6 +105,7 @@ class DirectEditMatcherTest extends UnitTestCase {
         'blue' => 'primary',
       ],
       'align' => [
+        'default' => 'default',
         'left' => 'left',
         'center' => 'center',
         'centered' => 'center',
@@ -487,6 +488,34 @@ class DirectEditMatcherTest extends UnitTestCase {
         'section_footer',
         FALSE,
       ],
+
+      // Edge case: unicode in text value.
+      'unicode heading text' => [
+        'change the heading to Bienvenue chez nous',
+        'sdc.byte_theme.heading',
+        'heading_text',
+        'Bienvenue chez nous',
+      ],
+
+      // Reset/clear/remove patterns.
+      'reset color to default' => [
+        'reset the color',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'default',
+      ],
+      'clear the link on button' => [
+        'clear the link',
+        'sdc.byte_theme.button',
+        'href',
+        '',
+      ],
+      'remove the url on button' => [
+        'remove the url',
+        'sdc.byte_theme.button',
+        'href',
+        '',
+      ],
     ];
   }
 
@@ -518,6 +547,16 @@ class DirectEditMatcherTest extends UnitTestCase {
         [
           ['prop' => 'heading_text', 'value' => 'Welcome'],
           ['prop' => 'align', 'value' => 'right'],
+        ],
+      ],
+
+      // Edge case: edit verb in text value must not be split.
+      'compound with edit verb in text value' => [
+        'change the heading to Set Your Goals and set the color to blue',
+        'sdc.byte_theme.heading',
+        [
+          ['prop' => 'heading_text', 'value' => 'Set Your Goals'],
+          ['prop' => 'text_color', 'value' => 'primary'],
         ],
       ],
     ];
@@ -629,6 +668,32 @@ class DirectEditMatcherTest extends UnitTestCase {
       // Empty and too-long messages.
       'empty message' => ['', 'sdc.byte_theme.heading', 'empty message'],
       'too long message' => [str_repeat('x', 501), 'sdc.byte_theme.heading', 'exceeds 500 chars'],
+
+      // Edge case: bare "default" is ambiguous (maps to text_color and align).
+      'bare default is ambiguous (multiple props have default)' => [
+        'default',
+        'sdc.byte_theme.heading',
+        'default maps to multiple props (text_color, align both have default)',
+      ],
+
+      // Edge case: empty value after extraction — regex (.+?) requires ≥1 char.
+      'empty value after extraction' => [
+        'change the heading to ',
+        'sdc.byte_theme.heading',
+        'trailing space produces empty value, (.+?) does not match',
+      ],
+
+      // Reset/clear/remove rejections.
+      'remove this section (structural, not prop reset)' => [
+        'remove this section',
+        'sdc.byte_theme.heading',
+        'structural operation, not prop reset',
+      ],
+      'clear with no prop reference' => [
+        'clear',
+        'sdc.byte_theme.heading',
+        'no prop reference after verb',
+      ],
     ];
   }
 

@@ -209,6 +209,13 @@ final class DirectEditMatcher {
       return $result;
     }
 
+    // Phase 2b: Reset/clear/remove patterns.
+    // "reset the color", "clear the link", "remove the icon"
+    $result = $this->matchResetPattern($messageLower, $componentName);
+    if ($result !== NULL) {
+      return $result;
+    }
+
     // Phase 3: Relative adjustments.
     // "bigger", "smaller", "make it bigger" — navigate enum ordinals.
     // Requires current prop values to know which direction to move.
@@ -519,6 +526,69 @@ final class DirectEditMatcher {
 
     // For string props (heading_text, label, etc.), accept the raw value.
     return ['prop' => $propName, 'value' => $rawValue];
+  }
+
+  /**
+   * Matches reset/clear/remove patterns for prop values.
+   *
+   * "reset the color" → set to first enum value (default).
+   * "clear the link" → set string prop to empty string.
+   * "remove the icon" → set string prop to empty string.
+   *
+   * @param string $messageLower
+   *   Lowercased, trimmed user message.
+   * @param string $componentName
+   *   The SDC component name.
+   *
+   * @return array{prop: string, value: mixed}|null
+   *   Resolved prop and reset value, or NULL if no match.
+   */
+  private function matchResetPattern(string $messageLower, string $componentName): ?array {
+    // Match: reset/clear/remove [the] <prop reference>
+    $pattern = '/^(reset|clear|remove)\s+(?:the\s+)?(.+?)\s*$/i';
+    if (!preg_match($pattern, $messageLower, $matches)) {
+      return NULL;
+    }
+
+    $verb = mb_strtolower($matches[1]);
+    $propRef = mb_strtolower(trim($matches[2]));
+
+    // Don't match structural operations like "remove this section".
+    $structuralWords = ['section', 'component', 'block', 'card', 'element', 'page', 'this'];
+    foreach ($structuralWords as $word) {
+      if (str_contains($propRef, $word)) {
+        return NULL;
+      }
+    }
+
+    // Resolve the prop reference using aliases.
+    $aliases = $this->schemaLoader->getPropAliases($componentName);
+    $propName = $aliases[$propRef] ?? NULL;
+    if ($propName === NULL) {
+      return NULL;
+    }
+
+    // For "reset": set to default enum value (first in the list).
+    if ($verb === 'reset') {
+      $enumValues = $this->schemaLoader->getEnumValues($propName, $componentName);
+      if ($enumValues !== NULL) {
+        // First value in the enum map is typically 'default'.
+        $firstValue = array_values($enumValues)[0] ?? NULL;
+        if ($firstValue !== NULL) {
+          return ['prop' => $propName, 'value' => $firstValue];
+        }
+      }
+      return NULL;
+    }
+
+    // For "clear"/"remove": set string props to empty, reject enum props.
+    $enumValues = $this->schemaLoader->getEnumValues($propName, $componentName);
+    if ($enumValues !== NULL) {
+      // Can't "clear" an enum prop — use "reset" instead.
+      return NULL;
+    }
+
+    return ['prop' => $propName, 'value' => ''];
   }
 
   /**

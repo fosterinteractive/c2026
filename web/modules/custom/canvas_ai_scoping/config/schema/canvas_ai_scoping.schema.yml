@@ -1,0 +1,7 @@
+canvas_ai_scoping.settings:
+  type: config_object
+  label: 'Canvas AI Scoping settings'
+  mapping:
+    telemetry_enabled:
+      type: boolean
+      label: 'Enable detailed direct-edit telemetry logging'

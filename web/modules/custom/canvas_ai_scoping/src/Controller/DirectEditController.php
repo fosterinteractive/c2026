@@ -11,7 +11,7 @@ use Drupal\canvas_ai_scoping\Service\DirectEditMatcher;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Access\CsrfTokenGenerator;
 use Drupal\Core\Controller\ControllerBase;
-use Drupal\Core\State\StateInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -39,7 +39,7 @@ final class DirectEditController extends ControllerBase {
     private readonly CanvasAiTempStore $canvasAiTempStore,
     private readonly CsrfTokenGenerator $csrfTokenGenerator,
     private readonly LoggerInterface $logger,
-    private readonly StateInterface $state,
+    private readonly ConfigFactoryInterface $scopingConfigFactory,
   ) {}
 
   /**
@@ -53,7 +53,7 @@ final class DirectEditController extends ControllerBase {
       $container->get('canvas_ai.tempstore'),
       $container->get('csrf_token'),
       $container->get('logger.channel.canvas_ai_scoping'),
-      $container->get('state'),
+      $container->get('config.factory'),
     );
   }
 
@@ -165,7 +165,7 @@ final class DirectEditController extends ControllerBase {
       $this->logger->info('DirectEdit: match elapsed @elapsed_us us (reject)', [
         '@elapsed_us' => $elapsedUs,
       ]);
-      if ($this->state->get('canvas_ai_scoping.telemetry_enabled', FALSE)) {
+      if ($this->scopingConfigFactory->get('canvas_ai_scoping.settings')->get('telemetry_enabled') ?? FALSE) {
         $this->logger->info('DirectEdit telemetry: @data', [
           '@data' => Json::encode([
             'tier' => 'reject',
@@ -196,7 +196,7 @@ final class DirectEditController extends ControllerBase {
       '@elapsed_us' => $elapsedUs,
       '@tier' => $tier,
     ]);
-    if ($this->state->get('canvas_ai_scoping.telemetry_enabled', FALSE)) {
+    if ($this->scopingConfigFactory->get('canvas_ai_scoping.settings')->get('telemetry_enabled') ?? FALSE) {
       $this->logger->info('DirectEdit telemetry: @data', [
         '@data' => Json::encode([
           'tier' => $tier,
