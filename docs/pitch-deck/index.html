@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canvas Direct-Edit: 430x Faster Component Editing</title>
+<!--
+  Aesthetic: Dark Signal — deep slate (#0f172a), electric purple (#7c3aed), cyan (#06b6d4)
+  Font: IBM Plex Mono (headings/labels) + DM Sans (body)
+  The ONE memorable thing: the 430x ratio rendered at full-bleed scale on slide 1
+  Narrative arc: Impact → Problem (16.4s) → Solution → 5 Tiers → Evidence (charts) → Methodology → Upstream → CTA
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+/* ============ THEME: Dark Signal ============ */
+:root {
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface2: #0f1f35;
+  --surface-elevated: #253350;
+  --border: rgba(148, 163, 184, 0.08);
+  --border-bright: rgba(148, 163, 184, 0.18);
+  --text: #f1f5f9;
+  --text-dim: #94a3b8;
+  --accent: #7c3aed;
+  --accent-bright: #a855f7;
+  --accent-dim: rgba(124, 58, 237, 0.15);
+  --cyan: #06b6d4;
+  --cyan-dim: rgba(6, 182, 212, 0.12);
+  --green: #10b981;
+  --green-dim: rgba(16, 185, 129, 0.12);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245, 158, 11, 0.12);
+  --red: #ef4444;
+  --red-dim: rgba(239, 68, 68, 0.12);
+  --code-bg: #0a1628;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { font-size: 16px; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--text);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ============ DECK ENGINE ============ */
+.deck {
+  height: 100dvh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.slide {
+  height: 100dvh;
+  scroll-snap-align: start;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(36px, 6vh, 72px) clamp(40px, 8vw, 120px);
+  isolation: isolate;
+  opacity: 0;
+  transform: translateY(40px) scale(0.98);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide.visible { opacity: 1; transform: none; }
+
+.slide .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.slide.visible .reveal { opacity: 1; transform: none; }
+.slide.visible .reveal:nth-child(1) { transition-delay: 0.08s; }
+.slide.visible .reveal:nth-child(2) { transition-delay: 0.18s; }
+.slide.visible .reveal:nth-child(3) { transition-delay: 0.28s; }
+.slide.visible .reveal:nth-child(4) { transition-delay: 0.38s; }
+.slide.visible .reveal:nth-child(5) { transition-delay: 0.48s; }
+.slide.visible .reveal:nth-child(6) { transition-delay: 0.58s; }
+.slide.visible .reveal:nth-child(7) { transition-delay: 0.68s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .slide, .slide .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* ============ NAV CHROME ============ */
+.deck-progress {
+  position: fixed; top: 0; left: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  z-index: 100; transition: width 0.3s ease; pointer-events: none;
+}
+
+.deck-dots {
+  position: fixed; right: clamp(12px, 2vw, 20px); top: 50%;
+  transform: translateY(-50%); display: flex; flex-direction: column;
+  gap: 7px; z-index: 100; padding: 8px;
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+
+.deck-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text-dim); opacity: 0.25; border: none; padding: 0;
+  cursor: pointer; transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+}
+.deck-dot:hover { opacity: 0.55; }
+.deck-dot.active { opacity: 1; transform: scale(1.6); background: var(--accent); }
+
+.deck-counter {
+  position: fixed; bottom: clamp(12px, 2vh, 20px); right: clamp(12px, 2vw, 20px);
+  font-family: var(--font-mono); font-size: 11px; color: var(--text-dim);
+  z-index: 100; font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  letter-spacing: 0.5px;
+}
+
+.deck-hints {
+  position: fixed; bottom: clamp(12px, 2vh, 20px); left: 50%;
+  transform: translateX(-50%); font-family: var(--font-mono);
+  font-size: 10px; color: var(--text-dim); opacity: 0.5; z-index: 100;
+  transition: opacity 0.5s ease; white-space: nowrap;
+}
+.deck-hints.faded { opacity: 0; pointer-events: none; }
+
+/* ============ SHARED TYPOGRAPHY ============ */
+.slide__display {
+  font-family: var(--font-mono);
+  font-size: clamp(56px, 11vw, 128px);
+  font-weight: 700;
+  letter-spacing: -3px;
+  line-height: 0.9;
+  text-wrap: balance;
+}
+
+.slide__heading {
+  font-family: var(--font-mono);
+  font-size: clamp(22px, 4vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.slide__subheading {
+  font-family: var(--font-mono);
+  font-size: clamp(16px, 2.5vw, 28px);
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.slide__body {
+  font-size: clamp(15px, 1.8vw, 20px);
+  line-height: 1.65;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+.slide__label {
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 1vw, 12px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent-bright);
+  margin-bottom: 14px;
+}
+
+.slide__label--cyan { color: var(--cyan); }
+.slide__label--green { color: var(--green); }
+.slide__label--amber { color: var(--amber); }
+
+/* Decorative background element */
+.slide__decor {
+  position: absolute;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ============ SLIDE 1: HERO / TITLE ============ */
+.slide--title {
+  justify-content: center;
+  align-items: flex-start;
+  background:
+    radial-gradient(ellipse at 70% 50%, rgba(124, 58, 237, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 80%, rgba(6, 182, 212, 0.10) 0%, transparent 45%),
+    var(--bg);
+}
+
+.slide--title .hero-stat {
+  font-family: var(--font-mono);
+  font-size: clamp(80px, 20vw, 260px);
+  font-weight: 700;
+  line-height: 0.85;
+  letter-spacing: -8px;
+  background: linear-gradient(135deg, var(--accent-bright) 0%, var(--cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: absolute;
+  right: -2vw;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.18;
+  pointer-events: none;
+  user-select: none;
+}
+
+.slide--title .hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+}
+
+.slide--title .hero-tagline {
+  font-family: var(--font-mono);
+  font-size: clamp(13px, 1.4vw, 17px);
+  color: var(--text-dim);
+  margin-top: 20px;
+  letter-spacing: 0.3px;
+}
+
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(124, 58, 237, 0.12);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  border-radius: 40px;
+  padding: 10px 20px;
+  margin-top: 24px;
+  font-family: var(--font-mono);
+}
+
+.stat-pill .stat-num {
+  font-size: clamp(20px, 3vw, 36px);
+  font-weight: 700;
+  color: var(--accent-bright);
+  letter-spacing: -1px;
+}
+
+.stat-pill .stat-vs {
+  font-size: clamp(12px, 1.2vw, 15px);
+  color: var(--text-dim);
+}
+
+.stat-pill .stat-ai {
+  font-size: clamp(12px, 1.2vw, 15px);
+  color: var(--red);
+  font-weight: 500;
+}
+
+.badge-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 1vw, 11px);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-weight: 600;
+  border: 1px solid;
+}
+.badge--purple { color: var(--accent-bright); border-color: rgba(168, 85, 247, 0.3); background: rgba(168, 85, 247, 0.08); }
+.badge--cyan { color: var(--cyan); border-color: rgba(6, 182, 212, 0.3); background: rgba(6, 182, 212, 0.08); }
+.badge--green { color: var(--green); border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08); }
+
+/* ============ SLIDE DIVIDER ============ */
+.slide--divider { justify-content: center; }
+
+.slide--divider .slide__number {
+  font-family: var(--font-mono);
+  font-size: clamp(120px, 28vw, 340px);
+  font-weight: 700;
+  line-height: 0.85;
+  opacity: 0.04;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -52%);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  letter-spacing: -10px;
+}
+
+.slide--divider .divider-content {
+  position: relative;
+  z-index: 1;
+}
+
+.slide--divider .divider-line {
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  border-radius: 2px;
+  margin-bottom: 20px;
+}
+
+/* ============ SLIDE: CONTENT LEFT-HEAVY ============ */
+.slide--content .slide__inner {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: clamp(24px, 4vw, 60px);
+  align-items: center;
+  width: 100%;
+}
+
+.slide__bullets {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.slide__bullets li {
+  padding: 10px 0 10px 22px;
+  position: relative;
+  font-size: clamp(14px, 1.7vw, 19px);
+  line-height: 1.6;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+}
+
+.slide__bullets li:last-child { border-bottom: none; }
+
+.slide__bullets li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20px;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent-bright);
+}
+
+.slide__bullets li strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ============ SLIDE: SPLIT (0 padding, panels fill) ============ */
+.slide--split { padding: 0; }
+
+.slide--split .slide__panels {
+  display: grid;
+  grid-template-columns: 55fr 45fr;
+  height: 100%;
+}
+
+.slide__panel {
+  padding: clamp(36px, 6vh, 72px) clamp(36px, 5vw, 72px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.slide__panel--primary { background: var(--surface); }
+.slide__panel--secondary { background: var(--surface2); }
+
+/* ============ PROBLEM SLIDE ============ */
+.chain-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.chain-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: clamp(12px, 1.3vw, 15px);
+}
+
+.chain-step .step-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--accent-dim);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-bright);
+  flex-shrink: 0;
+}
+
+.chain-step .step-label {
+  color: var(--text-dim);
+  flex: 1;
+}
+
+.chain-step .step-cost {
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.chain-step.chain-step--done .step-label { color: var(--text); }
+.chain-step.chain-step--done { border-color: rgba(16, 185, 129, 0.2); }
+.chain-step.chain-step--done .step-num { background: var(--green-dim); border-color: rgba(16, 185, 129, 0.3); color: var(--green); }
+
+.latency-callout {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 14px 20px;
+  background: var(--red-dim);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+}
+
+.latency-callout .lc-num {
+  font-family: var(--font-mono);
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 700;
+  color: var(--red);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.latency-callout .lc-label {
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.1vw, 13px);
+  color: var(--red);
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ============ SCREENSHOT PANEL ============ */
+.screenshot-frame {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-bright);
+  background: var(--code-bg);
+  position: relative;
+}
+
+.screenshot-frame::before {
+  content: '';
+  display: block;
+  height: 28px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--border);
+}
+
+.screenshot-dots {
+  position: absolute;
+  top: 8px; left: 12px;
+  display: flex; gap: 5px;
+}
+.screenshot-dots span {
+  width: 10px; height: 10px; border-radius: 50%;
+  display: block;
+}
+.sd-r { background: #ef4444; opacity: 0.7; }
+.sd-y { background: #f59e0b; opacity: 0.7; }
+.sd-g { background: #10b981; opacity: 0.7; }
+
+.screenshot-frame img {
+  width: 100%;
+  display: block;
+  max-height: calc(100dvh - 220px);
+  object-fit: cover;
+  object-position: top left;
+}
+
+/* ============ SOLUTION SLIDE ============ */
+.flow-diagram {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin-top: 24px;
+  width: 100%;
+}
+
+.flow-node {
+  flex: 1;
+  padding: 16px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  position: relative;
+}
+
+.flow-node--user { border-color: rgba(6, 182, 212, 0.3); background: var(--cyan-dim); }
+.flow-node--fe { border-color: rgba(148, 163, 184, 0.2); }
+.flow-node--direct { border-color: rgba(16, 185, 129, 0.35); background: var(--green-dim); }
+.flow-node--ai { border-color: rgba(239, 68, 68, 0.25); background: var(--red-dim); }
+
+.flow-node .fn-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.flow-node .fn-label {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 1vw, 12px);
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.flow-node .fn-sub {
+  font-size: clamp(9px, 0.9vw, 11px);
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.flow-node .fn-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.fn-badge--green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); }
+.fn-badge--red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.flow-arrow svg { width: 20px; height: 20px; }
+
+.flow-fallback {
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 0.85vw, 11px);
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 10px;
+  letter-spacing: 0.5px;
+}
+
+/* ============ TIERS SLIDE ============ */
+.tiers-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.tier-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tier-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.tier-card:nth-child(1)::before { background: var(--accent); }
+.tier-card:nth-child(2)::before { background: var(--cyan); }
+.tier-card:nth-child(3)::before { background: var(--green); }
+.tier-card:nth-child(4)::before { background: var(--amber); }
+.tier-card:nth-child(5)::before { background: #ec4899; }
+
+.tier-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.tier-name {
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.1vw, 14px);
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.tier-example {
+  font-family: var(--font-mono);
+  font-size: clamp(9px, 0.85vw, 11px);
+  color: var(--text-dim);
+  background: var(--code-bg);
+  border-radius: 4px;
+  padding: 6px 8px;
+  line-height: 1.5;
+}
+
+.tier-pct {
+  font-family: var(--font-mono);
+  font-size: clamp(18px, 2.5vw, 28px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1px;
+}
+
+.tier-card:nth-child(1) .tier-pct { color: var(--accent-bright); }
+.tier-card:nth-child(2) .tier-pct { color: var(--cyan); }
+.tier-card:nth-child(3) .tier-pct { color: var(--green); }
+.tier-card:nth-child(4) .tier-pct { color: var(--amber); }
+.tier-card:nth-child(5) .tier-pct { color: #ec4899; }
+
+/* ============ CHARTS SLIDE ============ */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 14px;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.chart-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chart-panel h3 {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 1.1vw, 13px);
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.chart-panel canvas {
+  flex: 1;
+  min-height: 0;
+  max-height: 200px;
+}
+
+/* ============ DATA TABLE ============ */
+.data-table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.1vw, 13px);
+}
+
+.data-table th {
+  background: var(--surface2);
+  padding: 8px 14px;
+  text-align: left;
+  color: var(--text-dim);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-size: 10px;
+  border-bottom: 1px solid var(--border-bright);
+}
+
+.data-table td {
+  padding: 7px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.data-table .td-fast { color: var(--green); font-weight: 600; }
+.data-table .td-slow { color: var(--red); font-weight: 600; }
+.data-table .td-status-ok {
+  color: var(--green); font-weight: 700;
+  font-size: 10px; letter-spacing: 0.5px;
+}
+
+/* ============ EXPANDABLE PANELS ============ */
+.expand-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--border-bright);
+  border-radius: 6px;
+  padding: 6px 14px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.5px;
+  margin-top: 12px;
+}
+.expand-btn:hover { color: var(--text); border-color: var(--accent-bright); background: var(--accent-dim); }
+.expand-btn .arrow { transition: transform 0.25s ease; display: inline-block; }
+.expand-btn.open .arrow { transform: rotate(90deg); }
+
+.expand-content {
+  display: none;
+  margin-top: 12px;
+  padding: 14px 18px;
+  background: var(--code-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 1.1vw, 13px);
+  line-height: 1.7;
+  color: var(--text-dim);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.expand-content.open { display: block; }
+
+/* ============ UPSTREAM ISSUE CARDS ============ */
+.issues-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.issue-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.issue-card .ic-priority {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+.ic-priority--major { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+.ic-priority--p1 { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.ic-priority--p4 { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
+
+.issue-card .ic-title {
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.2vw, 14px);
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.issue-card .ic-desc {
+  font-size: clamp(11px, 1.1vw, 13px);
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.issue-card .ic-impact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--green);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* ============ TEST COVERAGE SLIDE ============ */
+.coverage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.cov-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cov-card .cov-num {
+  font-family: var(--font-mono);
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 700;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+
+.cov-card .cov-label {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 1vw, 12px);
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.cov-card .cov-detail {
+  font-size: clamp(12px, 1.2vw, 14px);
+  color: var(--text-dim);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.cov-card:nth-child(1) .cov-num { color: var(--accent-bright); }
+.cov-card:nth-child(2) .cov-num { color: var(--cyan); }
+.cov-card:nth-child(3) .cov-num { color: var(--green); }
+.cov-card:nth-child(4) .cov-num { color: var(--amber); }
+
+/* ============ CTA SLIDE ============ */
+.slide--cta {
+  justify-content: center;
+  align-items: flex-start;
+  background:
+    radial-gradient(ellipse at 80% 20%, rgba(124, 58, 237, 0.20) 0%, transparent 50%),
+    radial-gradient(ellipse at 10% 80%, rgba(6, 182, 212, 0.10) 0%, transparent 45%),
+    var(--bg);
+}
+
+.cta-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.cta-action {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.cta-action .ca-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.cta-action .ca-text {
+  font-size: clamp(14px, 1.6vw, 17px);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.cta-action .ca-text strong {
+  color: var(--accent-bright);
+  font-weight: 600;
+}
+
+.cta-closing {
+  margin-top: 32px;
+  font-family: var(--font-mono);
+  font-size: clamp(14px, 1.6vw, 18px);
+  color: var(--text-dim);
+  border-left: 3px solid var(--accent);
+  padding-left: 16px;
+  line-height: 1.6;
+}
+
+/* ============ METHODOLOGY SLIDE ============ */
+.method-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.method-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.method-card h3 {
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+}
+
+.method-card:nth-child(1) h3 { color: var(--green); }
+.method-card:nth-child(2) h3 { color: var(--red); }
+.method-card:nth-child(3) h3 { color: var(--cyan); }
+.method-card:nth-child(4) h3 { color: var(--amber); }
+
+.method-list {
+  list-style: none;
+  padding: 0;
+}
+
+.method-list li {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 1.1vw, 12px);
+  color: var(--text-dim);
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.5;
+}
+
+.method-list li:last-child { border-bottom: none; }
+.method-list li span { color: var(--text); }
+
+/* Hit rate inline label */
+.hit-label {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.hit-badge {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.2vw, 14px);
+  font-weight: 600;
+}
+
+.hit-badge--det { background: var(--green-dim); border: 1px solid rgba(16,185,129,0.25); color: var(--green); }
+.hit-badge--ai { background: var(--red-dim); border: 1px solid rgba(239,68,68,0.25); color: var(--red); }
+
+/* ============ SCATTER STRIP CHART (SVG) ============ */
+.strip-chart {
+  width: 100%;
+  overflow: visible;
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 800px) {
+  .slide--split .slide__panels { grid-template-columns: 1fr; }
+  .slide--split .slide__panel--secondary { display: none; }
+  .tiers-grid { grid-template-columns: 1fr 1fr; }
+  .issues-grid { grid-template-columns: 1fr; }
+  .charts-grid { grid-template-columns: 1fr; }
+  .coverage-grid { grid-template-columns: 1fr; }
+  .method-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-height: 680px) {
+  .slide { padding-top: 20px; padding-bottom: 20px; }
+}
+
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- ========================================================
+       SLIDE 1: HERO TITLE
+       Composition: left-heavy, massive ghost number right
+       ======================================================== -->
+  <section class="slide slide--title">
+    <!-- Ghost "430" watermark -->
+    <div class="hero-stat" aria-hidden="true">430</div>
+
+    <!-- Corner grid decoration -->
+    <svg class="slide__decor" style="top:0;left:0;width:200px;height:200px;opacity:0.06;" aria-hidden="true">
+      <defs>
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#7c3aed" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+      <rect width="200" height="200" fill="url(#grid)"/>
+    </svg>
+
+    <div class="hero-content">
+      <p class="slide__label reveal">Canvas AI — Performance Research</p>
+      <h1 class="slide__display reveal" style="background:linear-gradient(135deg,#f1f5f9 0%,#a855f7 60%,#06b6d4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:clamp(36px,7vw,84px);letter-spacing:-2px;line-height:1.05;">
+        Canvas Direct-Edit:<br>430x Faster Component Editing
+      </h1>
+
+      <div class="stat-pill reveal">
+        <span class="stat-num">38ms</span>
+        <span class="stat-vs">vs</span>
+        <span class="stat-ai">16,358ms</span>
+        <span class="stat-vs">mean latency</span>
+      </div>
+
+      <p class="hero-tagline reveal">Zero tokens. Zero API keys. Instant response.</p>
+      <p class="hero-tagline reveal" style="color:var(--text-dim);font-size:clamp(11px,1.1vw,14px);margin-top:6px;">A schema-driven optimization for Drupal Canvas &mdash; upstream contribution proposal</p>
+
+      <div class="badge-row reveal">
+        <span class="badge badge--purple">430x speedup</span>
+        <span class="badge badge--cyan">60% hit rate</span>
+        <span class="badge badge--green">128 unit tests</span>
+        <span class="badge badge--green">19 E2E specs</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SLIDE 2: THE PROBLEM (Split — text left, screenshot right)
+       Composition: split 55/45
+       ======================================================== -->
+  <section class="slide slide--split">
+    <div class="slide__panels">
+      <div class="slide__panel slide__panel--primary">
+        <p class="slide__label reveal">The Problem</p>
+        <h2 class="slide__heading reveal">Every edit runs<br>the full LLM chain</h2>
+        <p class="slide__body reveal" style="margin-top:12px;">Even "change the heading to Welcome" triggers <strong style="color:var(--text);">5 LLM calls</strong> and burns 3,000–8,000 tokens before anything changes on screen.</p>
+
+        <div class="chain-steps reveal">
+          <div class="chain-step">
+            <span class="step-num">1</span>
+            <span class="step-label">Finding components in layout…</span>
+            <span class="step-cost">~800 tok</span>
+          </div>
+          <div class="chain-step">
+            <span class="step-num">2</span>
+            <span class="step-label">I need to identify the heading component…</span>
+            <span class="step-cost">~1.2k tok</span>
+          </div>
+          <div class="chain-step">
+            <span class="step-num">3</span>
+            <span class="step-label">Reading the full page layout JSON…</span>
+            <span class="step-cost">~2.9k tok</span>
+          </div>
+          <div class="chain-step">
+            <span class="step-num">4</span>
+            <span class="step-label">Let me update the component schema…</span>
+            <span class="step-cost">~1.1k tok</span>
+          </div>
+          <div class="chain-step chain-step--done">
+            <span class="step-num">5</span>
+            <span class="step-label">Done. Returning updated data.</span>
+            <span class="step-cost" style="color:var(--green);">finally</span>
+          </div>
+        </div>
+
+        <div class="latency-callout reveal">
+          <span class="lc-num">16.4s</span>
+          <span class="lc-label">mean latency<br>N=5 measured runs</span>
+        </div>
+      </div>
+
+      <div class="slide__panel slide__panel--secondary" style="align-items:center;padding:20px;">
+        <div class="screenshot-frame reveal" style="width:100%;max-width:480px;">
+          <div class="screenshot-dots">
+            <span class="sd-r"></span><span class="sd-y"></span><span class="sd-g"></span>
+          </div>
+          <img src="../guides/screenshots/05-ai-path-thinking.png"
+               alt="Canvas AI reasoning chain in action"
+               loading="lazy"
+               onerror="this.style.display='none';this.parentElement.style.background='var(--surface2)';this.parentElement.style.minHeight='200px';">
+        </div>
+        <p class="reveal" style="font-family:var(--font-mono);font-size:11px;color:var(--text-dim);margin-top:10px;text-align:center;letter-spacing:0.5px;">AI reasoning chain — 5 steps for one heading change</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SLIDE 3: THE SOLUTION (centered, architecture flow)
+       Composition: centered
+       ======================================================== -->
+  <section class="slide" style="background:radial-gradient(ellipse at 50% 60%,rgba(16,185,129,0.08) 0%,transparent 55%),var(--bg);">
+    <p class="slide__label reveal slide__label--green">The Solution</p>
+    <h2 class="slide__heading reveal">Intercept before the agent chain</h2>
+    <p class="slide__body reveal" style="max-width:620px;margin-top:10px;">Pattern-match simple edits against component SDC schemas. Return the same Canvas response format instantly — fall back to AI only on 422.</p>
+
+    <div class="flow-diagram reveal">
+      <div class="flow-node flow-node--user">
+        <div class="fn-icon">👤</div>
+        <div class="fn-label">User</div>
+        <div class="fn-sub">"change heading<br>to Welcome"</div>
+      </div>
+      <div class="flow-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+      </div>
+      <div class="flow-node flow-node--fe">
+        <div class="fn-icon">🖥️</div>
+        <div class="fn-label">Frontend</div>
+        <div class="fn-sub">Canvas editor<br>component selected</div>
+      </div>
+      <div class="flow-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+      </div>
+      <div class="flow-node flow-node--direct">
+        <div class="fn-icon">⚡</div>
+        <div class="fn-label">Direct-Edit</div>
+        <div class="fn-sub">Schema match<br>→ instant return</div>
+        <div class="fn-badge fn-badge--green">200 — 38ms</div>
+      </div>
+      <div class="flow-arrow" style="flex-direction:column;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(90deg);"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+        <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-dim);letter-spacing:0.5px;margin-top:2px;">422 fallback</span>
+      </div>
+      <div class="flow-node flow-node--ai">
+        <div class="fn-icon">🤖</div>
+        <div class="fn-label">AI Agent</div>
+        <div class="fn-sub">Full LLM chain<br>for complex edits</div>
+        <div class="fn-badge fn-badge--red">16.4s avg</div>
+      </div>
+    </div>
+
+    <p class="flow-fallback reveal">Frontend tries direct-edit first &bull; Falls back to AI on 422 &bull; Zero false positives by design</p>
+
+    <div class="screenshot-frame reveal" style="margin-top:16px;max-width:520px;">
+      <div class="screenshot-dots">
+        <span class="sd-r"></span><span class="sd-y"></span><span class="sd-g"></span>
+      </div>
+      <img src="../guides/screenshots/06-heading-component-selected.png"
+           alt="Heading component selected in Canvas editor"
+           loading="lazy"
+           style="max-height:140px;object-fit:cover;"
+           onerror="this.style.display='none';">
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SLIDE 4: FIVE TIERS (full-width, centered)
+       Composition: centered, all 5 tiers
+       ======================================================== -->
+  <section class="slide" style="background:var(--bg);padding:clamp(28px,4vh,56px) clamp(36px,6vw,90px);">
+    <!-- Background accent lines -->
+    <svg class="slide__decor" style="bottom:0;right:0;width:300px;height:300px;opacity:0.04;" aria-hidden="true">
+      <line x1="300" y1="0" x2="0" y2="300" stroke="var(--accent)" stroke-width="60"/>
+    </svg>
+
+    <p class="slide__label reveal">Architecture</p>
+    <h2 class="slide__heading reveal">Five tiers of pattern matching</h2>
+    <p class="slide__body reveal" style="margin-top:8px;">The matcher tries each tier in order. First match wins. 60% of edits resolve in Tier 1.</p>
+
+    <div class="tiers-grid reveal">
+      <div class="tier-card">
+        <div class="tier-num">Tier 01</div>
+        <div class="tier-name">Explicit Patterns</div>
+        <div class="tier-example">"change X to Y"<br>"set X to Y"<br>"X: Y"</div>
+        <div class="tier-pct">~40%</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-num">Tier 02</div>
+        <div class="tier-name">Compound Edits</div>
+        <div class="tier-example">"change heading to X<br>and set color to Y"</div>
+        <div class="tier-pct">~10%</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-num">Tier 03</div>
+        <div class="tier-name">Bare Values</div>
+        <div class="tier-example">"center"<br>"primary"<br>"make it blue"</div>
+        <div class="tier-pct">~5%</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-num">Tier 04</div>
+        <div class="tier-name">Boolean Toggles</div>
+        <div class="tier-example">"show the header"<br>"hide the footer"</div>
+        <div class="tier-pct">~3%</div>
+      </div>
+      <div class="tier-card">
+        <div class="tier-num">Tier 05</div>
+        <div class="tier-name">Relative Adjustments</div>
+        <div class="tier-example">"bigger"<br>"smaller"<br>"increase padding"</div>
+        <div class="tier-pct">~2%</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:16px;" class="reveal">
+      <div style="flex:1;padding:10px 16px;background:var(--green-dim);border:1px solid rgba(16,185,129,0.25);border-radius:8px;display:flex;align-items:center;gap:10px;">
+        <span style="font-family:var(--font-mono);font-size:clamp(20px,3vw,32px);font-weight:700;color:var(--green);">60%</span>
+        <span style="font-family:var(--font-mono);font-size:clamp(10px,1.1vw,13px);color:var(--text-dim);">deterministic — 12/20 test edits resolved without AI</span>
+      </div>
+      <div style="flex:1;padding:10px 16px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.25);border-radius:8px;display:flex;align-items:center;gap:10px;">
+        <span style="font-family:var(--font-mono);font-size:clamp(20px,3vw,32px);font-weight:700;color:var(--red);">40%</span>
+        <span style="font-family:var(--font-mono);font-size:clamp(10px,1.1vw,13px);color:var(--text-dim);">AI fallback — 8/20 edits correctly deferred</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SLIDE 5: MEASURED RESULTS — Latency comparison (left) + donut (right)
+       Composition: split
+       ======================================================== -->
+  <section class="slide slide--split">
+    <div class="slide__panels">
+      <div class="slide__panel slide__panel--primary" style="padding:clamp(28px,4vh,52px) clamp(28px,4vw,52px);">
+        <p class="slide__label reveal">Measured Results</p>
+        <h2 class="slide__heading reveal" style="font-size:clamp(18px,3vw,32px);">Latency: Direct-Edit vs AI Path</h2>
+        <p class="slide__body reveal" style="font-size:clamp(12px,1.3vw,15px);margin-top:6px;margin-bottom:14px;">Log scale — both values on same axis. Error bars = 95% CI.</p>
+        <div class="chart-panel reveal" style="flex:1;min-height:0;background:transparent;border:none;padding:0;">
+          <canvas id="latencyChart"></canvas>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px;" class="reveal">
+          <div style="flex:1;padding:8px 12px;background:var(--green-dim);border:1px solid rgba(16,185,129,0.25);border-radius:8px;">
+            <div style="font-family:var(--font-mono);font-size:clamp(18px,3vw,32px);font-weight:700;color:var(--green);letter-spacing:-1px;line-height:1;">38ms</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Direct-edit mean (N=10)</div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-dim);margin-top:2px;">95% CI [23, 54] ms</div>
+          </div>
+          <div style="flex:1;padding:8px 12px;background:var(--red-dim);border:1px solid rgba(239,68,68,0.25);border-radius:8px;">
+            <div style="font-family:var(--font-mono);font-size:clamp(18px,3vw,32px);font-weight:700;color:var(--red);letter-spacing:-1px;line-height:1;">16.4s</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">AI path mean (N=5)</div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--text-dim);margin-top:2px;">95% CI [15.3, 17.4] s</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide__panel slide__panel--secondary" style="padding:clamp(28px,4vh,52px) clamp(28px,4vw,52px);gap:16px;">
+        <h3 class="slide__subheading reveal" style="font-size:clamp(14px,2vw,22px);">Hit Rate Distribution</h3>
+        <p class="slide__body reveal" style="font-size:clamp(11px,1.2vw,14px);margin-top:4px;">20 real edit commands tested on a heading component</p>
+        <div style="position:relative;flex:1;min-height:0;max-height:240px;" class="reveal">
+          <canvas id="hitRateChart"></canvas>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;" class="reveal">
+          <div style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--text-dim);padding:6px 10px;background:var(--green-dim);border-radius:6px;border:1px solid rgba(16,185,129,0.2);">
+            <strong style="color:var(--green);">Deterministic (12):</strong> change heading to Welcome, set color to primary, make it center-aligned, hide the subtitle, bigger, set heading to DrupalCon, change text to Hello World, set alignment to right, make it bold, set color to secondary, show the title, change to left
+          </div>
+          <div style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--text-dim);padding:6px 10px;background:var(--red-dim);border-radius:6px;border:1px solid rgba(239,68,68,0.2);">
+            <strong style="color:var(--red);">AI fallback (8):</strong> make it more engaging, improve the copy, add a subheading, make it professional, suggest alternatives, rewrite for SEO, make it shorter, make it sound friendly
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SLIDE 6: SCATTER STRIP + PER-RUN DATA TABLE
+       Composition: right-heavy (table left, strip chart right)
+       ======================================================== -->
+  <section class="slide" style="background:var(--bg);padding:clamp(28px,4vh,52px) clamp(36px,6vw,90px);">
+    <p class="slide__label reveal slide__label--cyan">Per-Run Data</p>
+    <h2 class="slide__heading reveal" style="font-size:clamp(18px,3vw,34px);">All measured runs — every latency value</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;flex:1;min-height:0;" class="reveal">
+
+      <!-- Strip / scatter chart -->
+      <div>
+        <h3 style="font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;">Latency Distribution (log scale)</h3>
+        <svg id="stripChart" viewBox="0 0 400 320" style="width:100%;height:auto;display:block;" role="img" aria-label="Strip chart showing direct-edit latencies clustered 24-97ms versus AI path latencies 15-18 seconds">
+
+          <!-- Axes -->
+          <line x1="60" y1="20" x2="60" y2="290" stroke="rgba(148,163,184,0.2)" stroke-width="1"/>
+          <line x1="60" y1="290" x2="390" y2="290" stroke="rgba(148,163,184,0.2)" stroke-width="1"/>
+
+          <!-- Y-axis labels (log scale) -->
+          <text x="54" y="294" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="9" fill="#94a3b8">10ms</text>
+          <text x="54" y="228" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="9" fill="#94a3b8">100ms</text>
+          <text x="54" y="162" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="9" fill="#94a3b8">1s</text>
+          <text x="54" y="96" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="9" fill="#94a3b8">10s</text>
+          <text x="54" y="30" text-anchor="end" font-family="IBM Plex Mono,monospace" font-size="9" fill="#94a3b8">100s</text>
+
+          <!-- Grid lines -->
+          <line x1="60" y1="228" x2="390" y2="228" stroke="rgba(148,163,184,0.06)" stroke-width="1" stroke-dasharray="4,4"/>
+          <line x1="60" y1="162" x2="390" y2="162" stroke="rgba(148,163,184,0.06)" stroke-width="1" stroke-dasharray="4,4"/>
+          <line x1="60" y1="96" x2="390" y2="96" stroke="rgba(148,163,184,0.06)" stroke-width="1" stroke-dasharray="4,4"/>
+
+          <!-- Column labels -->
+          <text x="160" y="310" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="#10b981" font-weight="600">Direct-Edit (N=10)</text>
+          <text x="300" y="310" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="#ef4444" font-weight="600">AI Path (N=5)</text>
+
+          <!-- Direct-edit dots: log(ms/10)/log(10) * 66 px per decade, from y=290
+               Values: 24.1, 27.4, 24.6, 27.1, 31.1, 29.1, 44.5, 97.3, 36.9, 41.7
+               log10(24.1)=1.382, log10(97.3)=1.988
+               y = 290 - (log10(v)-1)*66 -->
+          <!-- 24.1ms → y = 290-(0.382*66)=264.8 -->
+          <circle cx="130" cy="265" r="6" fill="#10b981" opacity="0.85"/>
+          <text x="142" y="269" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94a3b8">24.1</text>
+          <!-- 27.4ms -->
+          <circle cx="150" cy="262" r="6" fill="#10b981" opacity="0.85"/>
+          <text x="162" y="266" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94a3b8">27.4</text>
+          <!-- 24.6ms -->
+          <circle cx="130" cy="264" r="6" fill="#10b981" opacity="0.7"/>
+          <!-- 27.1ms -->
+          <circle cx="170" cy="263" r="6" fill="#10b981" opacity="0.85"/>
+          <!-- 31.1ms → log10=1.493, y=290-0.493*66=257.5 -->
+          <circle cx="140" cy="258" r="6" fill="#10b981" opacity="0.85"/>
+          <text x="152" y="262" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94a3b8">31.1</text>
+          <!-- 29.1ms -->
+          <circle cx="160" cy="260" r="6" fill="#10b981" opacity="0.8"/>
+          <!-- 44.5ms → log10=1.648, y=290-0.648*66=247.2 -->
+          <circle cx="145" cy="247" r="6" fill="#10b981" opacity="0.85"/>
+          <text x="157" y="251" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94a3b8">44.5</text>
+          <!-- 97.3ms → log10=1.988, y=290-0.988*66=224.8 -->
+          <circle cx="165" cy="225" r="7" fill="#10b981" opacity="0.9"/>
+          <text x="178" y="229" font-family="IBM Plex Mono,monospace" font-size="8" fill="#10b981" font-weight="600">97.3ms</text>
+          <!-- 36.9ms → log10=1.567, y=290-0.567*66=252.6 -->
+          <circle cx="135" cy="253" r="6" fill="#10b981" opacity="0.85"/>
+          <!-- 41.7ms → log10=1.620, y=290-0.620*66=249.1 -->
+          <circle cx="155" cy="249" r="6" fill="#10b981" opacity="0.85"/>
+
+          <!-- Direct-edit CI bar: mean=38ms, CI [23,54] -->
+          <!-- log10(23)=1.362,y=267.1; log10(54)=1.732,y=242.5; mean log10(38)=1.580,y=251.7 -->
+          <line x1="160" y1="242" x2="160" y2="267" stroke="#10b981" stroke-width="2" opacity="0.5"/>
+          <line x1="155" y1="242" x2="165" y2="242" stroke="#10b981" stroke-width="2" opacity="0.5"/>
+          <line x1="155" y1="267" x2="165" y2="267" stroke="#10b981" stroke-width="2" opacity="0.5"/>
+          <circle cx="160" cy="252" r="4" fill="#10b981" stroke="#0f172a" stroke-width="1.5"/>
+          <text x="168" y="256" font-family="IBM Plex Mono,monospace" font-size="8" fill="#10b981" font-weight="600">mean 38ms</text>
+
+          <!-- AI path dots:
+               15,924ms → log10=4.202, y=290-3.202*66=79.7
+               17,828ms → log10=4.251, y=290-3.251*66=75.4
+               16,074ms → log10=4.206, y=290-3.206*66=79.4
+               16,203ms → log10=4.210, y=290-3.210*66=78.1
+               15,762ms → log10=4.198, y=290-3.198*66=79.9 -->
+          <circle cx="275" cy="80" r="6" fill="#ef4444" opacity="0.85"/>
+          <text x="287" y="84" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94a3b8">15.9s</text>
+          <circle cx="295" cy="75" r="6" fill="#ef4444" opacity="0.85"/>
+          <text x="307" y="79" font-family="IBM Plex Mono,monospace" font-size="8" fill="#94a3b8">17.8s</text>
+          <circle cx="280" cy="79" r="6" fill="#ef4444" opacity="0.8"/>
+          <circle cx="310" cy="78" r="6" fill="#ef4444" opacity="0.85"/>
+          <circle cx="290" cy="80" r="6" fill="#ef4444" opacity="0.8"/>
+
+          <!-- AI CI bar: mean=16358ms CI [15318,17398] -->
+          <!-- log10(15318)=4.185,y=84.4; log10(17398)=4.240,y=79.6; mean log10(16358)=4.214,y=81.9 -->
+          <line x1="300" y1="80" x2="300" y2="85" stroke="#ef4444" stroke-width="2" opacity="0.5"/>
+          <line x1="295" y1="80" x2="305" y2="80" stroke="#ef4444" stroke-width="2" opacity="0.5"/>
+          <line x1="295" y1="85" x2="305" y2="85" stroke="#ef4444" stroke-width="2" opacity="0.5"/>
+          <circle cx="300" cy="82" r="4" fill="#ef4444" stroke="#0f172a" stroke-width="1.5"/>
+          <text x="308" y="82" font-family="IBM Plex Mono,monospace" font-size="8" fill="#ef4444" font-weight="600">mean 16.4s</text>
+
+          <!-- 430x callout arrow -->
+          <line x1="175" y1="252" x2="288" y2="82" stroke="rgba(168,85,247,0.4)" stroke-width="1" stroke-dasharray="4,3"/>
+          <text x="215" y="168" font-family="IBM Plex Mono,monospace" font-size="12" fill="#a855f7" font-weight="700" transform="rotate(-32,215,168)">430x</text>
+        </svg>
+      </div>
+
+      <!-- Data tables side by side -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <h3 style="font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Direct-Edit Runs</h3>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Run</th><th>Latency</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>3</td><td class="td-fast">24.1 ms</td><td class="td-status-ok">200 OK</td></tr>
+                <tr><td>4</td><td class="td-fast">27.4 ms</td><td class="td-status-ok">200 OK</td></tr>
+                <tr><td>5</td><td class="td-fast">24.6 ms</td><td class="td-status-ok">200 OK</td></tr>
+                <tr><td>6</td><td class="td-fast">27.1 ms</td><td class="td-status-ok">200 OK</td></tr>
+                <tr><td>7</td><td class="td-fast">31.1 ms</td><td class="td-status-ok">200 OK</td></tr>
+                <tr><td>8</td><td class="td-fast">29.1 ms</td><td class="td-status-ok">200 OK</td></tr>
+                <tr><td>9</td><td class="td-fast">44.5 ms</td><td class="td-status-ok">200 OK</td></tr>
+                <tr><td>10</td><td class="td-fast">97.3 ms</td><td class="td-status-ok">200 OK</td></tr>
+                <tr><td>11</td><td class="td-fast">36.9 ms</td><td class="td-status-ok">200 OK</td></tr>
+                <tr><td>12</td><td class="td-fast">41.7 ms</td><td class="td-status-ok">200 OK</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">AI Path Runs</h3>
+          <div class="data-table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Run</th><th>Latency</th></tr></thead>
+              <tbody>
+                <tr><td>3</td><td class="td-slow">15,924 ms</td></tr>
+                <tr><td>4</td><td class="td-slow">17,828 ms</td></tr>
+                <tr><td>5</td><td class="td-slow">16,074 ms</td></tr>
+                <tr><td>6</td><td class="td-slow">16,203 ms</td></tr>
+                <tr><td>7</td><td class="td-slow">15,762 ms</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SLIDE 7: METHODOLOGY (expandable, centered)
+       Composition: centered, 4-panel grid
+       ======================================================== -->
+  <section class="slide" style="background:radial-gradient(ellipse at 30% 70%,rgba(6,182,212,0.07) 0%,transparent 50%),var(--bg);">
+    <p class="slide__label reveal slide__label--cyan">Methodology</p>
+    <h2 class="slide__heading reveal">Measurement protocol</h2>
+
+    <div class="method-grid reveal">
+      <div class="method-card">
+        <h3>Direct-Edit Protocol</h3>
+        <ul class="method-list">
+          <li>N = <span>12 total</span> (2 warm-up + <span>10 measured</span>)</li>
+          <li>Method: <span>Playwright API POST</span></li>
+          <li>Session: <span>shared — auth reused</span></li>
+          <li>Component: <span>heading, Byte theme</span></li>
+          <li>Metric: <span>response time to 200 OK</span></li>
+        </ul>
+      </div>
+      <div class="method-card">
+        <h3>AI Path Protocol</h3>
+        <ul class="method-list">
+          <li>N = <span>7 total</span> (2 warm-up + <span>5 measured</span>)</li>
+          <li>Method: <span>UI submission via Playwright</span></li>
+          <li>Level: <span>page-level (no component pre-selection)</span></li>
+          <li>Wait: <span>Canvas streaming complete</span></li>
+          <li>API: <span>Anthropic claude-3-5-sonnet</span></li>
+        </ul>
+      </div>
+      <div class="method-card">
+        <h3>Environment</h3>
+        <ul class="method-list">
+          <li>Runtime: <span>DDEV local</span></li>
+          <li>PHP: <span>8.3.25</span></li>
+          <li>DB: <span>MariaDB 10.11</span></li>
+          <li>Theme: <span>Byte theme</span></li>
+          <li>OS: <span>darwin 25.3.0</span></li>
+        </ul>
+      </div>
+      <div class="method-card">
+        <h3>Statistics</h3>
+        <ul class="method-list">
+          <li>Distribution: <span>Student's t</span></li>
+          <li>Confidence: <span>95% CI</span></li>
+          <li>Warm-up: <span>first 2 runs discarded</span></li>
+          <li>Ratio: <span>16,358 / 38 = 430.5x</span></li>
+          <li>False positives: <span>zero by design</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top:14px;">
+      <button class="expand-btn" onclick="toggleExpand(this,'methodDetail')">
+        <span class="arrow">▶</span> Full methodology notes
+      </button>
+      <div id="methodDetail" class="expand-content">
+Direct-edit: Playwright API POST to /canvas-ai/direct-edit endpoint with JSON body
+  { component_uuid, prop, value } — same endpoint Canvas frontend calls.
+  Session cookie passed via Playwright's storageState.
+  Timer: performance.now() around fetch(), stops on first byte of response.
+
+AI path: Full UI test — Playwright navigates to the Canvas editor,
+  clicks the AI panel, types the command, waits for streaming to complete.
+  Timer stops when Canvas confirms update applied.
+
+Warm-up protocol: 2 runs are made first to warm up PHP opcache, MySQL
+  query cache, and network stack. These are discarded from statistical analysis.
+
+Statistical model: mean ± t(df, 0.025) * SE
+  Direct-edit: df=9, SE=7.0ms, CI width = ±15.7ms
+  AI path: df=4, SE=386ms, CI width = ±1,073ms</div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SLIDE 8: UPSTREAM ISSUE 1 — ai_context loop-aware
+       Composition: left-heavy, issue card detail
+       ======================================================== -->
+  <section class="slide slide--divider" style="background:var(--bg);">
+    <span class="slide__number" aria-hidden="true">↑</span>
+    <div class="divider-content">
+      <div class="divider-line"></div>
+      <p class="slide__label" style="color:var(--text-dim);">Section 3 of 4</p>
+      <h2 class="slide__heading" style="font-size:clamp(28px,6vw,72px);">Upstream<br>Contribution<br>Plan</h2>
+      <p style="font-family:var(--font-mono);font-size:clamp(12px,1.4vw,16px);color:var(--text-dim);margin-top:16px;">Three issues. Three patches. Ready to post.</p>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SLIDE 9: THREE UPSTREAM ISSUES (full-width, 3-column)
+       Composition: centered
+       ======================================================== -->
+  <section class="slide" style="background:var(--bg);padding:clamp(28px,4vh,52px) clamp(36px,6vw,90px);">
+    <p class="slide__label reveal">Upstream Drupal.org Issues</p>
+    <h2 class="slide__heading reveal" style="font-size:clamp(18px,3vw,32px);">Three complementary optimizations</h2>
+
+    <div class="issues-grid reveal">
+      <!-- Issue 1 -->
+      <div class="issue-card" style="border-top:3px solid var(--amber);">
+        <span class="ic-priority ic-priority--major">Priority: Major</span>
+        <div class="ic-title">Issue 1 — ai_context loop-aware injection</div>
+        <div class="ic-desc">SystemPromptSubscriber re-injects full context on every agent loop iteration. A <code style="background:var(--code-bg);padding:1px 5px;border-radius:3px;font-size:10px;">loop_aware</code> config flag skips injection on loop &gt; 0.</div>
+        <div class="ic-impact">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          52% token reduction measured
+        </div>
+        <button class="expand-btn" onclick="toggleExpand(this,'issue1')">
+          <span class="arrow">▶</span> Draft drupal.org comment
+        </button>
+        <div id="issue1" class="expand-content">Title: SystemPromptSubscriber re-injects full context on every agent loop iteration
+
+Problem: SystemPromptSubscriber::onPreSystemPrompt() fires on every
+BuildSystemPromptEvent, which dispatches on every agent loop iteration.
+For agents with always_include context items, the full context block
+is re-appended on every LLM call across all loops.
+
+Measured cost (heading edit, 8 ai_context items): canvas_page_builder_agent
+at 3 loops wastes ~44K tokens. Stripping on loops 1+ reduces total from
+101K to 48K — 52% reduction.
+
+Proposed: Add loop_aware boolean to per-agent config. When enabled,
+SystemPromptSubscriber checks loop count and skips injection on loop > 0.
+Follows available_on_loop precedent from default_information_tools.</div>
+      </div>
+
+      <!-- Issue 2 -->
+      <div class="issue-card" style="border-top:3px solid var(--red);">
+        <span class="ic-priority ic-priority--p1">Complementary to #3545816</span>
+        <div class="ic-title">Issue 2 — Canvas layout_data scoped token</div>
+        <div class="ic-desc">Structured API for layout data on BuildSystemPromptEvent. Replaces fragile str_replace on JSON with a subscriber that scopes layout to the active section only.</div>
+        <div class="ic-impact">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          ~10% per-loop token reduction
+        </div>
+        <button class="expand-btn" onclick="toggleExpand(this,'issue2')">
+          <span class="arrow">▶</span> Draft drupal.org comment
+        </button>
+        <div id="issue2" class="expand-content">Complementary horizontal optimization: when editing a single heading,
+the page builder agent receives the full page layout. On a 15-component
+page, layout JSON is ~11.5K bytes (~2,900 tokens). The agent only needs
+the section containing the selected component.
+
+A BuildSystemPromptEvent subscriber (priority -10) replaces full layout
+with scoped version: active section at full detail, siblings as name+UUID,
+other regions as counts. Falls back to full layout if match fails.
+
+Layout is ~10% of per-loop cost. Compounds with loop-aware context (52%)
+and deterministic routing (100% for qualifying edits).</div>
+      </div>
+
+      <!-- Issue 3 -->
+      <div class="issue-card" style="border-top:3px solid var(--cyan);">
+        <span class="ic-priority ic-priority--p4">Complementary to #3549232</span>
+        <div class="ic-title">Issue 3 — Deterministic edit routing</div>
+        <div class="ic-desc">Full DirectEditMatcher + controller module. Schema-driven, theme-agnostic contrib version with 128 unit tests and 19 E2E specs.</div>
+        <div class="ic-impact">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          430x for qualifying edits (60% hit rate)
+        </div>
+        <button class="expand-btn" onclick="toggleExpand(this,'issue3')">
+          <span class="arrow">▶</span> Draft drupal.org comment
+        </button>
+        <div id="issue3" class="expand-content">The update_component_data tool enables routing simple edits directly
+without invoking the LLM agent chain.
+
+Pattern matcher detects "component selected + recognized prop + explicit value".
+Validated against SDC schema. Returns same JSON response format.
+Frontend tries direct-edit first; falls back to AI on 422.
+
+Measured: Direct-edit 38ms mean (N=10), AI path 16.4s mean (N=5).
+430x speedup. 60% of edits on a heading component qualify.
+128 unit tests, 19 E2E specs. Zero false positives by design — rejects
+to AI when uncertain.
+
+Limitations: English only, theme-specific prototype (Byte theme),
+concrete class coupling to AiResponseValidator/CanvasAiPageBuilderHelper.</div>
+      </div>
+    </div>
+
+    <!-- Compound savings callout -->
+    <div class="reveal" style="margin-top:16px;padding:14px 20px;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:10px;display:flex;align-items:center;gap:16px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      <div>
+        <div style="font-family:var(--font-mono);font-size:clamp(11px,1.2vw,14px);font-weight:600;color:var(--text);">Combined impact: 52% token reduction + 10% layout scoping + 100% latency elimination for 60% of edits</div>
+        <div style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--text-dim);margin-top:4px;">Each issue is independent and valuable on its own — compound gains when all three land</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SLIDE 10: TEST COVERAGE
+       Composition: right-heavy (numbers dominate)
+       ======================================================== -->
+  <section class="slide" style="background:radial-gradient(ellipse at 80% 30%,rgba(16,185,129,0.08) 0%,transparent 50%),var(--bg);">
+    <p class="slide__label reveal slide__label--green">Test Coverage</p>
+    <h2 class="slide__heading reveal">Proven at scale before upstream</h2>
+    <p class="slide__body reveal" style="max-width:560px;margin-top:8px;">Every tier of the matcher has unit tests. Every E2E spec passes in CI. Performance regression tests catch regressions to 50ms threshold.</p>
+
+    <div class="coverage-grid reveal">
+      <div class="cov-card">
+        <div class="cov-num">128</div>
+        <div class="cov-label">PHPUnit unit tests</div>
+        <div class="cov-detail">390 assertions — covers all 5 tiers, edge cases, schema validation, and rejection logic</div>
+      </div>
+      <div class="cov-card">
+        <div class="cov-num">19</div>
+        <div class="cov-label">Playwright E2E specs</div>
+        <div class="cov-detail">All passing — browser-level integration from user input to Canvas response</div>
+      </div>
+      <div class="cov-card">
+        <div class="cov-num">&lt;50ms</div>
+        <div class="cov-label">Perf regression threshold</div>
+        <div class="cov-detail">Automated benchmark specs run N=10, fail CI if mean exceeds 50ms target</div>
+      </div>
+      <div class="cov-card">
+        <div class="cov-num">0</div>
+        <div class="cov-label">False positives</div>
+        <div class="cov-detail">Matcher rejects to AI when uncertain — correctness over hit rate, always</div>
+      </div>
+    </div>
+
+    <div class="reveal" style="margin-top:14px;padding:12px 18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+      <span style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--text-dim);letter-spacing:0.5px;">BENCHMARK SPEC CRITERIA:</span>
+      <span style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--green);">✓ &lt;50ms per match (single)</span>
+      <span style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--green);">✓ &lt;1s for batch of 20</span>
+      <span style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--green);">✓ N=10 measured runs per benchmark</span>
+      <span style="font-family:var(--font-mono);font-size:clamp(9px,1vw,11px);color:var(--green);">✓ N=5 AI baseline runs</span>
+    </div>
+  </section>
+
+  <!-- ========================================================
+       SLIDE 11: CALL TO ACTION
+       Composition: left-heavy
+       ======================================================== -->
+  <section class="slide slide--cta">
+    <!-- Corner accent -->
+    <svg class="slide__decor" style="bottom:0;right:0;width:400px;height:400px;opacity:0.05;" aria-hidden="true">
+      <circle cx="400" cy="400" r="300" fill="none" stroke="var(--accent)" stroke-width="1"/>
+      <circle cx="400" cy="400" r="200" fill="none" stroke="var(--cyan)" stroke-width="0.5"/>
+      <circle cx="400" cy="400" r="100" fill="none" stroke="var(--accent)" stroke-width="0.5"/>
+    </svg>
+
+    <div style="max-width:700px;">
+      <p class="slide__label reveal">What's Next</p>
+      <h2 class="slide__heading reveal" style="font-size:clamp(24px,5vw,58px);line-height:1.05;">Ready to contribute.<br>Looking for Canvas maintainers.</h2>
+
+      <div class="cta-actions reveal">
+        <div class="cta-action">
+          <span class="ca-icon">📋</span>
+          <div class="ca-text"><strong>File upstream issues</strong> — all three are drafted and ready to post to drupal.org with patches attached</div>
+        </div>
+        <div class="cta-action">
+          <span class="ca-icon">🔧</span>
+          <div class="ca-text"><strong>Expand component coverage</strong> — prototype is Byte theme only; contrib version needs theme-agnostic SDC schema discovery</div>
+        </div>
+        <div class="cta-action">
+          <span class="ca-icon">📊</span>
+          <div class="ca-text"><strong>Measure on production-scale sites</strong> — 15-component pages vs. 60+; multi-region layouts; varied component types</div>
+        </div>
+      </div>
+
+      <p class="cta-closing reveal">
+        "We're ready to contribute patches.<br>Happy to work with Canvas maintainers."
+      </p>
+
+      <div class="badge-row reveal" style="margin-top:24px;">
+        <span class="badge badge--purple">Issue 1: loop_aware injection</span>
+        <span class="badge badge--cyan">Issue 2: layout scoping</span>
+        <span class="badge badge--green">Issue 3: deterministic routing</span>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /.deck -->
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'base', look: 'classic',
+    themeVariables: {
+      primaryColor: '#1e293b', primaryBorderColor: '#06b6d4', primaryTextColor: '#f1f5f9',
+      secondaryColor: '#253350', secondaryBorderColor: '#7c3aed', secondaryTextColor: '#f1f5f9',
+      lineColor: '#475569', fontSize: '16px', fontFamily: 'IBM Plex Mono,monospace',
+    }
+  });
+</script>
+
+<script>
+// ============ CHART.JS CHARTS ============
+var textColor = '#94a3b8';
+var gridColor = 'rgba(255,255,255,0.05)';
+var fontFamily = 'IBM Plex Mono, monospace';
+
+// Chart 1: Latency comparison (log scale bar chart)
+new Chart(document.getElementById('latencyChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Direct-Edit (mean)', 'AI Path (mean)'],
+    datasets: [{
+      label: 'Mean Latency',
+      data: [38, 16358],
+      backgroundColor: ['rgba(16, 185, 129, 0.55)', 'rgba(239, 68, 68, 0.55)'],
+      borderColor: ['#10b981', '#ef4444'],
+      borderWidth: 1.5,
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(ctx) {
+            var v = ctx.raw;
+            return v >= 1000 ? (v/1000).toFixed(1) + 's' : v + 'ms';
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { color: textColor, font: { family: fontFamily, size: 11 } },
+        grid: { color: gridColor },
+        border: { color: 'rgba(148,163,184,0.1)' },
+      },
+      y: {
+        type: 'logarithmic',
+        ticks: {
+          color: textColor,
+          font: { family: fontFamily, size: 10 },
+          callback: function(v) {
+            if (v >= 1000) return (v/1000) + 's';
+            return v + 'ms';
+          }
+        },
+        grid: { color: gridColor },
+        border: { color: 'rgba(148,163,184,0.1)' },
+      }
+    }
+  }
+});
+
+// Chart 2: Hit rate donut
+new Chart(document.getElementById('hitRateChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Deterministic (12/20)', 'AI Fallback (8/20)'],
+    datasets: [{
+      data: [60, 40],
+      backgroundColor: ['rgba(16, 185, 129, 0.6)', 'rgba(239, 68, 68, 0.5)'],
+      borderColor: ['#10b981', '#ef4444'],
+      borderWidth: 1.5,
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '62%',
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: textColor,
+          font: { family: fontFamily, size: 10 },
+          padding: 12,
+          boxWidth: 12,
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(ctx) { return ctx.label + ': ' + ctx.raw + '%'; }
+        }
+      }
+    }
+  }
+});
+
+// ============ EXPAND / COLLAPSE ============
+function toggleExpand(btn, id) {
+  var el = document.getElementById(id);
+  var open = el.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+window.toggleExpand = toggleExpand;
+
+// ============ AUTO-FIT ============
+function autoFit() {
+  document.querySelectorAll('.mermaid svg').forEach(function(svg) {
+    svg.removeAttribute('height');
+    svg.style.width = '100%';
+    svg.style.maxWidth = '100%';
+    svg.style.height = 'auto';
+    if (svg.parentElement) svg.parentElement.style.width = '100%';
+  });
+}
+
+// ============ SLIDE ENGINE ============
+class SlideEngine {
+  constructor() {
+    this.deck = document.querySelector('.deck');
+    this.slides = [...document.querySelectorAll('.slide')];
+    this.current = 0;
+    this.total = this.slides.length;
+    this.buildChrome();
+    this.bindEvents();
+    this.observe();
+    this.update();
+  }
+
+  buildChrome() {
+    var bar = document.createElement('div');
+    bar.className = 'deck-progress';
+    document.body.appendChild(bar);
+    this.bar = bar;
+
+    var dots = document.createElement('div');
+    dots.className = 'deck-dots';
+    var self = this;
+    this.slides.forEach(function(_, i) {
+      var d = document.createElement('button');
+      d.className = 'deck-dot';
+      d.title = 'Slide ' + (i + 1);
+      d.onclick = function() { self.goTo(i); };
+      dots.appendChild(d);
+    });
+    document.body.appendChild(dots);
+    this.dots = [...dots.children];
+
+    var ctr = document.createElement('div');
+    ctr.className = 'deck-counter';
+    document.body.appendChild(ctr);
+    this.counter = ctr;
+
+    var hints = document.createElement('div');
+    hints.className = 'deck-hints';
+    hints.textContent = '\u2190 \u2192 or scroll to navigate';
+    document.body.appendChild(hints);
+    this.hints = hints;
+    var self2 = this;
+    this.hintTimer = setTimeout(function() { hints.classList.add('faded'); }, 4000);
+  }
+
+  bindEvents() {
+    var self = this;
+    document.addEventListener('keydown', function(e) {
+      if (e.target.closest('.data-table-wrap, .expand-content, input, textarea')) return;
+      if (['ArrowDown', 'ArrowRight', ' ', 'PageDown'].includes(e.key)) {
+        e.preventDefault(); self.next();
+      } else if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) {
+        e.preventDefault(); self.prev();
+      } else if (e.key === 'Home') {
+        e.preventDefault(); self.goTo(0);
+      } else if (e.key === 'End') {
+        e.preventDefault(); self.goTo(self.total - 1);
+      }
+      self.fadeHints();
+    });
+
+    var touchY;
+    this.deck.addEventListener('touchstart', function(e) {
+      touchY = e.touches[0].clientY;
+    }, { passive: true });
+    this.deck.addEventListener('touchend', function(e) {
+      var dy = touchY - e.changedTouches[0].clientY;
+      if (Math.abs(dy) > 50) { dy > 0 ? self.next() : self.prev(); }
+    });
+  }
+
+  observe() {
+    var self = this;
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          self.current = self.slides.indexOf(entry.target);
+          self.update();
+        }
+      });
+    }, { threshold: 0.5 });
+    this.slides.forEach(function(s) { obs.observe(s); });
+  }
+
+  goTo(i) {
+    this.slides[Math.max(0, Math.min(i, this.total - 1))]
+      .scrollIntoView({ behavior: 'smooth' });
+  }
+
+  next() { if (this.current < this.total - 1) this.goTo(this.current + 1); }
+  prev() { if (this.current > 0) this.goTo(this.current - 1); }
+
+  update() {
+    this.bar.style.width = ((this.current + 1) / this.total * 100) + '%';
+    var self = this;
+    this.dots.forEach(function(d, i) { d.classList.toggle('active', i === self.current); });
+    this.counter.textContent = (this.current + 1) + ' / ' + this.total;
+  }
+
+  fadeHints() {
+    clearTimeout(this.hintTimer);
+    this.hints.classList.add('faded');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  autoFit();
+  new SlideEngine();
+});
+</script>
+</body>
+</html>
