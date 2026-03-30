@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\canvas_ai_scoping\Service;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+
 /**
  * Matches user messages against deterministic edit patterns.
  *
@@ -32,9 +34,9 @@ final class DirectEditMatcher {
    * splitting ordinary text values like "apples and oranges".
    */
   private const COMPOUND_SPLIT_PATTERNS = [
-    '/,\s*(?:and\s+)?(?=(?:change|set|update|modify|make)\b)/i',
-    '/;\s*(?=(?:change|set|update|modify|make)\b)/i',
-    '/\s+(?:and|also|plus|then)\s+(?=(?:change|set|update|modify|make)\b)/i',
+    '/,\s*(?:and\s+)?(?=(?:change|set|update|modify|make|turn|switch|put)\b)/i',
+    '/;\s*(?=(?:change|set|update|modify|make|turn|switch|put)\b)/i',
+    '/\s+(?:and|also|plus|then)\s+(?=(?:change|set|update|modify|make|turn|switch|put)\b)/i',
   ];
 
   /**
@@ -72,6 +74,7 @@ final class DirectEditMatcher {
    */
   public function __construct(
     private readonly ComponentSchemaLoaderInterface $schemaLoader,
+    private readonly ConfigFactoryInterface $configFactory,
   ) {}
 
   /**
@@ -156,6 +159,21 @@ final class DirectEditMatcher {
   /**
    * Attempts to match a single deterministic prop edit.
    */
+  /**
+   * Returns a regex alternation of recognized edit verbs.
+   *
+   * Reads from canvas_ai_scoping.settings config so site builders can extend
+   * or replace the verb list for non-English deployments without patching.
+   */
+  private function getEditVerbPattern(): string {
+    $config = $this->configFactory->get('canvas_ai_scoping.settings');
+    $verbs = $config->get('edit_verbs');
+    if (!is_array($verbs) || empty($verbs)) {
+      $verbs = ['change', 'set', 'update', 'modify', 'make', 'turn', 'switch', 'put'];
+    }
+    return implode('|', array_map(static fn(string $v): string => preg_quote($v, '/'), $verbs));
+  }
+
   private function matchSingle(string $message, string $componentName, ?array $currentPropValues = NULL): ?array {
     // Reject if the message contains add/create keywords or phrases.
     $messageLower = mb_strtolower($message);
@@ -172,9 +190,10 @@ final class DirectEditMatcher {
     }
 
     // Try to match "change/set/update X to Y" patterns (Tier 1).
+    $verbPattern = $this->getEditVerbPattern();
     $patterns = [
-      // "change the heading to New Title"
-      '/(?:change|set|update|modify|make)\s+(?:the\s+)?(.+?)\s+to\s+["\']?(.+?)["\']?\s*$/i',
+      // "change/turn/switch the heading to New Title"
+      '/(?:' . $verbPattern . ')\s+(?:the\s+)?(.+?)\s+to\s+["\']?(.+?)["\']?\s*$/i',
       // "heading: New Title"
       '/^(.+?):\s+["\']?(.+?)["\']?\s*$/i',
       // "set X = Y"
@@ -383,11 +402,11 @@ final class DirectEditMatcher {
    *   Resolved prop and value, or NULL if ambiguous or no match.
    */
   private function matchBareValue(string $messageLower, string $componentName): ?array {
-    // Strip "make it/this/the" prefix to extract the bare value.
-    // "make it blue" → "blue", "make this centered" → "centered"
+    // Strip "make/use it/this/the" prefix to extract the bare value.
+    // "make it blue" → "blue", "use this primary" → "primary"
     // Must not match "make a"/"make me" (those are ADD_PHRASES, already rejected).
     $bareValue = preg_replace(
-      '/^(?:make\s+(?:it|this|the)\s+)/i',
+      '/^(?:(?:make|use)\s+(?:it|this|the)\s+)/i',
       '',
       $messageLower
     );
@@ -429,8 +448,16 @@ final class DirectEditMatcher {
     $matchingProps = $reverseIndex[$value] ?? [];
 
     if (count($matchingProps) !== 1) {
-      // Zero matches (unknown value) or multiple matches (ambiguous) — reject.
-      return NULL;
+      // Check reverse alias index for natural language aliases.
+      $aliasIndex = $this->schemaLoader->getReverseAliasIndex($componentName);
+      $aliasMatchingProps = $aliasIndex[$value] ?? [];
+      if (count($aliasMatchingProps) === 1) {
+        $matchingProps = $aliasMatchingProps;
+      }
+      else {
+        // Zero matches (unknown value) or multiple matches (ambiguous) — reject.
+        return NULL;
+      }
     }
 
     $propName = $matchingProps[0];

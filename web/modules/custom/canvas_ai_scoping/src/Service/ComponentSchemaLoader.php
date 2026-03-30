@@ -56,6 +56,11 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   private const CACHE_CID_INTEGER_ENUMS = 'canvas_ai_scoping:integer_enums';
 
   /**
+   * Cache ID for the reverse alias index.
+   */
+  private const CACHE_CID_REVERSE_ALIAS = 'canvas_ai_scoping:reverse_alias_index';
+
+  /**
    * Cache tag used to invalidate all maps together.
    */
   private const CACHE_TAG = 'canvas_ai_scoping';
@@ -134,6 +139,13 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   private ?array $integerEnums = NULL;
 
   /**
+   * Cached reverse alias index: {sdc_name => {alias => [prop_name, ...]}}.
+   *
+   * @var array<string, array<string, list<string>>>|null
+   */
+  private ?array $reverseAliasIndex = NULL;
+
+  /**
    * Constructs a ComponentSchemaLoader.
    *
    * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
@@ -204,6 +216,14 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   /**
    * {@inheritdoc}
    */
+  public function getReverseAliasIndex(string $componentName): array {
+    $this->ensureLoaded();
+    return $this->reverseAliasIndex[$componentName] ?? [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getBooleanProps(string $componentName): array {
     $this->ensureLoaded();
     return $this->booleanProps[$componentName] ?? [];
@@ -262,16 +282,19 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     $cachedBooleanProps = $this->cache->get(self::CACHE_CID_BOOLEAN_PROPS);
     $cachedEnumOrdinals = $this->cache->get(self::CACHE_CID_ENUM_ORDINALS);
     $cachedIntegerEnums = $this->cache->get(self::CACHE_CID_INTEGER_ENUMS);
+    $cachedReverseAlias = $this->cache->get(self::CACHE_CID_REVERSE_ALIAS);
 
     if ($cachedAliases !== FALSE && $cachedEnums !== FALSE
       && $cachedReverseEnum !== FALSE && $cachedBooleanProps !== FALSE
-      && $cachedEnumOrdinals !== FALSE && $cachedIntegerEnums !== FALSE) {
+      && $cachedEnumOrdinals !== FALSE && $cachedIntegerEnums !== FALSE
+      && $cachedReverseAlias !== FALSE) {
       $this->propAliases = $cachedAliases->data;
       $this->enumValues = $cachedEnums->data;
       $this->reverseEnumIndex = $cachedReverseEnum->data;
       $this->booleanProps = $cachedBooleanProps->data;
       $this->enumOrdinals = $cachedEnumOrdinals->data;
       $this->integerEnums = $cachedIntegerEnums->data;
+      $this->reverseAliasIndex = $cachedReverseAlias->data;
       return;
     }
 
@@ -284,6 +307,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
       self::CACHE_CID_BOOLEAN_PROPS => $this->booleanProps,
       self::CACHE_CID_ENUM_ORDINALS => $this->enumOrdinals,
       self::CACHE_CID_INTEGER_ENUMS => $this->integerEnums,
+      self::CACHE_CID_REVERSE_ALIAS => $this->reverseAliasIndex,
     ];
     foreach ($cacheSets as $cid => $data) {
       $this->cache->set(
@@ -305,6 +329,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     $this->booleanProps = [];
     $this->enumOrdinals = [];
     $this->integerEnums = [];
+    $this->reverseAliasIndex = [];
 
     $themePath = $this->resolveThemePath();
     if ($themePath === NULL) {
@@ -472,6 +497,27 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
       }
       $this->reverseEnumIndex[$sdcName] = $reverseEnum;
     }
+
+    // Build reverse alias index: alias => [prop_name, ...].
+    // Includes natural aliases (e.g. blue→primary) not just raw enum values.
+    // Skips aliases already in the raw reverse enum index.
+    $reverseAlias = [];
+    foreach ($enumMap as $propName => $aliasMap) {
+      foreach (array_keys($aliasMap) as $alias) {
+        // Skip aliases already covered by the raw reverse enum index.
+        if (isset($reverseEnum[$alias])) {
+          continue;
+        }
+        $reverseAlias[$alias][] = $propName;
+      }
+    }
+    if (!empty($reverseAlias)) {
+      foreach ($reverseAlias as $alias => $props) {
+        $reverseAlias[$alias] = array_values(array_unique($props));
+      }
+      $this->reverseAliasIndex[$sdcName] = $reverseAlias;
+    }
+
     if (!empty($boolProps)) {
       $this->booleanProps[$sdcName] = $boolProps;
     }

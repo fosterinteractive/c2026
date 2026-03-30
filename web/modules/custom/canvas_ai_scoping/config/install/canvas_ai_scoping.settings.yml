@@ -1,1 +1,10 @@
 telemetry_enabled: false
+edit_verbs:
+  - change
+  - set
+  - update
+  - modify
+  - make
+  - turn
+  - switch
+  - put

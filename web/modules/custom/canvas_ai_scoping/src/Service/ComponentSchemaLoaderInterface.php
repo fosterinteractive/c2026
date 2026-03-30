@@ -106,6 +106,21 @@ interface ComponentSchemaLoaderInterface {
   public function getIntegerEnumValues(string $propName, string $componentName): ?array;
 
   /**
+   * Returns a reverse index mapping enum aliases to prop names.
+   *
+   * Similar to getReverseEnumIndex() but includes natural language aliases
+   * from buildEnumAliases() and getNaturalAliasesForEnumValue(). Only
+   * aliases that map to exactly one prop are included (unambiguous).
+   *
+   * @param string $componentName
+   *   The SDC component name.
+   *
+   * @return array<string, list<string>>
+   *   Map of alias => [prop_name, ...].
+   */
+  public function getReverseAliasIndex(string $componentName): array;
+
+  /**
    * Returns per-component enum value collision data.
    *
    * Derived from the reverse enum index — any value mapping to 2+ props is

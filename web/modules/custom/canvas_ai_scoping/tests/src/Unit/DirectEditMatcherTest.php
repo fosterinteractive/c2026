@@ -6,6 +6,8 @@ namespace Drupal\Tests\canvas_ai_scoping\Unit;
 
 use Drupal\canvas_ai_scoping\Service\ComponentSchemaLoaderInterface;
 use Drupal\canvas_ai_scoping\Service\DirectEditMatcher;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
 
 /**
@@ -252,7 +254,46 @@ class DirectEditMatcherTest extends UnitTestCase {
         return $reverse;
       });
 
-    $this->matcher = new DirectEditMatcher($schemaLoader);
+    $schemaLoader->method('getReverseAliasIndex')
+      ->willReturnCallback(static function (string $componentName): array {
+        $enums = self::$enumValues[$componentName] ?? [];
+        // Build the full reverse map (all aliases including natural ones).
+        $fullReverse = [];
+        foreach ($enums as $propName => $valueMap) {
+          foreach ($valueMap as $alias => $canonical) {
+            $fullReverse[$alias][] = $propName;
+          }
+        }
+        // Determine raw enum values (alias === canonical, case-insensitive).
+        $rawValues = [];
+        foreach ($enums as $propName => $valueMap) {
+          foreach ($valueMap as $alias => $canonical) {
+            if ($alias === mb_strtolower($canonical)) {
+              $rawValues[$alias] = TRUE;
+            }
+          }
+        }
+        // Alias index = aliases NOT in the raw enum values set.
+        $aliasIndex = [];
+        foreach ($fullReverse as $alias => $props) {
+          if (!isset($rawValues[$alias])) {
+            $aliasIndex[$alias] = array_values(array_unique($props));
+          }
+        }
+        return $aliasIndex;
+      });
+
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')->willReturnCallback(static function (string $key) {
+      if ($key === 'edit_verbs') {
+        return ['change', 'set', 'update', 'modify', 'make', 'turn', 'switch', 'put'];
+      }
+      return NULL;
+    });
+    $configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $configFactory->method('get')->with('canvas_ai_scoping.settings')->willReturn($config);
+
+    $this->matcher = new DirectEditMatcher($schemaLoader, $configFactory);
   }
 
   /**
@@ -438,6 +479,26 @@ class DirectEditMatcherTest extends UnitTestCase {
         'large',
       ],
 
+      // Phase 1: Bare alias inference (Tier 3 — natural aliases not in raw enum).
+      'bare alias blue resolves to text_color' => [
+        'blue',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'primary',
+      ],
+      'bare alias white resolves to text_color' => [
+        'white',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'inverted',
+      ],
+      'make it white resolves via alias' => [
+        'make it white',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'inverted',
+      ],
+
       // Phase 2: Boolean toggle matches.
       'show header on section' => [
         'show the header',
@@ -515,6 +576,26 @@ class DirectEditMatcherTest extends UnitTestCase {
         'sdc.byte_theme.button',
         'href',
         '',
+      ],
+
+      // Synonym verbs (config-driven).
+      'turn color to blue' => [
+        'turn the color to blue',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'primary',
+      ],
+      'switch alignment to center' => [
+        'switch the alignment to center',
+        'sdc.byte_theme.heading',
+        'align',
+        'center',
+      ],
+      'put size to large' => [
+        'put the size to large',
+        'sdc.byte_theme.button',
+        'size',
+        'large',
       ],
     ];
   }

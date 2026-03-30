@@ -5,3 +5,9 @@ canvas_ai_scoping.settings:
     telemetry_enabled:
       type: boolean
       label: 'Enable detailed direct-edit telemetry logging'
+    edit_verbs:
+      type: sequence
+      label: 'Edit verb patterns recognized by the direct-edit matcher'
+      sequence:
+        type: string
+        label: 'Verb'

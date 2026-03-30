@@ -110,7 +110,7 @@ final class ComponentSchemaLoaderTest extends UnitTestCase {
     $reflection = new \ReflectionClass($loader);
 
     // Initialize the internal arrays.
-    $arrayProps = ['propAliases', 'enumValues', 'reverseEnumIndex', 'booleanProps', 'enumOrdinals'];
+    $arrayProps = ['propAliases', 'enumValues', 'reverseEnumIndex', 'booleanProps', 'enumOrdinals', 'integerEnums', 'reverseAliasIndex'];
     foreach ($arrayProps as $prop) {
       $rp = $reflection->getProperty($prop);
       $rp->setAccessible(TRUE);
@@ -672,6 +672,44 @@ final class ComponentSchemaLoaderTest extends UnitTestCase {
     $this->assertSame(['1', '2', '3', '4'], $ordinals['columns']['values']);
     $this->assertArrayHasKey('margin_block_start', $ordinals);
     $this->assertSame(['0', '8', '16', '32', '64'], $ordinals['margin_block_start']['values']);
+  }
+
+  /**
+   * Tests that the reverse alias index includes natural language aliases.
+   *
+   * @covers ::getReverseAliasIndex
+   */
+  public function testReverseAliasIndexIncludesNaturalAliases(): void {
+    $loader = $this->buildLoader([
+      'heading' => [
+        'text_color' => [
+          'type' => 'string',
+          'enum' => ['default', 'inverted', 'primary'],
+        ],
+        'align' => [
+          'type' => 'string',
+          'enum' => ['left', 'center', 'right'],
+        ],
+      ],
+    ]);
+
+    $aliasIndex = $loader->getReverseAliasIndex('sdc.byte_theme.heading');
+
+    // "blue" is a natural alias for "primary" on text_color.
+    $this->assertArrayHasKey('blue', $aliasIndex);
+    $this->assertSame(['text_color'], $aliasIndex['blue']);
+
+    // "white" is a natural alias for "inverted" on text_color.
+    $this->assertArrayHasKey('white', $aliasIndex);
+    $this->assertSame(['text_color'], $aliasIndex['white']);
+
+    // "centered" is a natural alias for "center" on align.
+    $this->assertArrayHasKey('centered', $aliasIndex);
+    $this->assertSame(['align'], $aliasIndex['centered']);
+
+    // Raw values like "primary" should NOT be in alias index (they're in reverse enum).
+    $this->assertArrayNotHasKey('primary', $aliasIndex);
+    $this->assertArrayNotHasKey('center', $aliasIndex);
   }
 
   /**

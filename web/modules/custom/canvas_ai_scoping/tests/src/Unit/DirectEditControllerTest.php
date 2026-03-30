@@ -55,13 +55,21 @@ final class DirectEditControllerTest extends UnitTestCase {
     LoggerInterface $logger,
     ?ConfigFactoryInterface $configFactory = NULL,
   ): DirectEditController {
-    $matcher = new DirectEditMatcher($schemaLoader);
     if ($configFactory === NULL) {
       $config = $this->createMock(ImmutableConfig::class);
-      $config->method('get')->with('telemetry_enabled')->willReturn(FALSE);
+      $config->method('get')->willReturnCallback(static function (string $key) {
+        if ($key === 'telemetry_enabled') {
+          return FALSE;
+        }
+        if ($key === 'edit_verbs') {
+          return ['change', 'set', 'update', 'modify', 'make', 'turn', 'switch', 'put'];
+        }
+        return NULL;
+      });
       $configFactory = $this->createMock(ConfigFactoryInterface::class);
-      $configFactory->method('get')->with('canvas_ai_scoping.settings')->willReturn($config);
+      $configFactory->method('get')->willReturn($config);
     }
+    $matcher = new DirectEditMatcher($schemaLoader, $configFactory);
 
     return new DirectEditController(
       $matcher,
@@ -104,8 +112,16 @@ final class DirectEditControllerTest extends UnitTestCase {
       ->with('heading_text', 'sdc.byte_theme.heading')
       ->willReturn(NULL);
 
-    $config->method('get')->with('telemetry_enabled')->willReturn(FALSE);
-    $configFactory->method('get')->with('canvas_ai_scoping.settings')->willReturn($config);
+    $config->method('get')->willReturnCallback(static function (string $key) {
+      if ($key === 'telemetry_enabled') {
+        return FALSE;
+      }
+      if ($key === 'edit_verbs') {
+        return ['change', 'set', 'update', 'modify', 'make', 'turn', 'switch', 'put'];
+      }
+      return NULL;
+    });
+    $configFactory->method('get')->willReturn($config);
 
     $tempStore->expects($this->once())
       ->method('setData')
@@ -202,8 +218,16 @@ final class DirectEditControllerTest extends UnitTestCase {
 
     $csrfTokenGenerator->method('validate')->willReturn(TRUE);
     $schemaLoader->method('getPropAliases')->willReturn([]);
-    $config->method('get')->with('telemetry_enabled')->willReturn(FALSE);
-    $configFactory->method('get')->with('canvas_ai_scoping.settings')->willReturn($config);
+    $config->method('get')->willReturnCallback(static function (string $key) {
+      if ($key === 'telemetry_enabled') {
+        return FALSE;
+      }
+      if ($key === 'edit_verbs') {
+        return ['change', 'set', 'update', 'modify', 'make', 'turn', 'switch', 'put'];
+      }
+      return NULL;
+    });
+    $configFactory->method('get')->willReturn($config);
 
     // With telemetry disabled, info should be called exactly once for elapsed.
     $logger->expects($this->once())
@@ -257,8 +281,16 @@ final class DirectEditControllerTest extends UnitTestCase {
 
     $csrfTokenGenerator->method('validate')->willReturn(TRUE);
     $schemaLoader->method('getPropAliases')->willReturn([]);
-    $config->method('get')->with('telemetry_enabled')->willReturn(TRUE);
-    $configFactory->method('get')->with('canvas_ai_scoping.settings')->willReturn($config);
+    $config->method('get')->willReturnCallback(static function (string $key) {
+      if ($key === 'telemetry_enabled') {
+        return TRUE;
+      }
+      if ($key === 'edit_verbs') {
+        return ['change', 'set', 'update', 'modify', 'make', 'turn', 'switch', 'put'];
+      }
+      return NULL;
+    });
+    $configFactory->method('get')->willReturn($config);
 
     // With telemetry enabled: 1 elapsed log + 1 detailed telemetry log.
     $infoMessages = [];
