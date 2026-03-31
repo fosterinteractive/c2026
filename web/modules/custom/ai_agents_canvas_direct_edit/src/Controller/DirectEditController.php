@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\ai_agents_canvas_direct_edit\Controller;
 
+use Drupal\ai_agents_canvas_direct_edit\Service\AiProviderAvailabilityCheckerInterface;
 use Drupal\ai_agents_canvas_direct_edit\Service\DirectEditMatcher;
 use Drupal\canvas_ai\AiResponseValidator;
 use Drupal\canvas_ai\CanvasAiPageBuilderHelper;
@@ -40,6 +41,7 @@ final class DirectEditController extends ControllerBase {
     private readonly CsrfTokenGenerator $csrfTokenGenerator,
     private readonly LoggerInterface $logger,
     private readonly ConfigFactoryInterface $directEditConfigFactory,
+    private readonly AiProviderAvailabilityCheckerInterface $availabilityChecker,
   ) {}
 
   /**
@@ -54,6 +56,7 @@ final class DirectEditController extends ControllerBase {
       $container->get('csrf_token'),
       $container->get('logger.channel.ai_agents_canvas_direct_edit'),
       $container->get('config.factory'),
+      $container->get('ai_agents_canvas_direct_edit.ai_provider_availability_checker'),
     );
   }
 
@@ -176,6 +179,13 @@ final class DirectEditController extends ControllerBase {
             'message_length' => mb_strlen($message),
           ]),
         ]);
+      }
+      if (!$this->availabilityChecker->isAiAvailable()) {
+        return new JsonResponse([
+          'status' => FALSE,
+          'reason' => 'ai_unavailable',
+          'message' => 'This edit requires AI. Configure an API key in AI settings to enable AI-powered editing.',
+        ], 503);
       }
       return new JsonResponse([
         'status' => FALSE,

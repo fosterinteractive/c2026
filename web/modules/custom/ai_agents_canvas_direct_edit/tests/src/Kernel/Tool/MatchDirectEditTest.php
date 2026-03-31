@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\ai_agents_canvas_direct_edit\Kernel\Tool;
 
+use Drupal\ai_agents_canvas_direct_edit\Service\AiProviderAvailabilityCheckerInterface;
+
 /**
  * Kernel tests for the MatchDirectEdit #[Tool] plugin.
  *
@@ -294,6 +296,63 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
     $this->assertTrue($result->isSuccess());
     $output = json_decode($result->getContextValues()['result'], TRUE);
     $this->assertSame('no_match', $output['status']);
+  }
+
+  // ---------------------------------------------------------------------------
+  // ai_available field in no_match response (WP08)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * @covers ::doExecute
+   */
+  public function testNoMatchIncludesAiAvailableTrueWhenProviderConfigured(): void {
+    // Default base setUp registers availability checker returning TRUE.
+    $plugin = $this->createPlugin();
+    $plugin->setInputValue('message', 'add a new section');
+    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->execute();
+
+    $output = json_decode($plugin->getResult()->getContextValues()['result'], TRUE);
+    $this->assertSame('no_match', $output['status']);
+    $this->assertArrayHasKey('ai_available', $output);
+    $this->assertTrue($output['ai_available']);
+  }
+
+  /**
+   * @covers ::doExecute
+   */
+  public function testNoMatchIncludesAiAvailableFalseWhenNoProviderConfigured(): void {
+    $unavailable = $this->createMock(AiProviderAvailabilityCheckerInterface::class);
+    $unavailable->method('isAiAvailable')->willReturn(FALSE);
+    $this->container->set(
+      'ai_agents_canvas_direct_edit.ai_provider_availability_checker',
+      $unavailable
+    );
+
+    $plugin = $this->createPlugin();
+    $plugin->setInputValue('message', 'add a new section');
+    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->execute();
+
+    $output = json_decode($plugin->getResult()->getContextValues()['result'], TRUE);
+    $this->assertSame('no_match', $output['status']);
+    $this->assertArrayHasKey('ai_available', $output);
+    $this->assertFalse($output['ai_available']);
+  }
+
+  /**
+   * @covers ::doExecute
+   */
+  public function testMatchedResultDoesNotIncludeAiAvailableField(): void {
+    // The ai_available field should only appear in no_match results.
+    $plugin = $this->createPlugin();
+    $plugin->setInputValue('message', 'change the heading to Hello');
+    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->execute();
+
+    $output = json_decode($plugin->getResult()->getContextValues()['result'], TRUE);
+    $this->assertSame('matched', $output['status']);
+    $this->assertArrayNotHasKey('ai_available', $output);
   }
 
 }

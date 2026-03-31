@@ -21,13 +21,17 @@ final class AiProviderAvailabilityChecker implements AiProviderAvailabilityCheck
    *   The AI provider plugin manager.
    */
   public function __construct(
-    private readonly AiProviderPluginManager $aiProviderPluginManager,
+    private readonly ?AiProviderPluginManager $aiProviderPluginManager,
   ) {}
 
   /**
    * {@inheritdoc}
    */
   public function isAiAvailable(): bool {
+    if ($this->aiProviderPluginManager === NULL) {
+      return FALSE;
+    }
+
     $default = $this->aiProviderPluginManager->getDefaultProviderForOperationType('chat');
 
     if (empty($default['provider_id'])) {

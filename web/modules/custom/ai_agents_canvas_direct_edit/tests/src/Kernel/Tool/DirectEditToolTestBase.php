@@ -6,6 +6,7 @@ namespace Drupal\Tests\ai_agents_canvas_direct_edit\Kernel\Tool;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\ai_agents_canvas_direct_edit\Plugin\tool\Tool\MatchDirectEdit;
+use Drupal\ai_agents_canvas_direct_edit\Service\AiProviderAvailabilityCheckerInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 
@@ -50,6 +51,14 @@ abstract class DirectEditToolTestBase extends KernelTestBase {
     foreach ($canvasAiServices as $serviceId) {
       $this->container->set($serviceId, new \stdClass());
     }
+
+    // Register a stub availability checker that reports AI as available by default.
+    $availabilityChecker = $this->createMock(AiProviderAvailabilityCheckerInterface::class);
+    $availabilityChecker->method('isAiAvailable')->willReturn(TRUE);
+    $this->container->set(
+      'ai_agents_canvas_direct_edit.ai_provider_availability_checker',
+      $availabilityChecker
+    );
 
     // Replace config.factory to return test settings for the module config key.
     $config = $this->createMock(ImmutableConfig::class);

@@ -7,6 +7,7 @@ namespace Drupal\Tests\ai_agents_canvas_direct_edit\Kernel\Controller;
 use Drupal\KernelTests\KernelTestBase;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Drupal\ai_agents_canvas_direct_edit\Controller\DirectEditController;
+use Drupal\ai_agents_canvas_direct_edit\Service\AiProviderAvailabilityCheckerInterface;
 use Drupal\ai_agents_canvas_direct_edit\Service\DirectEditMatcher;
 use Drupal\canvas_ai\AiResponseValidator;
 use Drupal\canvas_ai\CanvasAiPageBuilderHelper;
@@ -85,6 +86,11 @@ final class DirectEditControllerTest extends KernelTestBase {
   private ConfigFactoryInterface $configFactory;
 
   /**
+   * The AI provider availability checker mock. Returns TRUE by default.
+   */
+  private AiProviderAvailabilityCheckerInterface $availabilityChecker;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -132,6 +138,10 @@ final class DirectEditControllerTest extends KernelTestBase {
 
     // Logger: record calls but do nothing.
     $this->logger = $this->createMock(LoggerInterface::class);
+
+    // Availability checker: reports AI as available by default.
+    $this->availabilityChecker = $this->createMock(AiProviderAvailabilityCheckerInterface::class);
+    $this->availabilityChecker->method('isAiAvailable')->willReturn(TRUE);
   }
 
   // ---------------------------------------------------------------------------
@@ -177,6 +187,7 @@ final class DirectEditControllerTest extends KernelTestBase {
       $this->csrfTokenGenerator,
       $this->logger,
       $this->configFactory,
+      $this->availabilityChecker,
     );
   }
 
@@ -853,6 +864,82 @@ final class DirectEditControllerTest extends KernelTestBase {
     $this->assertArrayHasKey('message', $data);
     $this->assertFalse($data['status']);
     $this->assertSame('no_match', $data['reason']);
+  }
+
+  // ---------------------------------------------------------------------------
+  // AI availability: 503 vs 422 on no-match (WP08)
+  // ---------------------------------------------------------------------------
+
+  /**
+   * @covers ::edit
+   */
+  public function testNoMatchWithAiUnavailableReturns503(): void {
+    $this->availabilityChecker = $this->createMock(AiProviderAvailabilityCheckerInterface::class);
+    $this->availabilityChecker->method('isAiAvailable')->willReturn(FALSE);
+
+    $controller = $this->createController();
+
+    $response = $controller->edit($this->buildRequest($this->validBody('add a new section')));
+
+    $this->assertSame(503, $response->getStatusCode());
+    $data = json_decode($response->getContent(), TRUE);
+    $this->assertFalse($data['status']);
+    $this->assertSame('ai_unavailable', $data['reason']);
+    $this->assertStringContainsString('API key', $data['message']);
+  }
+
+  /**
+   * @covers ::edit
+   */
+  public function testNoMatchWithAiAvailableReturns422(): void {
+    // Default mock returns TRUE — no-match should still be 422.
+    $controller = $this->createController();
+
+    $response = $controller->edit($this->buildRequest($this->validBody('add a new section')));
+
+    $this->assertSame(422, $response->getStatusCode());
+    $data = json_decode($response->getContent(), TRUE);
+    $this->assertSame('no_match', $data['reason']);
+  }
+
+  /**
+   * @covers ::edit
+   */
+  public function testDeterministicMatchSucceedsWithAiUnavailable(): void {
+    // A successful deterministic match must work regardless of AI availability.
+    $this->availabilityChecker = $this->createMock(AiProviderAvailabilityCheckerInterface::class);
+    $this->availabilityChecker->method('isAiAvailable')->willReturn(FALSE);
+
+    $controller = $this->createController();
+
+    $response = $controller->edit(
+      $this->buildRequest($this->validBody('change the heading to Hello World'))
+    );
+
+    $this->assertSame(200, $response->getStatusCode());
+    $data = json_decode($response->getContent(), TRUE);
+    $this->assertTrue($data['status']);
+    $this->assertTrue($data['direct_edit']);
+  }
+
+  /**
+   * @covers ::edit
+   */
+  public function test503ResponseBodyStructure(): void {
+    $this->availabilityChecker = $this->createMock(AiProviderAvailabilityCheckerInterface::class);
+    $this->availabilityChecker->method('isAiAvailable')->willReturn(FALSE);
+
+    $controller = $this->createController();
+
+    $response = $controller->edit($this->buildRequest($this->validBody('add a new section')));
+
+    $data = json_decode($response->getContent(), TRUE);
+    $this->assertArrayHasKey('status', $data);
+    $this->assertArrayHasKey('reason', $data);
+    $this->assertArrayHasKey('message', $data);
+    $this->assertFalse($data['status']);
+    $this->assertSame('ai_unavailable', $data['reason']);
+    $this->assertStringContainsString('AI settings', $data['message']);
   }
 
 }

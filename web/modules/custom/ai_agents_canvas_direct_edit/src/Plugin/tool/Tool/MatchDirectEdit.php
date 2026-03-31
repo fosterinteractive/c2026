@@ -13,6 +13,7 @@ use Drupal\tool\ExecutableResult;
 use Drupal\tool\Tool\ToolBase;
 use Drupal\tool\Tool\ToolOperation;
 use Drupal\tool\TypedData\InputDefinition;
+use Drupal\ai_agents_canvas_direct_edit\Service\AiProviderAvailabilityCheckerInterface;
 use Drupal\ai_agents_canvas_direct_edit\Service\DirectEditMatcher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -57,11 +58,17 @@ class MatchDirectEdit extends ToolBase {
   protected DirectEditMatcher $matcher;
 
   /**
+   * The AI provider availability checker.
+   */
+  protected AiProviderAvailabilityCheckerInterface $availabilityChecker;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->matcher = $container->get('ai_agents_canvas_direct_edit.direct_edit_matcher');
+    $instance->availabilityChecker = $container->get('ai_agents_canvas_direct_edit.ai_provider_availability_checker');
     return $instance;
   }
 
@@ -87,6 +94,7 @@ class MatchDirectEdit extends ToolBase {
       $output = json_encode([
         'status' => 'no_match',
         'component_name' => $componentName,
+        'ai_available' => $this->availabilityChecker->isAiAvailable(),
       ]);
       return ExecutableResult::success(
         new TranslatableMarkup('No deterministic match found. Proceed with LLM reasoning.'),

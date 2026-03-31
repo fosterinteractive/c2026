@@ -21,4 +21,11 @@ services:
   ai_agents_canvas_direct_edit.ai_provider_availability_checker:
     class: Drupal\ai_agents_canvas_direct_edit\Service\AiProviderAvailabilityChecker
     arguments:
-      - '@ai.provider'
+      - '@?ai.provider'
+
+  ai_agents_canvas_direct_edit.telemetry_collector:
+    class: Drupal\ai_agents_canvas_direct_edit\Telemetry\TelemetryCollector
+    arguments:
+      - '@database'
+      - '@config.factory'
+      - '@logger.channel.ai_agents_canvas_direct_edit'
