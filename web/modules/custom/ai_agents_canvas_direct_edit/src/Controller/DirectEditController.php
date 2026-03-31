@@ -39,7 +39,7 @@ final class DirectEditController extends ControllerBase {
     private readonly CanvasAiTempStore $canvasAiTempStore,
     private readonly CsrfTokenGenerator $csrfTokenGenerator,
     private readonly LoggerInterface $logger,
-    private readonly ConfigFactoryInterface $configFactory,
+    private readonly ConfigFactoryInterface $directEditConfigFactory,
   ) {}
 
   /**
@@ -165,7 +165,7 @@ final class DirectEditController extends ControllerBase {
       $this->logger->info('DirectEdit: match elapsed @elapsed_us us (reject)', [
         '@elapsed_us' => $elapsedUs,
       ]);
-      if ($this->configFactory->get('ai_agents_canvas_direct_edit.settings')->get('telemetry_enabled') ?? FALSE) {
+      if ($this->directEditConfigFactory->get('ai_agents_canvas_direct_edit.settings')->get('telemetry_enabled') ?? FALSE) {
         $this->logger->info('DirectEdit telemetry: @data', [
           '@data' => Json::encode([
             'tier' => 'reject',
@@ -196,7 +196,7 @@ final class DirectEditController extends ControllerBase {
       '@elapsed_us' => $elapsedUs,
       '@tier' => $tier,
     ]);
-    if ($this->configFactory->get('ai_agents_canvas_direct_edit.settings')->get('telemetry_enabled') ?? FALSE) {
+    if ($this->directEditConfigFactory->get('ai_agents_canvas_direct_edit.settings')->get('telemetry_enabled') ?? FALSE) {
       $this->logger->info('DirectEdit telemetry: @data', [
         '@data' => Json::encode([
           'tier' => $tier,
