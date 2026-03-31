@@ -119,11 +119,14 @@ final class DirectEditMatcher {
    *   Current prop values for the selected component, keyed by prop name.
    *   Needed for relative adjustments (Phase 3). NULL if unavailable.
    *
-   * @return array{prop: string, value: mixed}|array{changes: array<int, array{prop: string, value: mixed}>}|null
-   *   A single matched prop change, a list of matched changes for a compound
-   *   deterministic edit, or NULL if no deterministic match.
+   * @return \Drupal\ai_agents_canvas_direct_edit\Service\MatchResult|null
+   *   A MatchResult for a single or compound deterministic edit, or NULL if
+   *   no deterministic match was found. Callers that previously checked
+   *   === NULL for no-match continue to work. Callers that accessed
+   *   $result['prop'], $result['value'], and $result['changes'] continue to
+   *   work via MatchResult's ArrayAccess implementation.
    */
-  public function match(string $message, string $componentName, ?array $currentPropValues = NULL): ?array {
+  public function match(string $message, string $componentName, ?array $currentPropValues = NULL): ?MatchResult {
     $message = trim($message);
     // Deterministic edit commands are short. Messages beyond 500 chars are
     // almost certainly content generation or multi-paragraph instructions
@@ -136,13 +139,21 @@ final class DirectEditMatcher {
 
     $fragments = $this->splitCompoundMessage($message);
     if (count($fragments) > 1) {
-      $changes = [];
+      $fragmentResults = [];
       foreach ($fragments as $fragment) {
         $result = $this->matchSingle($fragment, $componentName, $currentPropValues);
         if ($result === NULL) {
           return NULL;
         }
-        $changes[] = $result;
+        $fragmentResults[] = $result;
+      }
+
+      // Extract raw prop/value pairs for deduplication check and compound result.
+      $changes = [];
+      $confidences = [];
+      foreach ($fragmentResults as $fragmentResult) {
+        $changes[] = ['prop' => $fragmentResult['prop'], 'value' => $fragmentResult['value']];
+        $confidences[] = $fragmentResult['confidence'];
       }
 
       $props = array_column($changes, 'prop');
@@ -150,7 +161,7 @@ final class DirectEditMatcher {
         return NULL;
       }
 
-      return ['changes' => $changes];
+      return MatchResult::compound($changes, min($confidences));
     }
 
     return $this->matchSingle($message, $componentName, $currentPropValues);
@@ -174,7 +185,7 @@ final class DirectEditMatcher {
     return implode('|', array_map(static fn(string $v): string => preg_quote($v, '/'), $verbs));
   }
 
-  private function matchSingle(string $message, string $componentName, ?array $currentPropValues = NULL): ?array {
+  private function matchSingle(string $message, string $componentName, ?array $currentPropValues = NULL): ?MatchResult {
     // Reject if the message contains add/create keywords or phrases.
     $messageLower = mb_strtolower($message);
     foreach (self::ADD_KEYWORDS as $keyword) {
@@ -189,7 +200,11 @@ final class DirectEditMatcher {
       }
     }
 
-    // Try to match "change/set/update X to Y" patterns (Tier 1).
+    // Nearest-tier tracking for no-match confidence scoring.
+    // Updated as each tier is attempted and partially succeeds.
+    $nearestTier = NULL;
+
+    // Try to match "change/set/update X to Y" patterns (Tier 1 / Tier 2).
     $verbPattern = $this->getEditVerbPattern();
     $patterns = [
       // "change/turn/switch the heading to New Title"
@@ -205,45 +220,75 @@ final class DirectEditMatcher {
         $propAlias = trim(mb_strtolower($matches[1]));
         $value = trim($matches[2]);
 
+        // Check whether the alias resolves to a prop at all (for nearest-miss).
+        $aliases = $this->schemaLoader->getPropAliases($componentName);
+        $resolvedPropName = $aliases[$propAlias] ?? NULL;
+        if ($resolvedPropName !== NULL) {
+          // Prop name found — nearest-miss is at least "prop matched, value
+          // didn't match" (Tier 1 nearest-miss → confidence 0.6).
+          $nearestTier = 1;
+        }
+        else {
+          // Edit verb recognized but prop alias not found (Tier 2 nearest-miss
+          // → confidence 0.4). Only set if we haven't found a closer miss.
+          if ($nearestTier === NULL) {
+            $nearestTier = 2;
+          }
+        }
+
         $result = $this->resolveEdit($propAlias, $value, $componentName);
         if ($result !== NULL) {
-          return $result;
+          // Determine Tier 1 (exact prop name match) vs Tier 2 (semantic alias).
+          // Exact match: $propAlias is the prop name itself. Alias match:
+          // $propAlias is a human-friendly synonym mapped via the schema.
+          $confidence = ($propAlias === $resolvedPropName) ? 1.0 : 0.95;
+          return MatchResult::matched($result['prop'], $result['value'], $confidence);
         }
       }
     }
 
-    // Phase 1: Bare value type inference.
+    // Phase 1: Bare value type inference (Tier 3 — enum value match).
     // If the message is a bare value or "make it/this {value}", attempt to
     // resolve by scanning all enum props on the component. Only resolves
     // when exactly one prop accepts the value (unambiguous).
     $result = $this->matchBareValue($messageLower, $componentName);
     if ($result !== NULL) {
-      return $result;
+      return MatchResult::matched($result['prop'], $result['value'], 0.90);
     }
 
-    // Phase 2: Boolean toggle patterns.
+    // Phase 2: Boolean toggle patterns (Tier 5 — boolean).
     // "show the header", "hide the footer", "enable overlap", "disable it"
     $result = $this->matchBooleanToggle($messageLower, $componentName);
     if ($result !== NULL) {
-      return $result;
+      return MatchResult::matched($result['prop'], $result['value'], 0.80);
     }
 
-    // Phase 2b: Reset/clear/remove patterns.
+    // Phase 2b: Reset/clear/remove patterns (Tier 5 — reset).
     // "reset the color", "clear the link", "remove the icon"
     $result = $this->matchResetPattern($messageLower, $componentName);
     if ($result !== NULL) {
-      return $result;
+      return MatchResult::matched($result['prop'], $result['value'], 0.80);
     }
 
-    // Phase 3: Relative adjustments.
+    // Phase 3: Relative adjustments (Tier 4).
     // "bigger", "smaller", "make it bigger" — navigate enum ordinals.
     // Requires current prop values to know which direction to move.
     if ($currentPropValues !== NULL) {
       $result = $this->matchRelativeAdjustment($messageLower, $componentName, $currentPropValues);
       if ($result !== NULL) {
-        return $result;
+        return MatchResult::matched($result['prop'], $result['value'], 0.85);
       }
     }
+
+    // No match — compute confidence from nearest-miss analysis.
+    // $nearestTier = 1: prop alias resolved but value didn't match → 0.6
+    // $nearestTier = 2: edit verb detected but no prop alias found → 0.4
+    // $nearestTier = NULL: no recognizable pattern → 0.1
+    $noMatchConfidence = match ($nearestTier) {
+      1 => 0.6,
+      2 => 0.4,
+      default => 0.1,
+    };
 
     return NULL;
   }
