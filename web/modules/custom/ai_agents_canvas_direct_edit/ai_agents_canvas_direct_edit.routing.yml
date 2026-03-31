@@ -5,3 +5,11 @@ ai_agents_canvas_direct_edit.direct_edit:
   requirements:
     _permission: 'use ai agents canvas direct edit'
   methods: [POST]
+
+ai_agents_canvas_direct_edit.telemetry_export:
+  path: '/admin/reports/canvas-direct-edit/telemetry'
+  defaults:
+    _controller: '\Drupal\ai_agents_canvas_direct_edit\Controller\TelemetryExportController::export'
+  requirements:
+    _permission: 'administer ai agents canvas direct edit'
+  methods: [GET]

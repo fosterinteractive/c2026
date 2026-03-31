@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * @file
+ * Hook implementations for the AI Agents Canvas Direct Edit module.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_cron().
+ *
+ * Deletes telemetry records older than the configured retention period.
+ */
+function ai_agents_canvas_direct_edit_cron(): void {
+  $config = \Drupal::config('ai_agents_canvas_direct_edit.settings');
+
+  if (!$config->get('telemetry.enabled')) {
+    return;
+  }
+
+  $retentionDays = (int) ($config->get('telemetry.retention_days') ?? 90);
+  $cutoff = time() - ($retentionDays * 86400);
+
+  try {
+    $deleted = \Drupal::database()
+      ->delete('canvas_direct_edit_telemetry')
+      ->condition('timestamp', $cutoff, '<')
+      ->execute();
+
+    if ($deleted > 0) {
+      \Drupal::logger('ai_agents_canvas_direct_edit')
+        ->info('Telemetry cron: deleted @count records older than @days days.', [
+          '@count' => $deleted,
+          '@days' => $retentionDays,
+        ]);
+    }
+  }
+  catch (\Exception $e) {
+    \Drupal::logger('ai_agents_canvas_direct_edit')
+      ->error('Telemetry cron cleanup failed: @message', [
+        '@message' => $e->getMessage(),
+      ]);
+  }
+}

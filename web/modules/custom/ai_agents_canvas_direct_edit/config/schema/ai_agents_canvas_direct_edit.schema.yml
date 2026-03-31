@@ -8,9 +8,22 @@ ai_agents_canvas_direct_edit.settings:
       sequence:
         type: string
         label: 'Verb'
-    telemetry_enabled:
-      type: boolean
-      label: 'Enable detailed telemetry logging for the direct-edit matcher'
+    telemetry:
+      type: mapping
+      label: 'Telemetry configuration'
+      mapping:
+        enabled:
+          type: boolean
+          label: 'Enable telemetry collection'
+        store_messages:
+          type: boolean
+          label: 'Store raw message content (disable for PII safety)'
+        retention_days:
+          type: integer
+          label: 'Days to retain telemetry records'
+        export_enabled:
+          type: boolean
+          label: 'Enable telemetry export endpoint'
     enum_value_aliases:
       type: mapping
       label: 'Enum value aliases for the direct-edit matcher'
@@ -21,3 +34,20 @@ ai_agents_canvas_direct_edit.settings:
           sequence:
             type: string
             label: 'Alias'
+    model_routing:
+      type: mapping
+      label: 'Model routing configuration'
+      mapping:
+        enabled:
+          type: boolean
+          label: 'Enable complexity-based model routing'
+        models:
+          type: mapping
+          label: 'Model assignments per complexity signal'
+          mapping:
+            simple:
+              type: string
+              label: 'Model identifier for simple complexity (e.g. provider_id/model_id or bare model_id)'
+            complex:
+              type: string
+              label: 'Model identifier for complex complexity (e.g. provider_id/model_id or bare model_id)'

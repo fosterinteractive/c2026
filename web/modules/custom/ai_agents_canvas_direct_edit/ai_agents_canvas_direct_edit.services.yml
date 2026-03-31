@@ -23,6 +23,12 @@ services:
     arguments:
       - '@?ai.provider'
 
+  ai_agents_canvas_direct_edit.complexity_model_router:
+    class: Drupal\ai_agents_canvas_direct_edit\Service\ComplexityModelRouter
+    arguments:
+      - '@config.factory'
+      - '@?ai.provider'
+
   ai_agents_canvas_direct_edit.telemetry_collector:
     class: Drupal\ai_agents_canvas_direct_edit\Telemetry\TelemetryCollector
     arguments:
