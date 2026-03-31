@@ -8,6 +8,9 @@ ai_agents_canvas_direct_edit.settings:
       sequence:
         type: string
         label: 'Verb'
+    telemetry_enabled:
+      type: boolean
+      label: 'Enable detailed telemetry logging for the direct-edit matcher'
     enum_value_aliases:
       type: mapping
       label: 'Enum value aliases for the direct-edit matcher'

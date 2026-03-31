@@ -8,3 +8,4 @@ dependencies:
   - ai_agents:ai_agents
   - tool:tool
   - canvas:canvas
+  - canvas_ai:canvas_ai

@@ -1,0 +1,7 @@
+ai_agents_canvas_direct_edit.direct_edit:
+  path: '/admin/api/canvas/direct-edit'
+  defaults:
+    _controller: '\Drupal\ai_agents_canvas_direct_edit\Controller\DirectEditController::edit'
+  requirements:
+    _permission: 'use ai agents canvas direct edit'
+  methods: [POST]

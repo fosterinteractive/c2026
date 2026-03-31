@@ -1,3 +1,4 @@
+telemetry_enabled: false
 edit_verbs:
   - change
   - set
