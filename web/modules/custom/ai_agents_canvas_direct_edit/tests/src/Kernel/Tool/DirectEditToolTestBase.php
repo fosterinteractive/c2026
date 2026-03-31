@@ -39,6 +39,18 @@ abstract class DirectEditToolTestBase extends KernelTestBase {
       new TestComponentSchemaLoader()
     );
 
+    // Register stub canvas_ai services so the plugin manager can discover
+    // all tool plugins without canvas_ai being installed.
+    $canvasAiServices = [
+      'canvas_ai.tempstore',
+      'canvas_ai.component_context_helper',
+      'canvas_ai.page_builder_helper',
+      'canvas_ai.response_validator',
+    ];
+    foreach ($canvasAiServices as $serviceId) {
+      $this->container->set($serviceId, new \stdClass());
+    }
+
     // Replace config.factory to return test settings for the module config key.
     $config = $this->createMock(ImmutableConfig::class);
     $config->method('get')->willReturnCallback(static function (string $key) {
