@@ -29,3 +29,8 @@ services:
       - '@database'
       - '@config.factory'
       - '@logger.channel.ai_agents_canvas_direct_edit'
+
+  ai_agents_canvas_direct_edit.telemetry_aggregator:
+    class: Drupal\ai_agents_canvas_direct_edit\Telemetry\TelemetryAggregator
+    arguments:
+      - '@database'

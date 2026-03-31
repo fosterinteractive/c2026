@@ -6,6 +6,8 @@ namespace Drupal\ai_agents_canvas_direct_edit\Controller;
 
 use Drupal\ai_agents_canvas_direct_edit\Service\AiProviderAvailabilityCheckerInterface;
 use Drupal\ai_agents_canvas_direct_edit\Service\DirectEditMatcher;
+use Drupal\ai_agents_canvas_direct_edit\Telemetry\TelemetryCollectorInterface;
+use Drupal\ai_agents_canvas_direct_edit\Telemetry\TelemetryEvent;
 use Drupal\canvas_ai\AiResponseValidator;
 use Drupal\canvas_ai\CanvasAiPageBuilderHelper;
 use Drupal\canvas_ai\CanvasAiTempStore;
@@ -42,6 +44,7 @@ final class DirectEditController extends ControllerBase {
     private readonly LoggerInterface $logger,
     private readonly ConfigFactoryInterface $directEditConfigFactory,
     private readonly AiProviderAvailabilityCheckerInterface $availabilityChecker,
+    private readonly TelemetryCollectorInterface $telemetryCollector,
   ) {}
 
   /**
@@ -57,6 +60,7 @@ final class DirectEditController extends ControllerBase {
       $container->get('logger.channel.ai_agents_canvas_direct_edit'),
       $container->get('config.factory'),
       $container->get('ai_agents_canvas_direct_edit.ai_provider_availability_checker'),
+      $container->get('ai_agents_canvas_direct_edit.telemetry_collector'),
     );
   }
 
@@ -164,22 +168,19 @@ final class DirectEditController extends ControllerBase {
     $elapsedUs = (int) (hrtime(TRUE) / 1000) - $startUs;
 
     if ($match === NULL) {
-      // Always log elapsed time; gate detailed telemetry on config toggle.
       $this->logger->info('DirectEdit: match elapsed @elapsed_us us (reject)', [
         '@elapsed_us' => $elapsedUs,
       ]);
-      if ($this->directEditConfigFactory->get('ai_agents_canvas_direct_edit.settings')->get('telemetry_enabled') ?? FALSE) {
-        $this->logger->info('DirectEdit telemetry: @data', [
-          '@data' => Json::encode([
-            'tier' => 'reject',
-            'component_name' => $componentName,
-            'prop' => NULL,
-            'reason' => 'no_match',
-            'elapsed_us' => $elapsedUs,
-            'message_length' => mb_strlen($message),
-          ]),
-        ]);
-      }
+      $this->telemetryCollector->record(
+        TelemetryEvent::create()
+          ->withComponentName($componentName)
+          ->withTier(TelemetryEvent::TIER_REJECT)
+          ->withMatched(FALSE)
+          ->withLatencyUs($elapsedUs)
+          ->withMessage($message)
+          ->withAiFallback(FALSE)
+          ->build()
+      );
       if (!$this->availabilityChecker->isAiAvailable()) {
         return new JsonResponse([
           'status' => FALSE,
@@ -196,28 +197,26 @@ final class DirectEditController extends ControllerBase {
 
     // Determine tier and resolved prop for telemetry.
     $isCompound = isset($match['changes']);
-    $tier = $isCompound ? 2 : 1;
+    $tier = $isCompound ? TelemetryEvent::TIER_COMPOUND : TelemetryEvent::TIER_EXACT;
     $resolvedProp = $isCompound
       ? implode(', ', array_column($match['changes'], 'prop'))
       : ($match['prop'] ?? NULL);
 
-    // Always log elapsed time; gate detailed telemetry on config toggle.
     $this->logger->info('DirectEdit: match elapsed @elapsed_us us (tier @tier)', [
       '@elapsed_us' => $elapsedUs,
       '@tier' => $tier,
     ]);
-    if ($this->directEditConfigFactory->get('ai_agents_canvas_direct_edit.settings')->get('telemetry_enabled') ?? FALSE) {
-      $this->logger->info('DirectEdit telemetry: @data', [
-        '@data' => Json::encode([
-          'tier' => $tier,
-          'component_name' => $componentName,
-          'prop' => $resolvedProp,
-          'reason' => 'matched',
-          'elapsed_us' => $elapsedUs,
-          'message_length' => mb_strlen($message),
-        ]),
-      ]);
-    }
+    $this->telemetryCollector->record(
+      TelemetryEvent::create()
+        ->withComponentName($componentName)
+        ->withTier($tier)
+        ->withMatched(TRUE)
+        ->withPropName($resolvedProp)
+        ->withLatencyUs($elapsedUs)
+        ->withMessage($message)
+        ->withAiFallback(FALSE)
+        ->build()
+    );
 
     try {
       $this->responseValidator->validateComponentExistsInPage($componentUuid);
