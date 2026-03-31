@@ -1,0 +1,4 @@
+use ai agents canvas direct edit:
+  title: 'Use AI Agents Canvas Direct Edit tool'
+  description: 'Allows users to invoke the deterministic Canvas property matching tool.'
+  restrict access: false

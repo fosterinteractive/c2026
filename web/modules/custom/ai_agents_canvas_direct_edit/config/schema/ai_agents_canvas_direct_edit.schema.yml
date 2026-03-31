@@ -1,0 +1,20 @@
+ai_agents_canvas_direct_edit.settings:
+  type: config_object
+  label: 'AI Agents Canvas Direct Edit settings'
+  mapping:
+    edit_verbs:
+      type: sequence
+      label: 'Edit verb patterns recognized by the direct-edit matcher'
+      sequence:
+        type: string
+        label: 'Verb'
+    enum_value_aliases:
+      type: mapping
+      label: 'Enum value aliases for the direct-edit matcher'
+      mapping:
+        '*':
+          type: sequence
+          label: 'Aliases for this enum value'
+          sequence:
+            type: string
+            label: 'Alias'

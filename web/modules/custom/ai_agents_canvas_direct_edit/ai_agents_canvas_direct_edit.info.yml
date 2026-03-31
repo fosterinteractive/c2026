@@ -1,0 +1,10 @@
+name: 'AI Agents Canvas Direct Edit'
+type: module
+description: 'Deterministic Canvas component property editing without LLM. Resolves simple prop edits from SDC schemas in <7ms at 0 tokens.'
+package: AI Tools
+core_version_requirement: ^10.3 || ^11
+experimental: true
+dependencies:
+  - ai_agents:ai_agents
+  - tool:tool
+  - canvas:canvas

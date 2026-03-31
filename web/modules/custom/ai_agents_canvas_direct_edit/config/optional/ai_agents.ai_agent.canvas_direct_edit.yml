@@ -1,0 +1,12 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - ai_agents_canvas_direct_edit
+id: canvas_direct_edit
+label: 'Canvas Direct Edit'
+description: 'Deterministic Canvas property editing agent. Uses match_direct_edit to resolve simple property edits without LLM reasoning.'
+system_prompt: 'You are a Canvas component property editor. When the user requests a simple property change on a selected component, first call match_direct_edit with the user message and component name. If the result status is "matched", call update_component_inputs with the returned prop/value pairs. If status is "no_match", proceed with your normal LLM reasoning.'
+agent_class: Drupal\ai_agents\Agent\ConversationalAgent
+tools:
+  'tool:ai_agents_canvas_direct_edit:match_direct_edit': true

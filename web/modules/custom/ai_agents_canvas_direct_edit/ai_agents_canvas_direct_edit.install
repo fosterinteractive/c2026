@@ -1,0 +1,16 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * @file
+ * Install, update and uninstall functions for the ai_agents_canvas_direct_edit module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function ai_agents_canvas_direct_edit_uninstall(): void {
+  \Drupal::configFactory()
+    ->getEditable('ai_agents.ai_agent.canvas_direct_edit')
+    ->delete();
+}

@@ -39,10 +39,12 @@
         "drupal/dynamic_entity_reference": "^3.2",
         "drupal/recipe_installer_kit": "^1.0.4",
         "drupal/tagify": "^1.2",
+        "drupal/tool": "^1.0@beta",
         "drupal/webform": "@beta",
         "google/analytics-data": "^0.23.2"
     },
     "require-dev": {
+        "drupal/core-dev": "^11.3",
         "drush/drush": "^13.7"
     },
     "conflict": {
@@ -58,7 +60,9 @@
             "drupal/core-recipe-unpack": true,
             "drupal/core-vendor-hardening": true,
             "php-http/discovery": true,
-            "cweagans/composer-patches": true
+            "cweagans/composer-patches": true,
+            "phpstan/extension-installer": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
         },
         "bin-dir": "vendor/bin",
         "sort-packages": true,
@@ -77,22 +81,45 @@
             ]
         },
         "installer-paths": {
-            "web/core": ["type:drupal-core"],
-            "web/libraries/{$name}": ["type:drupal-library"],
-            "web/modules/contrib/{$name}": ["type:drupal-module"],
-            "web/profiles/contrib/{$name}": ["type:drupal-profile"],
-            "web/themes/contrib/{$name}": ["type:drupal-theme"],
-            "./drush/Commands/contrib/{$name}": ["type:drupal-drush"],
-            "web/modules/custom/{$name}": ["type:drupal-custom-module"],
-            "web/profiles/custom/{$name}": ["type:drupal-custom-profile"],
-            "./recipes/{$name}": ["type:drupal-recipe"],
-            "web/themes/custom/{$name}": ["type:drupal-custom-theme"]
+            "web/core": [
+                "type:drupal-core"
+            ],
+            "web/libraries/{$name}": [
+                "type:drupal-library"
+            ],
+            "web/modules/contrib/{$name}": [
+                "type:drupal-module"
+            ],
+            "web/profiles/contrib/{$name}": [
+                "type:drupal-profile"
+            ],
+            "web/themes/contrib/{$name}": [
+                "type:drupal-theme"
+            ],
+            "./drush/Commands/contrib/{$name}": [
+                "type:drupal-drush"
+            ],
+            "web/modules/custom/{$name}": [
+                "type:drupal-custom-module"
+            ],
+            "web/profiles/custom/{$name}": [
+                "type:drupal-custom-profile"
+            ],
+            "./recipes/{$name}": [
+                "type:drupal-recipe"
+            ],
+            "web/themes/custom/{$name}": [
+                "type:drupal-custom-theme"
+            ]
         },
         "drupal-core-project-message": {
-            "include-keys": ["homepage", "support"],
+            "include-keys": [
+                "homepage",
+                "support"
+            ],
             "post-create-project-cmd-message": [
                 "<bg=blue;fg=white>                                                   </>",
-                "<bg=blue;fg=white>  Congratulations, you’ve installed Drupal CMS!    </>",
+                "<bg=blue;fg=white>  Congratulations, you\u2019ve installed Drupal CMS!    </>",
                 "<bg=blue;fg=white>                                                   </>",
                 "",
                 "<bg=yellow;fg=black>Next steps</>:",
@@ -105,7 +132,9 @@
             "composer/composer": false
         },
         "composer-patches": {
-            "ignore-dependency-patches": ["drupal/ai_context"]
+            "ignore-dependency-patches": [
+                "drupal/ai_context"
+            ]
         },
         "patches": {
             "drupal/core": {

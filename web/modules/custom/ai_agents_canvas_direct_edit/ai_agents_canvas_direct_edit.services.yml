@@ -1,0 +1,19 @@
+services:
+  logger.channel.ai_agents_canvas_direct_edit:
+    parent: logger.channel_base
+    arguments: ['ai_agents_canvas_direct_edit']
+
+  ai_agents_canvas_direct_edit.component_schema_loader:
+    class: Drupal\ai_agents_canvas_direct_edit\Service\ComponentSchemaLoader
+    arguments:
+      - '@theme_handler'
+      - '@extension.list.theme'
+      - '@cache.default'
+      - '@logger.channel.ai_agents_canvas_direct_edit'
+      - '@config.factory'
+
+  ai_agents_canvas_direct_edit.direct_edit_matcher:
+    class: Drupal\ai_agents_canvas_direct_edit\Service\DirectEditMatcher
+    arguments:
+      - '@ai_agents_canvas_direct_edit.component_schema_loader'
+      - '@config.factory'
