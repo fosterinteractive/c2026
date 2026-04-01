@@ -75,7 +75,7 @@ final class DirectEditController extends ControllerBase {
    * Request body (JSON):
    * - message: string — the user's chat message
    * - component_uuid: string — UUID of the selected component
-   * - component_name: string — SDC name (e.g., 'sdc.byte_theme.heading')
+   * - component_name: string — SDC name (e.g., 'sdc.mytheme.heading')
    *
    * Returns:
    * - 200 with update operations if the edit was applied deterministically.
@@ -133,7 +133,6 @@ final class DirectEditController extends ControllerBase {
     // making the check silently pass in the normal AI flow. This is a
     // contrib bug (tracked for upstream report). Our endpoint relies on the
     // tempstore being correctly populated by the page load flow.
-
     // The standard AI endpoint seeds the same tempstore from the client-side
     // `layout` payload before validation. Mirror that here so a first direct
     // edit does not depend on a previous fallback request having populated the
@@ -236,7 +235,7 @@ final class DirectEditController extends ControllerBase {
       ], 400);
     }
 
-    $changes = isset($match['changes']) ? $match['changes'] : [$match];
+    $changes = $match['changes'] ?? [$match];
     $propValues = [];
     foreach ($changes as $change) {
       $propValues[$change['prop']] = $change['value'];

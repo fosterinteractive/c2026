@@ -16,19 +16,74 @@ namespace Drupal\ai_agents_canvas_direct_edit\Telemetry;
  */
 final class Builder {
 
+  /**
+   * Unix timestamp of the edit attempt.
+   */
   private int $timestamp;
+
+  /**
+   * SDC component name.
+   */
   private string $componentName = '';
+
+  /**
+   * Match tier (one of the TelemetryEvent::TIER_* constants).
+   */
   private string $tier = TelemetryEvent::TIER_REJECT;
+
+  /**
+   * Whether the attempt produced a deterministic match.
+   */
   private bool $matched = FALSE;
+
+  /**
+   * The matched prop name, or NULL when rejected.
+   */
   private ?string $propName = NULL;
+
+  /**
+   * Confidence score (0.0–1.0).
+   */
   private ?float $confidence = NULL;
+
+  /**
+   * Complexity signal label.
+   */
   private ?string $complexitySignal = NULL;
+
+  /**
+   * AI model identifier used for fallback.
+   */
   private ?string $modelUsed = NULL;
+
+  /**
+   * Deterministic-path latency in microseconds.
+   */
   private int $latencyUs = 0;
+
+  /**
+   * Character length of the original user message.
+   */
   private int $messageLength = 0;
+
+  /**
+   * SHA-256 hash of the raw user message.
+   */
   private string $messageHash = '';
+
+  /**
+   * Redacted or raw message text.
+   */
   private ?string $redactedMessage = NULL;
+
+  /**
+   * Whether the attempt was escalated to an AI fallback.
+   */
   private bool $aiFallback = FALSE;
+
+  /**
+   * AI fallback round-trip latency in milliseconds.
+   */
   private ?int $aiLatencyMs = NULL;
 
   /**
@@ -55,7 +110,7 @@ final class Builder {
    * Sets the SDC component name.
    *
    * @param string $componentName
-   *   SDC component name (e.g. sdc.byte_theme.heading).
+   *   SDC component name (e.g. sdc.mytheme.heading).
    *
    * @return static
    */

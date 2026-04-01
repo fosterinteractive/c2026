@@ -35,7 +35,7 @@ use Symfony\Component\Yaml\Yaml;
     'component_id' => new InputDefinition(
       data_type: 'string',
       label: new TranslatableMarkup('Component ID'),
-      description: new TranslatableMarkup('Component ID to add (e.g. sdc.byte_theme.heading).'),
+      description: new TranslatableMarkup('Component ID to add (e.g. sdc.mytheme.heading).'),
       required: TRUE,
     ),
     'region' => new InputDefinition(

@@ -89,7 +89,7 @@ interface TelemetryAggregatorInterface {
    *   latency_percentiles: array{p50: int, p95: int, p99: int},
    *   model_breakdown: array<string, int>,
    *   ai_fallback_rate: float
-   * }
+   *   }
    *   Combined statistics suitable for JSON serialization.
    */
   public function getSummary(int $since, int $until): array;

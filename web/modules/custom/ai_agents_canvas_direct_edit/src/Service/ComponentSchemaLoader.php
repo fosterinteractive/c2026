@@ -12,9 +12,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Loads Byte theme component YAML schemas and builds alias/enum maps.
+ * Loads the active theme's SDC component YAML schemas and builds alias/enum maps.
  *
- * Discovers all *.component.yml files under the byte_theme components
+ * Discovers all *.component.yml files under the default theme's components
  * directory, parses each schema, and produces two maps consumed by
  * DirectEditMatcher:
  *
@@ -157,6 +157,8 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
    *   The default cache backend.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger channel.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory, used to load enum value alias overrides.
    */
   public function __construct(
     private readonly ThemeHandlerInterface $themeHandler,
@@ -170,7 +172,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
    * Returns the prop alias map for a component.
    *
    * @param string $componentName
-   *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   *   The SDC component name (e.g., 'sdc.mytheme.heading').
    *
    * @return array<string, string>
    *   Map of alias => prop_name. Empty array if component is not found.
@@ -186,7 +188,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
    * @param string $propName
    *   The canonical prop name (e.g., 'text_color').
    * @param string $componentName
-   *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   *   The SDC component name (e.g., 'sdc.mytheme.heading').
    *
    * @return array<string, string>|null
    *   Map of alias => canonical_value, or NULL if the prop has no enum.
@@ -354,7 +356,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   }
 
   /**
-   * Resolves the absolute filesystem path of byte_theme.
+   * Resolves the absolute filesystem path of the default theme.
    *
    * @return string|null
    *   Absolute path, or NULL if the theme is not installed.
@@ -397,8 +399,8 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
       return;
     }
 
-    // Derive the SDC name from the directory name.
-    // File: .../components/heading/heading.component.yml → sdc.<theme>.heading
+    // Derive the SDC name from the directory name:
+    // .../components/heading/heading.component.yml → sdc.<theme>.heading.
     $componentDir = basename(dirname($file));
     $sdcName = 'sdc.' . $this->themeHandler->getDefault() . '.' . $componentDir;
 

@@ -17,7 +17,7 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
    * @var array<string, array<string, string>>
    */
   private static array $propAliases = [
-    'sdc.byte_theme.heading' => [
+    'sdc.test_theme.heading' => [
       'heading' => 'heading_text',
       'title' => 'heading_text',
       'text' => 'heading_text',
@@ -31,7 +31,7 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
       'alignment' => 'align',
       'align' => 'align',
     ],
-    'sdc.byte_theme.button' => [
+    'sdc.test_theme.button' => [
       'label' => 'label',
       'text' => 'label',
       'button text' => 'label',
@@ -43,7 +43,7 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
       'url' => 'href',
       'href' => 'href',
     ],
-    'sdc.byte_theme.card-icon' => [
+    'sdc.test_theme.card-icon' => [
       'title' => 'text',
       'heading' => 'text',
       'text' => 'text',
@@ -52,23 +52,23 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
       'background' => 'background_color',
       'background color' => 'background_color',
     ],
-    'sdc.byte_theme.badge' => [
+    'sdc.test_theme.badge' => [
       'label' => 'label',
       'text' => 'label',
     ],
-    'sdc.byte_theme.icon' => [
+    'sdc.test_theme.icon' => [
       'icon' => 'icon',
       'name' => 'icon',
       'size' => 'size',
       'color' => 'color',
     ],
-    'sdc.byte_theme.section' => [
+    'sdc.test_theme.section' => [
       'header' => 'section_header',
       'show header' => 'section_header',
       'footer' => 'section_footer',
       'show footer' => 'section_footer',
     ],
-    'sdc.byte_theme.group' => [
+    'sdc.test_theme.group' => [
       'gap' => 'flex_gap',
       'flex gap' => 'flex_gap',
       'radius' => 'radius',
@@ -81,7 +81,7 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
    * @var array<string, array<string, array<string, string>>>
    */
   private static array $enumValues = [
-    'sdc.byte_theme.heading' => [
+    'sdc.test_theme.heading' => [
       'text_color' => [
         'default' => 'default',
         'white' => 'inverted',
@@ -99,7 +99,7 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
         'right' => 'right',
       ],
     ],
-    'sdc.byte_theme.button' => [
+    'sdc.test_theme.button' => [
       'variant' => [
         'primary' => 'primary',
         'secondary' => 'secondary',
@@ -112,7 +112,7 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
         'large' => 'large',
       ],
     ],
-    'sdc.byte_theme.group' => [
+    'sdc.test_theme.group' => [
       'flex_gap' => ['sm' => 'sm', 'md' => 'md', 'lg' => 'lg', 'xl' => 'xl'],
       'radius' => ['sm' => 'sm', 'md' => 'md', 'lg' => 'lg', 'xl' => 'xl'],
       'padding' => ['sm' => 'sm', 'md' => 'md', 'lg' => 'lg', 'xl' => 'xl'],
@@ -162,12 +162,12 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
    */
   public function getBooleanProps(string $componentName): array {
     $booleanProps = [
-      'sdc.byte_theme.heading' => [],
-      'sdc.byte_theme.button' => [
+      'sdc.test_theme.heading' => [],
+      'sdc.test_theme.button' => [
         'disabled' => ['aliases' => ['disabled'], 'inverted' => TRUE],
         'icon_first' => ['aliases' => ['icon_first', 'icon first'], 'inverted' => FALSE],
       ],
-      'sdc.byte_theme.section' => [
+      'sdc.test_theme.section' => [
         'section_header' => ['aliases' => ['section_header', 'show header', 'header'], 'inverted' => FALSE],
         'section_footer' => ['aliases' => ['section_footer', 'show footer', 'footer'], 'inverted' => FALSE],
       ],
@@ -180,7 +180,7 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
    */
   public function getEnumOrdinals(string $componentName): array {
     $ordinals = [
-      'sdc.byte_theme.heading' => [
+      'sdc.test_theme.heading' => [
         'text_size' => [
           'values' => [
             'default',
@@ -204,7 +204,7 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
           'direction' => 'ascending',
         ],
       ],
-      'sdc.byte_theme.button' => [
+      'sdc.test_theme.button' => [
         'variant' => [
           'values' => ['primary', 'secondary', 'primary-inverted', 'secondary-inverted'],
           'direction' => 'ascending',
@@ -223,7 +223,7 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
    */
   public function getIntegerEnumValues(string $propName, string $componentName): ?array {
     $integerEnums = [
-      'sdc.byte_theme.heading' => [
+      'sdc.test_theme.heading' => [
         'level' => [1, 2, 3, 4, 5, 6],
       ],
     ];

@@ -39,7 +39,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
     'component_name' => new InputDefinition(
       data_type: 'string',
       label: new TranslatableMarkup('Component Name'),
-      description: new TranslatableMarkup('The SDC component ID of the selected component (e.g. sdc.byte_theme.heading).'),
+      description: new TranslatableMarkup('The SDC component ID of the selected component (e.g. sdc.mytheme.heading).'),
       required: TRUE,
     ),
     'current_prop_values' => new InputDefinition(

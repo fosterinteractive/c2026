@@ -152,7 +152,7 @@ final class MatchResult implements \ArrayAccess {
    *   - 'prop'    → prop name (single-prop matches)
    *   - 'value'   → prop value (single-prop matches)
    *   - 'changes' → changes array (compound matches)
-   *   - 'matched', 'confidence', 'nearestTier', 'complexitySignal' → DTO props
+   *   - 'matched', 'confidence', 'nearestTier', 'complexitySignal' → DTO props.
    */
   public function offsetExists(mixed $offset): bool {
     return match ($offset) {

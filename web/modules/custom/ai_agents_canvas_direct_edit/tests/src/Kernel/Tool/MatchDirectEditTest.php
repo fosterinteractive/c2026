@@ -30,8 +30,8 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
    */
   public function testSinglePropStringMatch(): void {
     $plugin = $this->createPlugin();
-    $plugin->setInputValue('message', 'change the heading to Welcome to FinDrop');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('message', 'change the heading to Welcome to Our Site');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $result = $plugin->getResult();
@@ -39,10 +39,10 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
 
     $output = json_decode($result->getContextValues()['result'], TRUE);
     $this->assertSame('matched', $output['status']);
-    $this->assertSame('sdc.byte_theme.heading', $output['component_name']);
+    $this->assertSame('sdc.test_theme.heading', $output['component_name']);
     $this->assertCount(1, $output['changes']);
     $this->assertSame('heading_text', $output['changes'][0]['prop']);
-    $this->assertSame('Welcome to FinDrop', $output['changes'][0]['value']);
+    $this->assertSame('Welcome to Our Site', $output['changes'][0]['value']);
   }
 
   /**
@@ -51,7 +51,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
   public function testEnumResolutionColorAlias(): void {
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'set the color to blue');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $result = $plugin->getResult();
@@ -69,7 +69,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
   public function testEnumResolutionAlignmentAlias(): void {
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'set the alignment to centered');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $result = $plugin->getResult();
@@ -87,7 +87,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
   public function testIntegerPropLevel(): void {
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'set the level to 3');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $result = $plugin->getResult();
@@ -105,7 +105,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
   public function testCompoundMatch(): void {
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'change the heading to Welcome and set the color to blue');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $result = $plugin->getResult();
@@ -126,7 +126,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
   public function testAddKeywordMissReturnsSuccess(): void {
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'add a new section');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $result = $plugin->getResult();
@@ -135,7 +135,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
 
     $output = json_decode($result->getContextValues()['result'], TRUE);
     $this->assertSame('no_match', $output['status']);
-    $this->assertSame('sdc.byte_theme.heading', $output['component_name']);
+    $this->assertSame('sdc.test_theme.heading', $output['component_name']);
   }
 
   /**
@@ -144,7 +144,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
   public function testInvalidEnumMiss(): void {
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'set the color to rainbow');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $result = $plugin->getResult();
@@ -160,7 +160,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
   public function testBareValueMatch(): void {
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'blue');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $result = $plugin->getResult();
@@ -178,7 +178,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
   public function testBooleanToggleShowHeader(): void {
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'show the header');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.section');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.section');
     $plugin->execute();
 
     $result = $plugin->getResult();
@@ -196,7 +196,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
   public function testRelativeAdjustmentWithCurrentProps(): void {
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'bigger');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->setInputValue(
       'current_prop_values',
       '{"text_size":"heading-responsive-5xl","text_color":"default"}'
@@ -218,7 +218,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
   public function testRelativeAdjustmentWithoutCurrentPropsIsMiss(): void {
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'bigger');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     // No current_prop_values set.
     $plugin->execute();
 
@@ -235,7 +235,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
   public function testResetPattern(): void {
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'reset the color');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $result = $plugin->getResult();
@@ -271,7 +271,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
     // it should be treated as no current values (relative adjustments miss).
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'bigger');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->setInputValue('current_prop_values', '');
     $plugin->execute();
 
@@ -288,7 +288,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
     // Passing invalid JSON for current_prop_values should not crash.
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'bigger');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->setInputValue('current_prop_values', 'not-valid-json');
     $plugin->execute();
 
@@ -309,7 +309,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
     // Default base setUp registers availability checker returning TRUE.
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'add a new section');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $output = json_decode($plugin->getResult()->getContextValues()['result'], TRUE);
@@ -331,7 +331,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
 
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'add a new section');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $output = json_decode($plugin->getResult()->getContextValues()['result'], TRUE);
@@ -347,7 +347,7 @@ final class MatchDirectEditTest extends DirectEditToolTestBase {
     // The ai_available field should only appear in no_match results.
     $plugin = $this->createPlugin();
     $plugin->setInputValue('message', 'change the heading to Hello');
-    $plugin->setInputValue('component_name', 'sdc.byte_theme.heading');
+    $plugin->setInputValue('component_name', 'sdc.test_theme.heading');
     $plugin->execute();
 
     $output = json_decode($plugin->getResult()->getContextValues()['result'], TRUE);

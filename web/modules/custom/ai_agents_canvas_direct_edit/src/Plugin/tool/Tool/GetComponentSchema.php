@@ -32,7 +32,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
     'component_ids' => new InputDefinition(
       data_type: 'string',
       label: new TranslatableMarkup('Component IDs'),
-      description: new TranslatableMarkup('Comma-separated list of component IDs (e.g. "sdc.byte_theme.heading,sdc.byte_theme.button").'),
+      description: new TranslatableMarkup('Comma-separated list of component IDs (e.g. "sdc.mytheme.heading,sdc.mytheme.button").'),
       required: TRUE,
     ),
   ],

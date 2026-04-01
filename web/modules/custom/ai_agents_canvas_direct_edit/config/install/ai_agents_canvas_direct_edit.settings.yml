@@ -6,8 +6,8 @@ telemetry:
 model_routing:
   enabled: false
   models:
-    simple: 'claude-haiku-4-5-20251001'
-    complex: 'claude-sonnet-4-6-20250514'
+    simple: ''
+    complex: ''
 edit_verbs:
   - change
   - set
@@ -18,11 +18,6 @@ edit_verbs:
   - switch
   - put
 enum_value_aliases:
-  inverted: ['white', 'light']
-  primary: ['blue', 'brand']
-  secondary: ['grey', 'gray']
-  accent: ['highlight']
-  muted: ['subtle']
   center: ['centered', 'middle']
   left: ['start']
   right: ['end']
@@ -31,10 +26,5 @@ enum_value_aliases:
   medium: ['mid']
   extra-large: ['xl', 'extra large']
   extra-small: ['xs', 'extra small']
-  framed: ['bordered']
-  full: ['full width']
   vertical: ['portrait']
   horizontal: ['landscape', 'side by side']
-  ribbon: ['thin', 'narrow']
-  before: ['prefix']
-  after: ['suffix']

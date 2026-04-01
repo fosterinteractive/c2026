@@ -7,8 +7,8 @@ namespace Drupal\ai_agents_canvas_direct_edit\Service;
 /**
  * Interface for the component schema loader service.
  *
- * Provides prop alias and enum value maps derived from Byte theme component
- * YAML schemas, consumed by DirectEditMatcher for deterministic edit routing.
+ * Provides prop alias and enum value maps derived from the active theme's SDC
+ * component YAML schemas, consumed by DirectEditMatcher for deterministic edit routing.
  */
 interface ComponentSchemaLoaderInterface {
 
@@ -16,7 +16,7 @@ interface ComponentSchemaLoaderInterface {
    * Returns the prop alias map for a component.
    *
    * @param string $componentName
-   *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   *   The SDC component name (e.g., 'sdc.mytheme.heading').
    *
    * @return array<string, string>
    *   Map of alias => prop_name. Empty array if component is not found.
@@ -29,7 +29,7 @@ interface ComponentSchemaLoaderInterface {
    * @param string $propName
    *   The canonical prop name (e.g., 'text_color').
    * @param string $componentName
-   *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   *   The SDC component name (e.g., 'sdc.mytheme.heading').
    *
    * @return array<string, string>|null
    *   Map of alias => canonical_value, or NULL if the prop has no enum.
@@ -52,7 +52,7 @@ interface ComponentSchemaLoaderInterface {
    * exactly 1 prop match are unambiguous; multiple matches indicate collision.
    *
    * @param string $componentName
-   *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   *   The SDC component name (e.g., 'sdc.mytheme.heading').
    *
    * @return array<string, list<string>>
    *   Map of normalized_value => [prop_name, ...]. Empty array if component
@@ -64,7 +64,7 @@ interface ComponentSchemaLoaderInterface {
    * Returns boolean prop metadata for a component.
    *
    * @param string $componentName
-   *   The SDC component name (e.g., 'sdc.byte_theme.section').
+   *   The SDC component name (e.g., 'sdc.mytheme.section').
    *
    * @return array<string, array{aliases: list<string>, inverted: bool}>
    *   Map of prop_name => ['aliases' => [...], 'inverted' => bool].
@@ -80,7 +80,7 @@ interface ComponentSchemaLoaderInterface {
    * adjustment logic ("bigger"/"smaller").
    *
    * @param string $componentName
-   *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   *   The SDC component name (e.g., 'sdc.mytheme.heading').
    *
    * @return array<string, array{values: list<string>, direction: string}>
    *   Map of prop_name => ['values' => [ordered values], 'direction' =>
@@ -98,7 +98,7 @@ interface ComponentSchemaLoaderInterface {
    * @param string $propName
    *   The canonical prop name (e.g., 'level').
    * @param string $componentName
-   *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   *   The SDC component name (e.g., 'sdc.mytheme.heading').
    *
    * @return list<int>|null
    *   List of valid integer values, or NULL if the prop has no integer enum.

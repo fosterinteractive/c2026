@@ -54,7 +54,7 @@ final class DirectEditControllerTest extends KernelTestBase {
   /**
    * A valid component name for use across tests.
    */
-  private const VALID_COMPONENT = 'sdc.byte_theme.heading';
+  private const VALID_COMPONENT = 'sdc.test_theme.heading';
 
   /**
    * The CSRF token generator mock, set to validate successfully by default.
@@ -406,7 +406,7 @@ final class DirectEditControllerTest extends KernelTestBase {
   public function testComponentNameWithoutSdcPrefixReturns400(): void {
     $controller = $this->createController();
     $body = $this->validBody();
-    $body['component_name'] = 'byte_theme.heading';
+    $body['component_name'] = 'test_theme.heading';
 
     $response = $controller->edit($this->buildRequest($body));
 
@@ -419,7 +419,7 @@ final class DirectEditControllerTest extends KernelTestBase {
   public function testComponentNameWithUppercaseReturns400(): void {
     $controller = $this->createController();
     $body = $this->validBody();
-    $body['component_name'] = 'sdc.Byte_Theme.Heading';
+    $body['component_name'] = 'sdc.Test_Theme.Heading';
 
     $response = $controller->edit($this->buildRequest($body));
 
@@ -532,13 +532,13 @@ final class DirectEditControllerTest extends KernelTestBase {
     $controller = $this->createController();
 
     $response = $controller->edit(
-      $this->buildRequest($this->validBody('change the heading to Welcome to FinDrop'))
+      $this->buildRequest($this->validBody('change the heading to Welcome to Our Site'))
     );
 
     $this->assertSame(200, $response->getStatusCode());
     $data = json_decode($response->getContent(), TRUE);
     $this->assertSame('heading_text', $data['matched_prop']);
-    $this->assertSame('Welcome to FinDrop', $data['matched_value']);
+    $this->assertSame('Welcome to Our Site', $data['matched_value']);
   }
 
   /**

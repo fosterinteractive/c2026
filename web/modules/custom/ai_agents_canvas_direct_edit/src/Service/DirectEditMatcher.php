@@ -17,8 +17,8 @@ use Drupal\Core\Config\ConfigFactoryInterface;
  * that requires LLM reasoning (multi-prop changes, ambiguous references,
  * content generation, add/remove operations).
  *
- * Prop aliases and enum value maps are loaded dynamically from the Byte theme
- * component YAML schemas via ComponentSchemaLoader, covering all 23 components.
+ * Prop aliases and enum value maps are loaded dynamically from the active
+ * theme's SDC component YAML schemas via ComponentSchemaLoader.
  */
 final class DirectEditMatcher {
 
@@ -71,6 +71,8 @@ final class DirectEditMatcher {
    *
    * @param \Drupal\ai_agents_canvas_direct_edit\Service\ComponentSchemaLoaderInterface $schemaLoader
    *   The component schema loader, providing dynamic prop alias and enum maps.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory, used to load edit verb configuration.
    */
   public function __construct(
     private readonly ComponentSchemaLoaderInterface $schemaLoader,
@@ -114,7 +116,7 @@ final class DirectEditMatcher {
    * @param string $message
    *   The user's chat message.
    * @param string $componentName
-   *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   *   The SDC component name (e.g., 'sdc.mytheme.heading').
    * @param array|null $currentPropValues
    *   Current prop values for the selected component, keyed by prop name.
    *   Needed for relative adjustments (Phase 3). NULL if unavailable.
@@ -168,9 +170,6 @@ final class DirectEditMatcher {
   }
 
   /**
-   * Attempts to match a single deterministic prop edit.
-   */
-  /**
    * Returns a regex alternation of recognized edit verbs.
    *
    * Reads from ai_agents_canvas_direct_edit.settings config so site builders can extend
@@ -185,6 +184,9 @@ final class DirectEditMatcher {
     return implode('|', array_map(static fn(string $v): string => preg_quote($v, '/'), $verbs));
   }
 
+  /**
+   * Attempts to match a single (non-compound) deterministic prop edit.
+   */
   private function matchSingle(string $message, string $componentName, ?array $currentPropValues = NULL): MatchResult {
     // Reject if the message contains add/create keywords or phrases.
     $messageLower = mb_strtolower($message);
@@ -257,14 +259,14 @@ final class DirectEditMatcher {
     }
 
     // Phase 2: Boolean toggle patterns (Tier 5 — boolean).
-    // "show the header", "hide the footer", "enable overlap", "disable it"
+    // "show the header", "hide the footer", "enable overlap", "disable it".
     $result = $this->matchBooleanToggle($messageLower, $componentName);
     if ($result !== NULL) {
       return MatchResult::matched($result['prop'], $result['value'], 0.80);
     }
 
     // Phase 2b: Reset/clear/remove patterns (Tier 5 — reset).
-    // "reset the color", "clear the link", "remove the icon"
+    // "reset the color", "clear the link", "remove the icon".
     $result = $this->matchResetPattern($messageLower, $componentName);
     if ($result !== NULL) {
       return MatchResult::matched($result['prop'], $result['value'], 0.80);
@@ -283,7 +285,7 @@ final class DirectEditMatcher {
     // No match — compute confidence from nearest-miss analysis.
     // $nearestTier = 1: prop alias resolved but value didn't match → 0.6
     // $nearestTier = 2: edit verb detected but no prop alias found → 0.4
-    // $nearestTier = NULL: no recognizable pattern → 0.1
+    // $nearestTier = NULL: no recognizable pattern → 0.1.
     $noMatchConfidence = match ($nearestTier) {
       1 => 0.6,
       2 => 0.4,
@@ -405,7 +407,7 @@ final class DirectEditMatcher {
     // Match toggle verb patterns.
     // Group 1: verb (determines true/false)
     // Group 2: optional "the" article
-    // Group 3: the prop reference
+    // Group 3: the prop reference.
     $pattern = '/^(show|hide|enable|disable|turn\s+on|turn\s+off|activate|deactivate)\s+(?:the\s+)?(.+?)\s*$/i';
     if (!preg_match($pattern, $messageLower, $matches)) {
       return NULL;
@@ -616,7 +618,7 @@ final class DirectEditMatcher {
    *   Resolved prop and reset value, or NULL if no match.
    */
   private function matchResetPattern(string $messageLower, string $componentName): ?array {
-    // Match: reset/clear/remove [the] <prop reference>
+    // Match: reset/clear/remove [the] <prop reference>.
     $pattern = '/^(reset|clear|remove)\s+(?:the\s+)?(.+?)\s*$/i';
     if (!preg_match($pattern, $messageLower, $matches)) {
       return NULL;

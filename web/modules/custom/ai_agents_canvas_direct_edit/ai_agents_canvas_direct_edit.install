@@ -28,7 +28,7 @@ function ai_agents_canvas_direct_edit_schema(): array {
         'default' => 0,
       ],
       'component_name' => [
-        'description' => 'SDC component name (e.g. sdc.byte_theme.heading).',
+        'description' => 'SDC component name (e.g. sdc.mytheme.heading).',
         'type' => 'varchar',
         'length' => 128,
         'not null' => TRUE,

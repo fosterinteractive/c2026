@@ -10,7 +10,7 @@ namespace Drupal\ai_agents_canvas_direct_edit\Telemetry;
  * Construct via the fluent builder:
  * @code
  * $event = TelemetryEvent::create()
- *   ->withComponentName('sdc.byte_theme.heading')
+ *   ->withComponentName('sdc.mytheme.heading')
  *   ->withTier('exact')
  *   ->withMatched(TRUE)
  *   ->withPropName('heading_text')
@@ -43,7 +43,7 @@ final class TelemetryEvent {
    * @param int $timestamp
    *   Unix timestamp of the edit attempt.
    * @param string $componentName
-   *   SDC component name (e.g. sdc.byte_theme.heading).
+   *   SDC component name (e.g. sdc.mytheme.heading).
    * @param string $tier
    *   Match tier (one of the TIER_* constants).
    * @param bool $matched
