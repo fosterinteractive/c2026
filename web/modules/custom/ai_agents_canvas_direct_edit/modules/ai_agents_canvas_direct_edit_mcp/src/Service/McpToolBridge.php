@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\ai_agents_canvas_direct_edit_mcp\Service;
 
+use Drupal\Core\Access\AccessException;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\tool\ToolManager;
 
@@ -83,7 +84,7 @@ final class McpToolBridge {
 
     $access = $plugin->access($arguments, $account, TRUE);
     if (!$access->isAllowed()) {
-      throw new \Drupal\Core\Access\AccessException(sprintf('Access denied for tool: %s', $name));
+      throw new AccessException(sprintf('Access denied for tool: %s', $name));
     }
 
     $result = $plugin->execute($arguments, $account);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\ai_agents_canvas_direct_edit_mcp\Service;
 
+use Drupal\Core\Access\AccessException;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Session\AccountInterface;
 
@@ -142,7 +143,7 @@ final class McpRequestHandler {
     catch (\InvalidArgumentException $e) {
       return $this->errorResponse($id, -32602, $e->getMessage());
     }
-    catch (\Drupal\Core\Access\AccessException $e) {
+    catch (AccessException $e) {
       return $this->errorResponse($id, -32603, $e->getMessage());
     }
     catch (\Exception $e) {

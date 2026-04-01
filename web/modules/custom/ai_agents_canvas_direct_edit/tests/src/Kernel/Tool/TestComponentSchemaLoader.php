@@ -14,6 +14,8 @@ use Drupal\ai_agents_canvas_direct_edit\Service\ComponentSchemaLoaderInterface;
 final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface {
 
   /**
+   * Prop alias map keyed by SDC component name.
+   *
    * @var array<string, array<string, string>>
    */
   private static array $propAliases = [
@@ -78,6 +80,8 @@ final class TestComponentSchemaLoader implements ComponentSchemaLoaderInterface 
   ];
 
   /**
+   * Enum value map keyed by SDC component name and prop name.
+   *
    * @var array<string, array<string, array<string, string>>>
    */
   private static array $enumValues = [
