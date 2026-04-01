@@ -15,6 +15,7 @@ use Drupal\canvas_ai\CanvasAiTempStore;
 use Drupal\Core\Access\CsrfTokenGenerator;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
+use Drupal\ai_agents_canvas_direct_edit\Telemetry\TelemetryCollectorInterface;
 use Drupal\Tests\ai_agents_canvas_direct_edit\Kernel\Tool\TestComponentSchemaLoader;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -91,6 +92,11 @@ final class DirectEditControllerTest extends KernelTestBase {
   private AiProviderAvailabilityCheckerInterface $availabilityChecker;
 
   /**
+   * The telemetry collector mock. No-ops by default.
+   */
+  private TelemetryCollectorInterface $telemetryCollector;
+
+  /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
@@ -142,6 +148,9 @@ final class DirectEditControllerTest extends KernelTestBase {
     // Availability checker: reports AI as available by default.
     $this->availabilityChecker = $this->createMock(AiProviderAvailabilityCheckerInterface::class);
     $this->availabilityChecker->method('isAiAvailable')->willReturn(TRUE);
+
+    // Telemetry collector: no-ops by default (record is void).
+    $this->telemetryCollector = $this->createMock(TelemetryCollectorInterface::class);
   }
 
   // ---------------------------------------------------------------------------
@@ -188,6 +197,7 @@ final class DirectEditControllerTest extends KernelTestBase {
       $this->logger,
       $this->configFactory,
       $this->availabilityChecker,
+      $this->telemetryCollector,
     );
   }
 
@@ -782,14 +792,14 @@ final class DirectEditControllerTest extends KernelTestBase {
    * @covers ::edit
    */
   public function testNoMatchWithTelemetryEnabledLogsBasicTimingAndTelemetryData(): void {
-    // With telemetry enabled, two info() calls are expected: the timing log
-    // and the detailed JSON telemetry log.
+    // With telemetry enabled, one info() call for timing; telemetry data
+    // goes through TelemetryCollector::record(), not the logger.
     $this->configFactory = $this->buildTestConfigFactory(telemetryEnabled: TRUE);
     $this->container->set('config.factory', $this->configFactory);
 
     $this->logger = $this->createMock(LoggerInterface::class);
     $this->logger
-      ->expects($this->exactly(2))
+      ->expects($this->once())
       ->method('info');
 
     $controller = $this->createController();
@@ -822,9 +832,10 @@ final class DirectEditControllerTest extends KernelTestBase {
     $this->container->set('config.factory', $this->configFactory);
 
     $this->logger = $this->createMock(LoggerInterface::class);
-    // Two info() calls (timing + telemetry JSON) and one notice().
+    // One info() call for timing; telemetry goes through TelemetryCollector.
+    // One notice() call for the successful edit log.
     $this->logger
-      ->expects($this->exactly(2))
+      ->expects($this->once())
       ->method('info');
     $this->logger
       ->expects($this->once())
