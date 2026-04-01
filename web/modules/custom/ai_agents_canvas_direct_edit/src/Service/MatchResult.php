@@ -7,6 +7,8 @@ namespace Drupal\ai_agents_canvas_direct_edit\Service;
 /**
  * Immutable value object representing the result of a DirectEditMatcher match.
  *
+ * @api
+ *
  * Carries confidence scoring and a complexity signal for downstream model
  * routing decisions. Implements \ArrayAccess for backward compatibility with
  * callers that access the legacy raw-array return shape.

@@ -6,6 +6,8 @@ namespace Drupal\ai_agents_canvas_direct_edit\Telemetry;
 
 /**
  * Computes aggregate statistics from the canvas_direct_edit_telemetry table.
+ *
+ * @internal Telemetry aggregation — API not stable.
  */
 interface TelemetryAggregatorInterface {
 

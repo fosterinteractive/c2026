@@ -14,6 +14,8 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * Loads the active theme's SDC component YAML schemas and builds alias/enum maps.
  *
+ * @internal Default implementation of ComponentSchemaLoaderInterface.
+ *
  * Discovers all *.component.yml files under the default theme's components
  * directory, parses each schema, and produces two maps consumed by
  * DirectEditMatcher:

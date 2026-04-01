@@ -9,6 +9,8 @@ use Drupal\ai\AiProviderPluginManager;
 /**
  * Checks whether any AI provider is configured and usable for chat operations.
  *
+ * @internal Default implementation of AiProviderAvailabilityCheckerInterface.
+ *
  * Reads live configuration on every call — no caching — so that changes to
  * the AI provider settings take effect immediately without a cache clear.
  */

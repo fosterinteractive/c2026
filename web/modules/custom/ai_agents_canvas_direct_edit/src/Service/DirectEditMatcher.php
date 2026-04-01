@@ -9,6 +9,8 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 /**
  * Matches user messages against deterministic edit patterns.
  *
+ * @api Primary entry point for deterministic edit matching.
+ *
  * When a component is selected and the user's message matches a pattern
  * like "change the heading to X" or "set the color to primary", this service
  * extracts the prop name and value without invoking the LLM agent chain.

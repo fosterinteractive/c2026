@@ -14,6 +14,8 @@ use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Returns aggregated telemetry data as JSON.
+ *
+ * @internal
  */
 class TelemetryExportController extends ControllerBase implements ContainerInjectionInterface {
 

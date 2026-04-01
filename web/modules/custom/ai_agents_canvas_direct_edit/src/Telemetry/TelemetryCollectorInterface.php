@@ -6,6 +6,8 @@ namespace Drupal\ai_agents_canvas_direct_edit\Telemetry;
 
 /**
  * Defines the interface for the telemetry collector service.
+ *
+ * @api
  */
 interface TelemetryCollectorInterface {
 

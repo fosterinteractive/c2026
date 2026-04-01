@@ -7,6 +7,8 @@ namespace Drupal\ai_agents_canvas_direct_edit\Service;
 /**
  * Interface for the complexity-based model router service.
  *
+ * @internal Experimental — API not stable.
+ *
  * Maps a complexity signal (e.g., 'simple', 'complex') to a specific AI
  * provider and model pair, allowing high-complexity tasks to be routed to
  * more capable models and low-complexity tasks to faster, cheaper ones.

@@ -10,6 +10,8 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 /**
  * Routes complexity signals to AI provider/model pairs via configuration.
  *
+ * @internal Default implementation of ComplexityModelRouterInterface.
+ *
  * Reads from ai_agents_canvas_direct_edit.settings:model_routing on every
  * call — no caching — so configuration changes take effect immediately.
  *

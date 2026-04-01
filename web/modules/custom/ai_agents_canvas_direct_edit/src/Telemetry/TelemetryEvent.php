@@ -7,6 +7,8 @@ namespace Drupal\ai_agents_canvas_direct_edit\Telemetry;
 /**
  * Immutable value object carrying all fields for a single telemetry record.
  *
+ * @internal
+ *
  * Construct via the fluent builder:
  * @code
  * $event = TelemetryEvent::create()

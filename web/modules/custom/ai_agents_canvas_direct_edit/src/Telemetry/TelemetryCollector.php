@@ -11,6 +11,8 @@ use Psr\Log\LoggerInterface;
 /**
  * Persists telemetry events to the canvas_direct_edit_telemetry table.
  *
+ * @internal Default implementation of TelemetryCollectorInterface.
+ *
  * This service is intentionally resilient: any database failure is caught,
  * logged, and silently discarded so that telemetry collection never blocks
  * or fails the edit response path.

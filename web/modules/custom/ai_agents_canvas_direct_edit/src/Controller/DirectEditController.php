@@ -24,6 +24,8 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 /**
  * Handles deterministic component edits without invoking the LLM agent chain.
  *
+ * @internal HTTP bridge — not a public API contract.
+ *
  * This endpoint implements ADR-004 (Simple Operations Bypass LLM). When the
  * user selects a component and sends a message that matches a deterministic
  * edit pattern ("change the heading to X"), this controller applies the edit

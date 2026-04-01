@@ -7,6 +7,8 @@ namespace Drupal\ai_agents_canvas_direct_edit\Telemetry;
 /**
  * Fluent builder for TelemetryEvent.
  *
+ * @internal
+ *
  * Obtained via TelemetryEvent::create(). Call withXxx() setters in any order,
  * then call build() to produce an immutable TelemetryEvent.
  *

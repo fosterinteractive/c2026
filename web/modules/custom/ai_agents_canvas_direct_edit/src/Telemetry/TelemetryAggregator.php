@@ -9,6 +9,8 @@ use Drupal\Core\Database\Connection;
 /**
  * Reads the telemetry table and computes aggregate statistics.
  *
+ * @internal Default implementation of TelemetryAggregatorInterface.
+ *
  * All methods accept Unix timestamp boundaries and return structured arrays
  * suitable for JSON serialization. Empty datasets are handled gracefully:
  * rates return 0.0, distributions return [], and percentiles return all zeros.

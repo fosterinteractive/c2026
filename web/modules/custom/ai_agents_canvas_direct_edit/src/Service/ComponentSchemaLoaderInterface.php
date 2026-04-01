@@ -9,6 +9,8 @@ namespace Drupal\ai_agents_canvas_direct_edit\Service;
  *
  * Provides prop alias and enum value maps derived from the active theme's SDC
  * component YAML schemas, consumed by DirectEditMatcher for deterministic edit routing.
+ *
+ * @api This interface is the public contract for schema loading.
  */
 interface ComponentSchemaLoaderInterface {
 

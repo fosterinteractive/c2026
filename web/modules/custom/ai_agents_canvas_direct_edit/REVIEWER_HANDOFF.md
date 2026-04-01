@@ -101,6 +101,32 @@ All config lives under `ai_agents_canvas_direct_edit.settings`:
 - `telemetry.*` — Enable/disable, retention, message storage (PII-safe by default)
 - `model_routing.*` — Complexity-based model selection (opt-in)
 
+## Relationship to Canvas AI
+
+This module **extends** canvas_ai, it does not compete with it. It acts as a
+pre-filter: deterministic edits resolve without touching the AI chain, reducing
+load on the orchestrator and saving tokens. Anything the matcher can't resolve
+falls through to the existing canvas_ai agent pipeline unchanged.
+
+The module depends on canvas_ai services (`AiResponseValidator`,
+`CanvasAiPageBuilderHelper`, `CanvasAiTempStore`) for validation and update
+operations. It produces the same JSON response format so the Canvas frontend
+needs zero changes.
+
+## Why 7 Services (Not Fewer)
+
+The services.yml header documents this in detail. In short:
+- **3 core** (schema loader, matcher, logger) — irreducible
+- **2 AI availability** (checker, router) — separate because the module works
+  without `drupal/ai` installed; nullable injection needs its own wrapper
+- **2 telemetry** (collector, aggregator) — write path and read path have
+  different performance profiles and load timing
+
+Telemetry is separate from AI Logging (`drupal/ai`) because they track different
+data: this module records deterministic match attempts (tier, confidence, <7ms
+latency), while AI Logging records LLM API calls (tokens, provider, model).
+They complement each other.
+
 ## Key Design Decisions
 
 1. **Schema-driven, not hardcoded.** Prop aliases and enum maps come from the active theme's `*.component.yml` files. When components update their schemas, the matcher auto-adapts.

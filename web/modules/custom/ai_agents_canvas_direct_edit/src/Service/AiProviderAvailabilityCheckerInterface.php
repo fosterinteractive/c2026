@@ -7,6 +7,8 @@ namespace Drupal\ai_agents_canvas_direct_edit\Service;
 /**
  * Interface for the AI provider availability checker service.
  *
+ * @api
+ *
  * Checks whether any AI provider is configured and usable for chat
  * operations. Used to determine whether API-key-free mode should be active.
  */
