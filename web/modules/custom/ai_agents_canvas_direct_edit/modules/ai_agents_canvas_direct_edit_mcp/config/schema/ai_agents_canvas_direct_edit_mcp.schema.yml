@@ -1,0 +1,16 @@
+ai_agents_canvas_direct_edit_mcp.settings:
+  type: config_object
+  label: 'Canvas Direct Edit MCP Server settings'
+  mapping:
+    enabled:
+      type: boolean
+      label: 'Enable MCP server'
+    allowed_origins:
+      type: sequence
+      label: 'Allowed CORS origins'
+      sequence:
+        type: string
+        label: 'Origin URL'
+    session_ttl:
+      type: integer
+      label: 'Session TTL in seconds'

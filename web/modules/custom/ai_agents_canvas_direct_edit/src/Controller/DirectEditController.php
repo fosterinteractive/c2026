@@ -167,7 +167,7 @@ final class DirectEditController extends ControllerBase {
     $match = $this->matcher->match($message, $componentName, $currentPropValues);
     $elapsedUs = (int) (hrtime(TRUE) / 1000) - $startUs;
 
-    if ($match === NULL) {
+    if (!$match->matched) {
       $this->logger->info('DirectEdit: match elapsed @elapsed_us us (reject)', [
         '@elapsed_us' => $elapsedUs,
       ]);
@@ -186,12 +186,16 @@ final class DirectEditController extends ControllerBase {
           'status' => FALSE,
           'reason' => 'ai_unavailable',
           'message' => 'This edit requires AI. Configure an API key in AI settings to enable AI-powered editing.',
+          'complexity_signal' => $match->complexitySignal,
+          'confidence' => $match->confidence,
         ], 503);
       }
       return new JsonResponse([
         'status' => FALSE,
         'reason' => 'no_match',
         'message' => 'Message does not match a deterministic edit pattern',
+        'complexity_signal' => $match->complexitySignal,
+        'confidence' => $match->confidence,
       ], 422);
     }
 

@@ -1,0 +1,11 @@
+services:
+  ai_agents_canvas_direct_edit_mcp.tool_bridge:
+    class: Drupal\ai_agents_canvas_direct_edit_mcp\Service\McpToolBridge
+    arguments:
+      - '@plugin.manager.tool'
+
+  ai_agents_canvas_direct_edit_mcp.request_handler:
+    class: Drupal\ai_agents_canvas_direct_edit_mcp\Service\McpRequestHandler
+    arguments:
+      - '@ai_agents_canvas_direct_edit_mcp.tool_bridge'
+      - '@config.factory'

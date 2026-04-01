@@ -119,14 +119,14 @@ final class DirectEditMatcher {
    *   Current prop values for the selected component, keyed by prop name.
    *   Needed for relative adjustments (Phase 3). NULL if unavailable.
    *
-   * @return \Drupal\ai_agents_canvas_direct_edit\Service\MatchResult|null
-   *   A MatchResult for a single or compound deterministic edit, or NULL if
-   *   no deterministic match was found. Callers that previously checked
-   *   === NULL for no-match continue to work. Callers that accessed
-   *   $result['prop'], $result['value'], and $result['changes'] continue to
-   *   work via MatchResult's ArrayAccess implementation.
+   * @return \Drupal\ai_agents_canvas_direct_edit\Service\MatchResult
+   *   A MatchResult for a single or compound deterministic edit, or a no-match
+   *   result with confidence scoring and complexity signal when the edit
+   *   requires AI reasoning. Check $result->matched to determine outcome.
+   *   Callers that accessed $result['prop'], $result['value'], and
+   *   $result['changes'] continue to work via MatchResult's ArrayAccess.
    */
-  public function match(string $message, string $componentName, ?array $currentPropValues = NULL): ?MatchResult {
+  public function match(string $message, string $componentName, ?array $currentPropValues = NULL): MatchResult {
     $message = trim($message);
     // Deterministic edit commands are short. Messages beyond 500 chars are
     // almost certainly content generation or multi-paragraph instructions
@@ -134,7 +134,7 @@ final class DirectEditMatcher {
     // controller's 2000-char validation to fast-reject verbose messages
     // before running regex patterns.
     if ($message === '' || mb_strlen($message) > 500) {
-      return NULL;
+      return MatchResult::noMatch(0.0);
     }
 
     $fragments = $this->splitCompoundMessage($message);
@@ -142,8 +142,8 @@ final class DirectEditMatcher {
       $fragmentResults = [];
       foreach ($fragments as $fragment) {
         $result = $this->matchSingle($fragment, $componentName, $currentPropValues);
-        if ($result === NULL) {
-          return NULL;
+        if (!$result->matched) {
+          return MatchResult::noMatch(0.1);
         }
         $fragmentResults[] = $result;
       }
@@ -158,7 +158,7 @@ final class DirectEditMatcher {
 
       $props = array_column($changes, 'prop');
       if (count($props) !== count(array_unique($props))) {
-        return NULL;
+        return MatchResult::noMatch(0.1);
       }
 
       return MatchResult::compound($changes, min($confidences));
@@ -185,18 +185,18 @@ final class DirectEditMatcher {
     return implode('|', array_map(static fn(string $v): string => preg_quote($v, '/'), $verbs));
   }
 
-  private function matchSingle(string $message, string $componentName, ?array $currentPropValues = NULL): ?MatchResult {
+  private function matchSingle(string $message, string $componentName, ?array $currentPropValues = NULL): MatchResult {
     // Reject if the message contains add/create keywords or phrases.
     $messageLower = mb_strtolower($message);
     foreach (self::ADD_KEYWORDS as $keyword) {
       // Match as whole word to avoid false positives (e.g., "address" contains "add").
       if (preg_match('/\b' . preg_quote($keyword, '/') . '\b/', $messageLower)) {
-        return NULL;
+        return MatchResult::noMatch(0.0);
       }
     }
     foreach (self::ADD_PHRASES as $pattern) {
       if (preg_match($pattern, $messageLower)) {
-        return NULL;
+        return MatchResult::noMatch(0.0);
       }
     }
 
@@ -290,7 +290,7 @@ final class DirectEditMatcher {
       default => 0.1,
     };
 
-    return NULL;
+    return MatchResult::noMatch($noMatchConfidence, $nearestTier);
   }
 
   /**

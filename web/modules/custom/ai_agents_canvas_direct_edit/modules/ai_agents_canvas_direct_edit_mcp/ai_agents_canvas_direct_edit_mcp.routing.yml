@@ -1,0 +1,10 @@
+ai_agents_canvas_direct_edit_mcp.endpoint:
+  path: '/api/mcp/canvas'
+  defaults:
+    _controller: '\Drupal\ai_agents_canvas_direct_edit_mcp\Controller\McpServerController::handle'
+  methods: [POST]
+  requirements:
+    _permission: 'access canvas mcp server'
+  options:
+    _auth: ['basic_auth', 'cookie']
+    no_cache: TRUE

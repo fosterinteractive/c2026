@@ -1,0 +1,4 @@
+access canvas mcp server:
+  title: 'Access Canvas MCP server'
+  description: 'Allows external MCP clients to discover and execute Canvas direct edit tools via the JSON-RPC endpoint.'
+  restrict access: true

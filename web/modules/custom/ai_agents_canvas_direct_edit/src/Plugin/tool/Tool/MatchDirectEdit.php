@@ -90,11 +90,13 @@ class MatchDirectEdit extends ToolBase {
 
     $matchResult = $this->matcher->match($message, $componentName, $currentPropValues);
 
-    if ($matchResult === NULL) {
+    if (!$matchResult->matched) {
       $output = json_encode([
         'status' => 'no_match',
         'component_name' => $componentName,
         'ai_available' => $this->availabilityChecker->isAiAvailable(),
+        'complexity_signal' => $matchResult->complexitySignal,
+        'confidence' => $matchResult->confidence,
       ]);
       return ExecutableResult::success(
         new TranslatableMarkup('No deterministic match found. Proceed with LLM reasoning.'),
