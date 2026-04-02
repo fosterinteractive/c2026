@@ -106,7 +106,7 @@ new file mode 100644
 index 0000000..0000000
 --- /dev/null
 +++ b/tests/src/Kernel/SystemPromptSubscriberLoopAwareTest.php
-@@ -0,0 +1,239 @@
+@@ -0,0 +1,238 @@
 +<?php
 +
 +declare(strict_types=1);
@@ -120,9 +120,6 @@ index 0000000..0000000
 +use Drupal\KernelTests\KernelTestBase;
 +use Drupal\user\Entity\Role;
 +use Drupal\user\Entity\User;
-+use PHPUnit\Framework\Attributes\DataProvider;
-+use PHPUnit\Framework\Attributes\Group;
-+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 +
 +/**
 + * Tests loop-aware context injection in SystemPromptSubscriber.
@@ -130,9 +127,10 @@ index 0000000..0000000
 + * Verifies that the loop_aware agent config flag causes context injection to
 + * be skipped on loop iterations > 0, while agents without loop_aware continue
 + * to receive context on every loop.
++ *
++ * @group ai_context
++ * @runTestsInSeparateProcesses
 + */
-+#[Group('ai_context')]
-+#[RunTestsInSeparateProcesses]
 +final class SystemPromptSubscriberLoopAwareTest extends KernelTestBase {
 +
 +  /**
@@ -220,8 +218,9 @@ index 0000000..0000000
 +
 +  /**
 +   * Tests that loop_aware config controls context injection per loop.
++   *
++   * @dataProvider providerLoopAwareBehavior
 +   */
-+  #[DataProvider('providerLoopAwareBehavior')]
 +  public function testLoopAwareContextInjection(
 +    bool $loopAware,
 +    int $loopCount,
