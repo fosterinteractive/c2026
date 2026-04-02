@@ -1,8 +1,8 @@
 diff --git a/config/schema/ai_context.schema.yml b/config/schema/ai_context.schema.yml
-index d6a6b79..2cefdde 100644
+index d25e48a..bcad743 100644
 --- a/config/schema/ai_context.schema.yml
 +++ b/config/schema/ai_context.schema.yml
-@@ -184,6 +184,9 @@ ai_context.agents:
+@@ -180,6 +180,9 @@ ai_context.agents:
              sequence:
                type: string
                label: 'AI Context Item ID'
@@ -12,25 +12,25 @@ index d6a6b79..2cefdde 100644
            scope_subscriptions:
              type: mapping
              label: 'Scope subscriptions'
-diff --git a/src/EventSubscriber/SystemPromptSubscriber.php b/src/EventSubscriber/SystemPromptSubscriber.php
-index e4b1a7c..5de34ac 100644
---- a/src/EventSubscriber/SystemPromptSubscriber.php
-+++ b/src/EventSubscriber/SystemPromptSubscriber.php
-@@ -26,6 +26,13 @@ final class SystemPromptSubscriber implements EventSubscriberInterface {
+diff --git a/src/EventSubscriber/AiContextSystemPromptSubscriber.php b/src/EventSubscriber/AiContextSystemPromptSubscriber.php
+index 85763e2..c8d9378 100644
+--- a/src/EventSubscriber/AiContextSystemPromptSubscriber.php
++++ b/src/EventSubscriber/AiContextSystemPromptSubscriber.php
+@@ -27,6 +27,13 @@ final class AiContextSystemPromptSubscriber implements EventSubscriberInterface
     */
    private array $runnerIds = [];
  
 +  /**
 +   * Temporary storage for loop counts keyed by agent ID.
 +   *
-+   * @var array<string,int>
++   * @var array<string, int>
 +   */
 +  private array $loopCounts = [];
 +
    /**
-    * Constructs a SystemPromptSubscriber object.
+    * Constructs an AiContextSystemPromptSubscriber.
     *
-@@ -72,6 +79,7 @@ final class SystemPromptSubscriber implements EventSubscriberInterface {
+@@ -73,6 +80,7 @@ final class AiContextSystemPromptSubscriber implements EventSubscriberInterface
      $runnerId = $event->getAgentRunnerId();
      if ($agentId && $runnerId) {
        $this->runnerIds[$agentId] = $runnerId;
@@ -38,7 +38,7 @@ index e4b1a7c..5de34ac 100644
      }
    }
  
-@@ -89,6 +97,18 @@ final class SystemPromptSubscriber implements EventSubscriberInterface {
+@@ -87,6 +95,18 @@ final class AiContextSystemPromptSubscriber implements EventSubscriberInterface
      $prompt = $event->getSystemPrompt();
      $tokens = $event->getTokens();
  
@@ -54,14 +54,14 @@ index e4b1a7c..5de34ac 100644
 +      }
 +    }
 +
-     if ($agentId && $prompt) {
-       $result = $this->selector->select($prompt, $agentId);
- 
+     if (!$agentId || !$prompt) {
+       return;
+     }
 diff --git a/src/Form/AiContextAgentForm.php b/src/Form/AiContextAgentForm.php
-index 6e8c1cc..4f826fc 100644
+index de6da9f..0438f13 100644
 --- a/src/Form/AiContextAgentForm.php
 +++ b/src/Form/AiContextAgentForm.php
-@@ -547,6 +547,14 @@ final class AiContextAgentForm extends ConfigFormBase {
+@@ -480,6 +480,14 @@ final class AiContextAgentForm extends ConfigFormBase {
        }
      }
  
@@ -76,7 +76,7 @@ index 6e8c1cc..4f826fc 100644
      // Store agent ID for form submission.
      $form['agent_id'] = [
        '#type' => 'value',
-@@ -651,6 +659,8 @@ final class AiContextAgentForm extends ConfigFormBase {
+@@ -552,6 +560,8 @@ final class AiContextAgentForm extends ConfigFormBase {
        }
      }
  
@@ -85,18 +85,18 @@ index 6e8c1cc..4f826fc 100644
      // Update or add the agent's configuration.
      $found = FALSE;
      foreach ($agent_configs as &$agent_config) {
-@@ -659,6 +669,7 @@ final class AiContextAgentForm extends ConfigFormBase {
+@@ -559,6 +569,7 @@ final class AiContextAgentForm extends ConfigFormBase {
          $agent_config['always_include'] = array_values($all_always_include);
+         $agent_config['never_include'] = array_values($all_never_include);
          $agent_config['scope_subscriptions'] = $scope_subscriptions;
-         $agent_config['excluded_subcontext'] = array_values($all_excluded_subcontext);
 +        $agent_config['loop_aware'] = $loop_aware;
          $found = TRUE;
          break;
        }
-@@ -672,6 +683,7 @@ final class AiContextAgentForm extends ConfigFormBase {
+@@ -571,6 +582,7 @@ final class AiContextAgentForm extends ConfigFormBase {
          'always_include' => array_values($all_always_include),
+         'never_include' => array_values($all_never_include),
          'scope_subscriptions' => $scope_subscriptions,
-         'excluded_subcontext' => array_values($all_excluded_subcontext),
 +        'loop_aware' => $loop_aware,
        ];
      }
