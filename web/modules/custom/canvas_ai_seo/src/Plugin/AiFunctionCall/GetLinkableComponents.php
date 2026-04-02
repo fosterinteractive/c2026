@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\canvas_ai_seo\Plugin\AiFunctionCall;
 
 use Drupal\ai\Attribute\FunctionCall;
@@ -25,14 +27,14 @@ use Symfony\Component\Yaml\Yaml;
   id: 'canvas_ai_seo:get_linkable_components',
   function_name: 'get_linkable_components',
   name: 'Get Linkable Components',
-  description: 'Retrieves components from the current page that conatins a Rich text prop. Use this to identify components with text content that can be enriched with internal links. The output preserves the layout tree structure, showing ancestor components with their uuid and name, and only the linkable components include their content.',
+  description: 'Retrieves components from the current page that contains a Rich text prop. Use this to identify components with text content that can be enriched with internal links. The output preserves the layout tree structure, showing ancestor components with their uuid and name, and only the linkable components include their content.',
   group: 'information_tools',
   module_dependencies: ['canvas_ai_seo'],
   context_definitions: [
     'param_with_no_use' => new ContextDefinition(
       data_type: 'string',
       label: new TranslatableMarkup("Param With No Use"),
-      description: new TranslatableMarkup("Anthropic provider does not support tools that don't contain any context definitions, so create a dummy parameter."),
+      description: new TranslatableMarkup("Reserved parameter."),
       required: FALSE,
     ),
   ],

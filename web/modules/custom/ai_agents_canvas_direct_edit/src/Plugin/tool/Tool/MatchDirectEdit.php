@@ -50,17 +50,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
     ),
   ],
 )]
-class MatchDirectEdit extends ToolBase {
+final class MatchDirectEdit extends ToolBase {
 
   /**
    * The direct edit matcher service.
    */
-  protected DirectEditMatcher $matcher;
+  private readonly DirectEditMatcher $matcher;
 
   /**
    * The AI provider availability checker.
    */
-  protected AiProviderAvailabilityCheckerInterface $availabilityChecker;
+  private readonly AiProviderAvailabilityCheckerInterface $availabilityChecker;
 
   /**
    * {@inheritdoc}

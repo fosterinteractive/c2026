@@ -140,6 +140,9 @@
             "drupal/core": {
                 "Navigation fatal error on 404 pages (3565886)": "patches/drupal/navigation.patch"
             },
+            "drupal/ai_context": {
+                "Add loop-aware context collection to ai_context": "docs/patches/ai-context-loop-aware.patch"
+            },
             "drupal/canvas": {
                 "issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873": "patches/canvas/issues-3549232-3533079-3545816-3558241-3548718-3551315-3569120-3571988-3541873.patch",
                 "Update AiPanel and AiWizard components": "patches/canvas/canvas-content-performance.patch",

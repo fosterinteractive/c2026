@@ -435,4 +435,59 @@ class LayoutScopingSubscriberTest extends UnitTestCase {
     $this->subscriber->onBuildSystemPrompt($event);
   }
 
+  /**
+   * Tests layout_data token presence does not break temp-store scoping.
+   *
+   * @covers ::onBuildSystemPrompt
+   */
+  public function testLayoutDataTokenIsPresent(): void {
+    $layoutJson = json_encode(self::$testLayout, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+    $this->tempStore->method('getData')
+      ->with(CanvasAiTempStore::CURRENT_LAYOUT_KEY)
+      ->willReturn($layoutJson);
+
+    $event = $this->createMock(BuildSystemPromptEvent::class);
+    $event->method('getAgentId')
+      ->willReturn('canvas_page_builder_agent');
+    $event->method('getTokens')
+      ->willReturn([
+        'active_component_uuid' => 'heading-uuid-1',
+        'layout_data' => self::$testLayout,
+      ]);
+    $event->method('getSystemPrompt')
+      ->willReturn($layoutJson);
+    $event->expects($this->once())
+      ->method('setSystemPrompt');
+
+    $this->subscriber->onBuildSystemPrompt($event);
+  }
+
+  /**
+   * Tests missing layout_data token does not break temp-store scoping.
+   *
+   * @covers ::onBuildSystemPrompt
+   */
+  public function testLayoutDataTokenMissingDoesNotBreakScoping(): void {
+    $layoutJson = json_encode(self::$testLayout, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+    $this->tempStore->method('getData')
+      ->with(CanvasAiTempStore::CURRENT_LAYOUT_KEY)
+      ->willReturn($layoutJson);
+
+    $event = $this->createMock(BuildSystemPromptEvent::class);
+    $event->method('getAgentId')
+      ->willReturn('canvas_page_builder_agent');
+    $event->method('getTokens')
+      ->willReturn([
+        'active_component_uuid' => 'heading-uuid-1',
+      ]);
+    $event->method('getSystemPrompt')
+      ->willReturn($layoutJson);
+    $event->expects($this->once())
+      ->method('setSystemPrompt');
+
+    $this->subscriber->onBuildSystemPrompt($event);
+  }
+
 }

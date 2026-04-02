@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\canvas_ai_seo\Hook;
 
+use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Hook\Attribute\Hook;
+use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\canvas\Entity\Page;
 
@@ -17,7 +18,7 @@ use Drupal\canvas\Entity\Page;
 final class CanvasAiSeoHooks {
 
   public function __construct(
-    private readonly ModuleHandlerInterface $moduleHandler,
+    private readonly RouteMatchInterface $routeMatch,
   ) {}
 
   /**
@@ -26,7 +27,7 @@ final class CanvasAiSeoHooks {
   #[Hook('entity_base_field_info')]
   public function entityBaseFieldInfo(EntityTypeInterface $entity_type): array {
     $fields = [];
-    if ($entity_type->id() === Page::ENTITY_TYPE_ID && $this->moduleHandler->moduleExists('metatag')) {
+    if ($entity_type->id() === Page::ENTITY_TYPE_ID) {
       $fields['schema_jsonld'] = BaseFieldDefinition::create('string_long')
         ->setLabel(new TranslatableMarkup('Schema.org JSON-LD'))
         ->setDescription(new TranslatableMarkup('AI-generated Schema.org JSON-LD structured data.'))
@@ -49,7 +50,14 @@ final class CanvasAiSeoHooks {
    */
   #[Hook('metatags_attachments_alter')]
   public function metatagAttachmentsAlter(array &$metatag_attachments): void {
-    $entity = metatag_get_route_entity();
+    $entity = NULL;
+    foreach ($this->routeMatch->getParameters()->all() as $param) {
+      if ($param instanceof ContentEntityInterface) {
+        $entity = $param;
+        break;
+      }
+    }
+
     if (!$entity instanceof Page) {
       return;
     }

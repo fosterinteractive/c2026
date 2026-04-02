@@ -201,11 +201,11 @@ final class DirectEditController extends ControllerBase {
     }
 
     // Determine tier and resolved prop for telemetry.
-    $isCompound = isset($match['changes']);
+    $isCompound = $match->changes !== NULL && count($match->changes) > 1;
     $tier = $isCompound ? TelemetryEvent::TIER_COMPOUND : TelemetryEvent::TIER_EXACT;
     $resolvedProp = $isCompound
-      ? implode(', ', array_column($match['changes'], 'prop'))
-      : ($match['prop'] ?? NULL);
+      ? implode(', ', array_column($match->changes, 'prop'))
+      : ($match->changes[0]['prop'] ?? NULL);
 
     $this->logger->info('DirectEdit: match elapsed @elapsed_us us (tier @tier)', [
       '@elapsed_us' => $elapsedUs,
@@ -237,7 +237,7 @@ final class DirectEditController extends ControllerBase {
       ], 400);
     }
 
-    $changes = $match['changes'] ?? [$match];
+    $changes = $match->changes ?? [];
     $propValues = [];
     foreach ($changes as $change) {
       $propValues[$change['prop']] = $change['value'];

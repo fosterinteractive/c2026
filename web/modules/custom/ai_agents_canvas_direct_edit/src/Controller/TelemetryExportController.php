@@ -55,7 +55,7 @@ class TelemetryExportController extends ControllerBase implements ContainerInjec
     $config = $this->configFactory->get('ai_agents_canvas_direct_edit.settings');
 
     if (!$config->get('telemetry.export_enabled')) {
-      return new JsonResponse(['error' => 'Telemetry export is disabled.'], 403);
+      return new JsonResponse(['error' => 'Telemetry export is not enabled.'], 503);
     }
 
     $now = time();
@@ -63,6 +63,10 @@ class TelemetryExportController extends ControllerBase implements ContainerInjec
 
     $since = (int) $request->query->get('since', (string) $thirtyDaysAgo);
     $until = (int) $request->query->get('until', (string) $now);
+
+    if ($since > $until) {
+      return new JsonResponse(['error' => 'since must be before until.'], 400);
+    }
 
     $summary = $this->aggregator->getSummary($since, $until);
 

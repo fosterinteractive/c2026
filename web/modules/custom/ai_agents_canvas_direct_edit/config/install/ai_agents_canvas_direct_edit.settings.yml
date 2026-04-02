@@ -1,8 +1,8 @@
 telemetry:
-  enabled: true
+  enabled: false
   store_messages: false
   retention_days: 90
-  export_enabled: true
+  export_enabled: false
 model_routing:
   enabled: false
   models:
