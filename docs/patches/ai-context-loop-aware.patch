@@ -103,10 +103,10 @@ index de6da9f..0438f13 100644
  
 diff --git a/tests/src/Kernel/SystemPromptSubscriberLoopAwareTest.php b/tests/src/Kernel/SystemPromptSubscriberLoopAwareTest.php
 new file mode 100644
-index 0000000..b3d1c0d
+index 0000000..0000000
 --- /dev/null
 +++ b/tests/src/Kernel/SystemPromptSubscriberLoopAwareTest.php
-@@ -0,0 +1,240 @@
+@@ -0,0 +1,239 @@
 +<?php
 +
 +declare(strict_types=1);
@@ -118,6 +118,7 @@ index 0000000..b3d1c0d
 +use Drupal\ai_agents\PluginInterfaces\ConfigAiAgentInterface;
 +use Drupal\ai_context\Entity\AiContextItem;
 +use Drupal\KernelTests\KernelTestBase;
++use Drupal\user\Entity\Role;
 +use Drupal\user\Entity\User;
 +use PHPUnit\Framework\Attributes\DataProvider;
 +use PHPUnit\Framework\Attributes\Group;
@@ -180,28 +181,28 @@ index 0000000..b3d1c0d
 +
 +    $this->installEntitySchema('user');
 +    $this->installEntitySchema('ai_context_item');
++    $this->installEntitySchema('ai_context_item_type');
 +    $this->installEntitySchema('ai_context_usage');
++    $this->installSchema('system', ['sequences']);
 +    $this->installConfig(['filter']);
++    $this->installConfig(['ai_context']);
 +
 +    $this->container->get('config.factory')
 +      ->getEditable('ai_context.settings')
-+      ->setData([
-+        'usage_tracking_enabled' => FALSE,
-+        'strategy' => 'keyword',
-+        'max_context_items' => 3,
-+        'max_global_items' => 3,
-+        'max_tokens' => 1200,
-+        'provider_id' => '',
-+        'model_id' => '',
-+        'show_overview_page' => TRUE,
-+        'target_entity_types' => [],
-+        'usage_max_records' => 10000,
-+        'usage_max_age' => 31536000,
-+      ])
++      ->set('usage_tracking_enabled', FALSE)
 +      ->save();
 +
++    $role = Role::create([
++      'id' => 'context_viewer',
++      'label' => 'Context viewer',
++    ]);
++    $role->grantPermission('view ai context items');
++    $role->save();
++
 +    $user = User::create(['name' => 'test', 'status' => 1]);
++    $user->addRole('context_viewer');
 +    $user->save();
++    $this->container->get('current_user')->setAccount($user);
 +
 +    // Create a published context item with known text. The selector loads
 +    // always_include items via loadMultiple() (no access check), so this item
@@ -281,7 +282,6 @@ index 0000000..b3d1c0d
 +        'id' => 'test_agent',
 +        'always_include' => [$this->contextItemId],
 +        'scope_subscriptions' => [],
-+        'excluded_subcontext' => [],
 +      ],
 +      ])
 +      ->save();
@@ -306,7 +306,6 @@ index 0000000..b3d1c0d
 +        'loop_aware' => $loopAware,
 +        'always_include' => [$this->contextItemId],
 +        'scope_subscriptions' => [],
-+        'excluded_subcontext' => [],
 +      ],
 +      ])
 +      ->save();
