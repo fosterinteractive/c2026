@@ -1,0 +1,7 @@
+property_id: ''
+credentials_fid: null
+credentials_uri: null
+benchmarks:
+  engaged_sessions_min: 100
+  bounce_rate_max: 70
+  key_event_rate_min: 2

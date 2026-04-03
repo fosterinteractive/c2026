@@ -1,0 +1,58 @@
+<?php
+
+/**
+ * @file
+ * Install and update hooks for the AI Google Analytics module.
+ */
+
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+/**
+ * Add per-page benchmark override fields to Canvas page entities.
+ */
+function ai_google_analytics_update_10001(): void {
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+
+  $fields = [
+    'benchmark_engaged_sessions_min' => [
+      'label' => 'Minimum engaged sessions (override)',
+      'description' => 'Leave blank to use the global default.',
+      'weight' => 20,
+      'settings' => ['min' => 0],
+    ],
+    'benchmark_bounce_rate_max' => [
+      'label' => 'Maximum bounce rate % (override)',
+      'description' => 'Leave blank to use the global default.',
+      'weight' => 21,
+      'settings' => ['min' => 0, 'max' => 100],
+    ],
+    'benchmark_key_event_rate_min' => [
+      'label' => 'Minimum key event rate % (override)',
+      'description' => 'Leave blank to use the global default.',
+      'weight' => 22,
+      'settings' => ['min' => 0, 'max' => 100],
+    ],
+  ];
+
+  foreach ($fields as $field_name => $info) {
+    $field = BaseFieldDefinition::create('float')
+      ->setLabel(new TranslatableMarkup($info['label']))
+      ->setDescription(new TranslatableMarkup($info['description']))
+      ->setDisplayOptions('form', [
+        'type' => 'number',
+        'weight' => $info['weight'],
+        'settings' => $info['settings'],
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setInternal(TRUE)
+      ->setProvider('ai_google_analytics');
+
+    $update_manager->installFieldStorageDefinition(
+      $field_name,
+      'canvas_page',
+      'ai_google_analytics',
+      $field,
+    );
+  }
+}

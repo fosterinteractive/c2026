@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\ai_google_analytics\Plugin\AiFunctionCall;
 
 use Drupal\ai\Attribute\FunctionCall;
@@ -22,6 +24,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Retrieves Google Analytics conversion data for Canvas AI agents.
+ *
+ * Provides a function call that AI agents can invoke to query GA4 metrics
+ * (engaged sessions, bounce rate, key event rate) for one or more page paths.
  */
 #[FunctionCall(
   id: 'ai_google_analytics:get_data',
@@ -32,8 +37,8 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   context_definitions: [
     'url' => new ContextDefinition(
       data_type: 'string',
-      label: new TranslatableMarkup("URLs"),
-      description: new TranslatableMarkup("The URLs of the pages to get analytics for."),
+      label: new TranslatableMarkup('URLs'),
+      description: new TranslatableMarkup('The URLs of the pages to get analytics for.'),
       required: FALSE,
     ),
   ],
@@ -71,8 +76,23 @@ class GoogleAnalytics extends FunctionCallBase implements ExecutableFunctionCall
   public function execute(): void {
     $config = $this->configFactory->get('ai_google_analytics.settings');
     $credentials_uri = $config->get('credentials_uri');
+
+    if (!$credentials_uri) {
+      $this->setOutput('Google Analytics credentials are not configured.');
+      return;
+    }
+
     $credentials_path = $this->fileSystem->realpath($credentials_uri);
-    putenv('GOOGLE_APPLICATION_CREDENTIALS=' . $credentials_path);
+    if (!$credentials_path || !file_exists($credentials_path)) {
+      $this->setOutput('Google Analytics credentials file not found.');
+      return;
+    }
+
+    $property_id = $config->get('property_id');
+    if (!$property_id) {
+      $this->setOutput('GA4 property ID is not configured.');
+      return;
+    }
 
     $url = $this->getContextValue('url');
     if (empty($url)) {
@@ -80,61 +100,63 @@ class GoogleAnalytics extends FunctionCallBase implements ExecutableFunctionCall
       return;
     }
 
-    $filterExpression = new FilterExpression([
-      'filter' => new Filter([
-        'field_name' => 'pagePath',
-        'in_list_filter' => new InListFilter([
-          'values' => explode(',', $url),
-          'case_sensitive' => FALSE,
-        ]),
-      ])
-    ]);
+    try {
+      putenv('GOOGLE_APPLICATION_CREDENTIALS=' . $credentials_path);
+      $gaClient = new BetaAnalyticsDataClient();
 
-    $gaClient = new BetaAnalyticsDataClient();
-    $endDate = (new \DateTimeImmutable())->format('Y-m-d');
-    $startDate = (new \DateTimeImmutable('-90 days'))->format('Y-m-d');
-    $request = (new RunReportRequest())
-      ->setProperty('properties/' . $config->get('property_id'))
-      ->setDateRanges([
-        new DateRange([
-          'start_date' => $startDate,
-          'end_date' => $endDate,
+      $filterExpression = new FilterExpression([
+        'filter' => new Filter([
+          'field_name' => 'pagePath',
+          'in_list_filter' => new InListFilter([
+            'values' => explode(',', $url),
+            'case_sensitive' => FALSE,
+          ]),
         ]),
-      ])
-      ->setDimensions([
-        new Dimension([
-          'name' => 'pagePath',
-        ]),
-      ])
-      ->setMetrics([
-        new Metric([
-          'name' => 'engagedSessions',
-        ]),
-        new Metric([
-          'name' => 'bounceRatePercentage',
-          'expression' => 'bounceRate*100',
-        ]),
-        new Metric([
-          'name' => 'conversionRatePercentage',
-          'expression' => 'sessionKeyEventRate*100',
-        ]),
-      ])
-      ->setDimensionFilter($filterExpression);
+      ]);
 
-    $response = $gaClient->runReport($request);
+      $endDate = (new \DateTimeImmutable())->format('Y-m-d');
+      $startDate = (new \DateTimeImmutable('-90 days'))->format('Y-m-d');
+      $request = (new RunReportRequest())
+        ->setProperty('properties/' . $property_id)
+        ->setDateRanges([
+          new DateRange([
+            'start_date' => $startDate,
+            'end_date' => $endDate,
+          ]),
+        ])
+        ->setDimensions([
+          new Dimension(['name' => 'pagePath']),
+        ])
+        ->setMetrics([
+          new Metric(['name' => 'engagedSessions']),
+          new Metric([
+            'name' => 'bounceRatePercentage',
+            'expression' => 'bounceRate*100',
+          ]),
+          new Metric([
+            'name' => 'conversionRatePercentage',
+            'expression' => 'sessionKeyEventRate*100',
+          ]),
+        ])
+        ->setDimensionFilter($filterExpression);
 
-    // Parse the response into an array keyed by URL.
-    $output = [];
-    foreach ($response->getRows() as $row) {
-      $output[$row->getDimensionValues()[0]->getValue()] = [
-        'engagedSessions' => $row->getMetricValues()[0]->getValue(),
-        'bounceRate' => $row->getMetricValues()[1]->getValue(),
-        'keyEventRate' => $row->getMetricValues()[2]->getValue(),
-      ];
+      $response = $gaClient->runReport($request);
+
+      $output = [];
+      foreach ($response->getRows() as $row) {
+        $output[$row->getDimensionValues()[0]->getValue()] = [
+          'engagedSessions' => $row->getMetricValues()[0]->getValue(),
+          'bounceRate' => $row->getMetricValues()[1]->getValue(),
+          'keyEventRate' => $row->getMetricValues()[2]->getValue(),
+        ];
+      }
+
+      $this->setStructuredOutput($output);
+      $this->setOutput((string) json_encode($output, JSON_UNESCAPED_SLASHES));
     }
-
-    $this->setStructuredOutput($output);
-    $this->setOutput((string) json_encode($output, JSON_UNESCAPED_SLASHES));
+    catch (\Throwable $e) {
+      $this->setOutput('Failed to fetch Google Analytics data: ' . $e->getMessage());
+    }
   }
 
 }
