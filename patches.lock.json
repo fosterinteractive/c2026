@@ -38,7 +38,7 @@
                 "package": "drupal/canvas",
                 "description": "Route deterministic Canvas AI edits through direct-edit first",
                 "url": "patches/canvas/canvas-direct-edit-ui-routing.patch",
-                "sha256": "a5234b72d988cde4f3955198609fc5fa8aa32a086d47d92617cd315482aa307c",
+                "sha256": "786c8542fa31daffc44665296438292e692e4c0393d59abc36a97a66a1af8430",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"

@@ -13,7 +13,7 @@ index d25e48a..bcad743 100644
              type: mapping
              label: 'Scope subscriptions'
 diff --git a/src/EventSubscriber/AiContextSystemPromptSubscriber.php b/src/EventSubscriber/AiContextSystemPromptSubscriber.php
-index 85763e2..c8d9378 100644
+index 85763e2..8ad0aa2 100644
 --- a/src/EventSubscriber/AiContextSystemPromptSubscriber.php
 +++ b/src/EventSubscriber/AiContextSystemPromptSubscriber.php
 @@ -27,6 +27,13 @@ final class AiContextSystemPromptSubscriber implements EventSubscriberInterface
@@ -38,14 +38,14 @@ index 85763e2..c8d9378 100644
      }
    }
  
-@@ -87,6 +95,18 @@ final class AiContextSystemPromptSubscriber implements EventSubscriberInterface
-     $prompt = $event->getSystemPrompt();
-     $tokens = $event->getTokens();
+@@ -91,6 +99,18 @@ final class AiContextSystemPromptSubscriber implements EventSubscriberInterface
+       return;
+     }
  
 +    // Skip context injection on loop iterations > 0 when loop_aware is enabled
 +    // for this agent. The LLM already has the context from loop 0 in its
 +    // conversation window, so re-injecting wastes tokens.
-+    if ($agentId && isset($this->loopCounts[$agentId]) && $this->loopCounts[$agentId] > 0) {
++    if (isset($this->loopCounts[$agentId]) && $this->loopCounts[$agentId] > 0) {
 +      $agentConfigs = $this->configFactory->get('ai_context.agents')->get('agents') ?? [];
 +      foreach ($agentConfigs as $agentConfig) {
 +        if ($agentConfig['id'] === $agentId && !empty($agentConfig['loop_aware'])) {
@@ -54,9 +54,9 @@ index 85763e2..c8d9378 100644
 +      }
 +    }
 +
-     if (!$agentId || !$prompt) {
-       return;
-     }
+     // Extract entity context from route or event tokens.
+     $entityInfo = $this->getEntityFromRoute() ?? $this->getEntityFromTokens($tokens);
+     $entityType = $entityInfo['entity_type'] ?? NULL;
 diff --git a/src/Form/AiContextAgentForm.php b/src/Form/AiContextAgentForm.php
 index de6da9f..0438f13 100644
 --- a/src/Form/AiContextAgentForm.php
@@ -103,7 +103,7 @@ index de6da9f..0438f13 100644
  
 diff --git a/tests/src/Kernel/SystemPromptSubscriberLoopAwareTest.php b/tests/src/Kernel/SystemPromptSubscriberLoopAwareTest.php
 new file mode 100644
-index 0000000..0000000
+index 0000000..93d9958
 --- /dev/null
 +++ b/tests/src/Kernel/SystemPromptSubscriberLoopAwareTest.php
 @@ -0,0 +1,238 @@

@@ -1,0 +1,23 @@
+{
+  "name": "drupal/canvas_ai_seo",
+  "description": "AI-generated Schema.org JSON-LD structured data for Canvas pages.",
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "homepage": "https://www.drupal.org/project/canvas_ai_seo",
+  "support": {
+    "issues": "https://drupal.org/project/issues/canvas_ai_seo",
+    "source": "https://drupal.org/project/canvas_ai_seo"
+  },
+  "require": {
+    "php": ">=8.2",
+    "drupal/core": "^10.3 || ^11",
+    "drupal/canvas_ai": "^1.0@dev",
+    "drupal/metatag": "^2.0"
+  },
+  "extra": {
+    "drupal": {
+      "version": "1.0.x-dev",
+      "datestamp": ""
+    }
+  }
+}
