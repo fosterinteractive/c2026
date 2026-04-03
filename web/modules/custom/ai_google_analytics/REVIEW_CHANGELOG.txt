@@ -1,0 +1,287 @@
+AI Google Analytics — Review Fixes Changelog
+=============================================
+
+All changes listed below were made to bring the module up to Drupal coding
+standards, fix correctness bugs, close a security issue, and prepare the
+module for drupal.org publishing.
+
+
+SECURITY
+--------
+
+1. Credentials file stored in public:// (CRITICAL)
+   File: src/Form/GoogleAnalyticsSettingsForm.php
+   Line: #upload_location value
+   Before: 'public://'
+   After:  'private://'
+   Why: The Google service account credentials JSON was uploaded to the
+   publicly accessible files directory. Any visitor could download it.
+   Now stored in the private file system.
+
+
+CORRECTNESS BUGS
+----------------
+
+2. Cron loop — only last page saved
+   File: ai_google_analytics.module, function ai_google_analytics_cron()
+   Before: $page->set() and $page->save() were OUTSIDE the foreach loop.
+   Only the last page's data was ever persisted. Also used 'return' on
+   empty rows, which exited the entire function instead of skipping to
+   the next page.
+   After: $page->set() and $page->save() moved inside the loop. 'return'
+   changed to 'continue'. Each page now gets its own GA data saved.
+
+3. Hardcoded start date
+   File: ai_google_analytics.module
+   Before: 'start_date' => '2026-01-01' (hardcoded)
+   After:  'start_date' => (new \DateTimeImmutable('-90 days'))->format('Y-m-d')
+   Why: Matches the 90-day rolling window already used by the
+   GoogleAnalytics FunctionCall plugin. The hardcoded date would become
+   increasingly stale over time.
+
+4. Missing credentials guard in cron
+   File: ai_google_analytics.module
+   Added: Early return with a warning log if no credentials_uri is
+   configured, preventing a fatal error on unconfigured sites.
+
+
+DRUPAL CODING STANDARDS
+-----------------------
+
+5. Unprefixed helper function
+   File: ai_google_analytics.module
+   Before: function get_monitored_pages()
+   After:  function ai_google_analytics_get_monitored_pages()
+   Why: Drupal requires all functions in .module files to be prefixed
+   with the module name to avoid global namespace collisions.
+
+6. Static \Drupal:: calls replaced with dependency injection
+   Files: src/Controller/GoogleAnalyticsReviewController.php
+          src/Hook/GoogleAnalyticsHooks.php
+   GoogleAnalyticsReviewController: Added constructor injection for
+   StateInterface via ControllerBase::create().
+   GoogleAnalyticsHooks: Added constructor injection for 7 services
+   (plugin.manager.ai_agents, plugin.manager.mail, config.factory,
+   current_user, logger.factory, state, request_stack). All static
+   \Drupal:: calls in OOP classes replaced with injected services.
+
+7. Added declare(strict_types=1)
+   Files: GoogleAnalyticsReviewController.php
+          GoogleAnalyticsSettingsForm.php
+          GoogleAnalytics.php (AiFunctionCall plugin)
+   (CanvasHooks.php and GoogleAnalyticsHooks.php already had it.)
+
+8. Brace style fixed
+   Files: GoogleAnalyticsReviewController.php
+          GoogleAnalyticsHooks.php
+   Before: Opening brace on next line for class declarations.
+   After:  Opening brace on same line per Drupal coding standards.
+
+9. Docblocks added
+   All files: Added @file docblock to .module file. Added class-level
+   docblocks to all classes. Added method-level docblocks where missing.
+   Added @param/@return annotations to public methods.
+
+10. Services registered in services.yml (NEW FILE)
+    File: ai_google_analytics.services.yml
+    Why: Hook classes using #[Hook] attributes are auto-discovered in
+    Drupal 11, but explicit service registration is better practice for
+    contrib modules. It documents the dependency graph and ensures
+    correct DI for GoogleAnalyticsHooks (7 constructor arguments).
+
+11. Redundant state delete removed
+    File: src/Hook/GoogleAnalyticsHooks.php
+    Before: \Drupal::state()->delete() immediately before ->set() on the
+    same key. The delete was unnecessary since set() overwrites.
+    After: Removed the delete call; only set() remains.
+
+
+CONFIG & METADATA
+-----------------
+
+12. Config schema added (NEW FILE)
+    File: config/schema/ai_google_analytics.schema.yml
+    Defines the schema for ai_google_analytics.settings (property_id,
+    credentials_fid, credentials_uri). Without this, drush config:inspect
+    would report a missing schema.
+
+13. Default config added (NEW FILE)
+    File: config/install/ai_google_analytics.settings.yml
+    Provides empty defaults so the config object exists after install.
+
+14. Agent config dependencies added
+    File: config/install/ai_agents.ai_agent.analytics_monitoring_agent.yml
+    Before: dependencies: {}
+    After:  dependencies.module: [ai_context]
+    Why: The agent references the ai_context:get_relevant_context_items
+    tool. Declaring the dependency prevents Drupal from allowing
+    ai_context to be uninstalled while this config exists.
+
+15. Library renamed for clarity
+    File: ai_google_analytics.libraries.yml
+    Before: canvas_ai_init
+    After:  ai_panel_bridge
+    Why: The script bridges the analytics review page to the Canvas AI
+    panel — the old name was generic. The reference in
+    CanvasHooks::libraryInfoAlter() updated to match.
+
+16. Module info.yml improved
+    File: ai_google_analytics.info.yml
+    - Description expanded from "GA integration." to a meaningful sentence.
+    - Added configure: ai_google_analytics.settings (so the settings link
+      appears on the module list page).
+    - Added canvas:canvas as a dependency (the module uses Canvas entities
+      and hooks — this was missing).
+
+17. Type hints added to hook_mail
+    File: ai_google_analytics.module
+    Before: function ai_google_analytics_mail($key, &$message, $params)
+    After:  function ai_google_analytics_mail(string $key, array &$message, array $params): void
+    Also simplified the switch to a single if statement (only one case).
+
+
+NEW FILES FOR D.O. PUBLISHING
+-----------------------------
+
+18. composer.json
+    Standard drupal-module composer.json with dependencies on drupal/ai,
+    drupal/ai_agents, drupal/canvas, and google/analytics-data.
+
+19. README.md
+    Documents how the module works (cron flow, presave agent trigger,
+    review page, function call plugin), requirements, installation,
+    configuration steps, and component descriptions.
+
+
+ARCHITECTURE REFACTOR (LLM review findings, 2026-04-03)
+-------------------------------------------------------
+
+An LLM-simulated review identified 4 converged blockers: non-deterministic
+AI decision path, stale review state, cron runtime hardening gap, and no
+automated test coverage. The following changes address those findings.
+
+20. Deterministic benchmark evaluation replaces LLM pass/fail decision
+    Files: config/schema/ai_google_analytics.schema.yml
+           config/install/ai_google_analytics.settings.yml
+           src/Form/GoogleAnalyticsSettingsForm.php
+           src/Hook/GoogleAnalyticsHooks.php
+    Before: The presave hook called the AI agent to evaluate whether GA
+    metrics met benchmarks, then regex-parsed JSON from free-form LLM
+    output to decide whether to flag a page. The pass/fail decision was
+    non-deterministic and untestable.
+    After: Global benchmark thresholds (engaged_sessions_min,
+    bounce_rate_max, key_event_rate_min) stored in config with a settings
+    form. Three nullable float base fields added to Canvas pages for
+    per-page overrides (NULL = use global default). A deterministic PHP
+    comparison decides pass/fail. The AI agent is now only called when a
+    page is already flagged, to generate a human-readable summary and
+    recommendations — it no longer makes the pass/fail decision.
+    Why: The core behavioral decision should not depend on parsing
+    unstructured LLM output. Deterministic thresholds are testable,
+    predictable, and configurable by site admins.
+
+21. BenchmarkEvaluator service (NEW FILE)
+    File: src/BenchmarkEvaluator.php
+    A dedicated service that performs deterministic comparison of GA metrics
+    against thresholds. Per-page override fields (float, nullable) take
+    precedence over global config defaults. Returns ['passed' => bool,
+    'failures' => string[]] — no AI involvement. Registered in
+    services.yml and injected into GoogleAnalyticsHooks.
+    Why: Extracted to a service (not a private method) for testability and
+    reuse. The evaluator can be called from cron, presave, or any other
+    context without coupling to the hooks class.
+
+22. Presave hook rewritten to use deterministic evaluation
+    File: src/Hook/GoogleAnalyticsHooks.php
+    Before: Called AI agent to decide pass/fail, regex-parsed JSON from
+    free-form output, branched on $json['notify'].
+    After: Calls BenchmarkEvaluator::evaluate() for deterministic pass/fail.
+    On pass: clears any existing flagged state (fixes stale state bug).
+    On fail: calls AI agent only for human-readable summary text, with
+    try/catch — agent failure falls back to deterministic failure
+    descriptions. Never crashes editor sessions on LLM outage.
+
+23. Entity delete state cleanup
+    File: src/Hook/GoogleAnalyticsHooks.php
+    Added hook_entity_delete() to clean up ai_google_analytics.context_data
+    state when a Canvas page is deleted. Prevents orphaned entries in the
+    review UI.
+
+24. BenchmarkEvaluator unit tests (NEW FILE)
+    File: tests/src/Unit/BenchmarkEvaluatorTest.php
+    8 test cases: all pass, all fail, single fail, per-page override
+    (lenient), per-page override (stricter), empty metrics, empty string
+    metrics, boundary values (at threshold and just past).
+
+25. Agent config rewritten for summary-only role
+    Files: config/install/ai_agents.ai_agent.analytics_monitoring_agent.yml
+           custom_recipes/findrop/config/ai_agents.ai_agent.analytics_monitoring_agent.yml
+    Before: System prompt instructed the agent to evaluate metrics AND
+    format a JSON response with notify/summary. structured_output_enabled
+    was false. Schema was a complex multi-page format with flag/url/summary
+    /recommendations per page — never consumed by any code.
+    After: System prompt scoped to summary-only role ("do NOT re-evaluate
+    whether the page passes or fails"). structured_output_enabled set to
+    true. Schema simplified to {summary: string, recommendations: string}.
+    Recipe copy also updated to match, including adding the missing
+    ai_context module dependency.
+    Why: The pass/fail decision is now handled by deterministic PHP code.
+    The agent's only job is generating human-readable text for editors.
+    Structured output ensures reliable JSON parsing without regex.
+
+26. Cron logic extracted to GoogleAnalyticsCronService (NEW FILE)
+    File: src/GoogleAnalyticsCronService.php
+    Before: All GA API logic lived in ai_google_analytics_cron() in the
+    .module file using static \Drupal:: calls. No try/catch — a single
+    credentials error or API failure aborted the entire cron run for all
+    monitored pages.
+    After: New service with proper DI (config, entity_type.manager,
+    file_system, logger, path_alias.manager). Client instantiation wrapped
+    in try/catch with early return. Per-page API calls wrapped in
+    try/catch — failures logged with page ID/label context, other pages
+    continue. Credentials file existence verified before attempting client
+    creation. hook_cron() is now a one-liner delegating to the service.
+
+27. AiFunctionCall plugin hardened
+    File: src/Plugin/AiFunctionCall/GoogleAnalytics.php
+    Before: No credential validation, no property_id check, no try/catch.
+    Missing credentials or API failure would throw unhandled exceptions
+    during AI agent tool execution.
+    After: Early returns with descriptive messages for missing credentials,
+    missing credentials file, and missing property ID. Entire GA API call
+    wrapped in try/catch — errors returned as tool output text rather than
+    crashing the agent session.
+
+28. Presave hook unit tests (NEW FILE)
+    File: tests/src/Unit/GoogleAnalyticsHooksPresaveTest.php
+    6 test cases: unchanged metrics skip evaluation, passing benchmarks
+    clear stale state, failing benchmarks call agent and update state,
+    agent failure falls back to deterministic failure text, new entities
+    skipped, entity delete clears state.
+    Why: The presave hook is the most complex code path — it orchestrates
+    evaluation, agent calls, state management, and email notification.
+    These tests verify all branches including the error fallback that
+    prevents editor sessions from crashing on LLM outage.
+
+29. Entity schema update hook for new fields
+    File: ai_google_analytics.install (NEW)
+    Added hook_update_N (10001) that installs the three per-page benchmark
+    float fields on existing canvas_page entities via
+    entityDefinitionUpdateManager. Without this, existing installs would
+    have no DB storage for the new fields.
+
+
+NOT CHANGED (reviewed, no action needed)
+----------------------------------------
+
+- GA4 metric expressions (bounceRate*100, sessionKeyEventRate*100):
+  These are valid GA4 Data API derived metric expressions. The 'expression'
+  field on Metric objects creates a calculated metric — this is intentional
+  and correct.
+
+- js/canvas-ai-init.js: No changes needed. The script correctly observes
+  the DOM for AiPanel mount and pre-populates the chat input.
+
+- GoogleAnalytics.php plugin logic: Already used DI via ::create(), had
+  correct GA4 API usage with InListFilter. Only added strict_types and
+  class docblock.

@@ -1,0 +1,25 @@
+services:
+  Drupal\ai_google_analytics\BenchmarkEvaluator:
+    arguments:
+      $configFactory: '@config.factory'
+
+  Drupal\ai_google_analytics\GoogleAnalyticsCronService:
+    arguments:
+      $configFactory: '@config.factory'
+      $entityTypeManager: '@entity_type.manager'
+      $fileSystem: '@file_system'
+      $loggerFactory: '@logger.factory'
+      $aliasManager: '@path_alias.manager'
+
+  Drupal\ai_google_analytics\Hook\CanvasHooks: {}
+
+  Drupal\ai_google_analytics\Hook\GoogleAnalyticsHooks:
+    arguments:
+      $benchmarkEvaluator: '@Drupal\ai_google_analytics\BenchmarkEvaluator'
+      $aiAgentManager: '@plugin.manager.ai_agents'
+      $mailManager: '@plugin.manager.mail'
+      $configFactory: '@config.factory'
+      $currentUser: '@current_user'
+      $loggerFactory: '@logger.factory'
+      $state: '@state'
+      $requestStack: '@request_stack'

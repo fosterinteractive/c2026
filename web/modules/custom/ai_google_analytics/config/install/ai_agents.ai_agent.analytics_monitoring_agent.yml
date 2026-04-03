@@ -1,21 +1,19 @@
 langcode: en
 status: true
-dependencies: {  }
+dependencies:
+  module:
+    - ai_context
 id: analytics_monitoring_agent
 label: 'Analytics Monitoring Agent'
-description: 'This agent monitors Google Analytics data and compares live performance metrics against benchmark targets defined in Drupal’s Context Control Center.'
+description: ‘This agent generates human-readable summaries and recommendations for Canvas pages that have failed analytics benchmarks. It does not make the pass/fail decision — that is handled by deterministic threshold comparison in PHP.’
 system_prompt: |-
-  You are a marketing expert, helping users review insights from Google Analytics regarding their website. Your goal is to help users ensure that their content is meeting benchmarks defined in the Google Analytics Benchmarks context. If any page is not meeting the benchmarks, then admins should be notified.
+  You are a marketing expert helping website administrators understand and improve underperforming content.
 
-  Google Analytics data for engaged sessions, bounce rate and key event rate will be provided in the user prompt. For each page, compare the metrics with the benchmarks provided in the context control center. If a page does not meet all of the benchmarks, provide a brief summary of which benchmark failed. Include the numbers for the page in the summary and how it compares to the benchmarks set in the context control center.
+  You will receive a list of analytics benchmarks that a page has already been identified as failing. Your job is to:
+  1. Summarize the performance issues in plain language suitable for a content editor.
+  2. Provide actionable recommendations to improve the failing metrics.
 
-  Format your response as a JSON object with 3 properties. The first property is "notify" which should be TRUE if any of the benchmarks fail, FALSE otherwise. The second property is "summary", which will contain the summary of which benchmarks failed.
-
-  For example:
-  {
-    "notify": true,
-    "summary": "Page did not meet bounce rate benchmark"
-  }
+  Do NOT re-evaluate whether the page passes or fails — that decision has already been made. Focus on explaining why the numbers matter and what content or UX changes could help.
 secured_system_prompt: '[ai_agent:agent_instructions]'
 tools:
   'ai_context:get_relevant_context_items': true
@@ -64,5 +62,5 @@ tool_usage_limits:
       values: ''
 exclude_users_role: false
 masquerade_roles: {  }
-structured_output_enabled: false
-structured_output_schema: "{\r\n  \"name\": \"google_analytics_report\",\r\n  \"description\": \"Summarize Google Analytics analysis into a reportable format.\",\r\n  \"schema\": {\r\n    \"type\": \"object\",\r\n    \"properties\": {\r\n      \"pages\": {\r\n        \"type\": \"array\",\r\n        \"description\": \"An array of URLs\",\r\n        \"items\": {\r\n          \"type\": \"object\",\r\n          \"properties\": {\r\n            \"flag\": {\r\n              \"type\": \"boolean\",\r\n              \"description\": \"Whether the URL should be reported as not meeting benchmarks.\"\r\n            },\r\n            \"url\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"The URL of the page.\"\r\n            },\r\n            \"summary\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"Detailed descriptions of which benchmarks were not met.\"\r\n            },\r\n            \"recommendations\": {\r\n              \"type\": \"string\",\r\n              \"description\": \"If benchmarks fail, a list of recommendations to improve the failing benchmark.\"\r\n            }\r\n          },\r\n          \"required\": [\"flag\", \"url\", \"summary\"]\r\n        }\r\n      }\r\n    }\r\n  }\r\n}\r\n"
+structured_output_enabled: true
+structured_output_schema: "{\n  \"name\": \"analytics_summary\",\n  \"description\": \"A summary of benchmark failures and recommendations for a single page.\",\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"summary\": {\n        \"type\": \"string\",\n        \"description\": \"Plain-language summary of which benchmarks failed and why it matters.\"\n      },\n      \"recommendations\": {\n        \"type\": \"string\",\n        \"description\": \"Actionable recommendations to improve the failing metrics.\"\n      }\n    },\n    \"required\": [\"summary\", \"recommendations\"]\n  }\n}\n"
