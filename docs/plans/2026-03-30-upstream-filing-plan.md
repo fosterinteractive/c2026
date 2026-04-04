@@ -488,7 +488,6 @@ These are not filed immediately. They're the "where this goes" story that emerge
 
 - **drupal-critic** (Canvas skills) — Reviews patch architecture against Canvas conventions
 - **proposal-critic** — Reviews filing strategy for gaps, assumptions, cognitive bias
-- **catch-bot core-team-review** — Simulates maintainer reaction using 55 contributor profiles
 
 ## Review History
 
