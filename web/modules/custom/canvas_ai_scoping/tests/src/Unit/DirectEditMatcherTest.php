@@ -6,6 +6,8 @@ namespace Drupal\Tests\canvas_ai_scoping\Unit;
 
 use Drupal\canvas_ai_scoping\Service\ComponentSchemaLoaderInterface;
 use Drupal\canvas_ai_scoping\Service\DirectEditMatcher;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
 
 /**
@@ -105,6 +107,7 @@ class DirectEditMatcherTest extends UnitTestCase {
         'blue' => 'primary',
       ],
       'align' => [
+        'default' => 'default',
         'left' => 'left',
         'center' => 'center',
         'centered' => 'center',
@@ -224,6 +227,17 @@ class DirectEditMatcherTest extends UnitTestCase {
         return $enumOrdinals[$componentName] ?? [];
       });
 
+    // Integer enum values mock.
+    $integerEnums = [
+      'sdc.byte_theme.heading' => [
+        'level' => [1, 2, 3, 4, 5, 6],
+      ],
+    ];
+    $schemaLoader->method('getIntegerEnumValues')
+      ->willReturnCallback(static function (string $propName, string $componentName) use ($integerEnums): ?array {
+        return $integerEnums[$componentName][$propName] ?? NULL;
+      });
+
     $schemaLoader->method('getReverseEnumIndex')
       ->willReturnCallback(static function (string $componentName): array {
         $enums = self::$enumValues[$componentName] ?? [];
@@ -240,7 +254,46 @@ class DirectEditMatcherTest extends UnitTestCase {
         return $reverse;
       });
 
-    $this->matcher = new DirectEditMatcher($schemaLoader);
+    $schemaLoader->method('getReverseAliasIndex')
+      ->willReturnCallback(static function (string $componentName): array {
+        $enums = self::$enumValues[$componentName] ?? [];
+        // Build the full reverse map (all aliases including natural ones).
+        $fullReverse = [];
+        foreach ($enums as $propName => $valueMap) {
+          foreach ($valueMap as $alias => $canonical) {
+            $fullReverse[$alias][] = $propName;
+          }
+        }
+        // Determine raw enum values (alias === canonical, case-insensitive).
+        $rawValues = [];
+        foreach ($enums as $propName => $valueMap) {
+          foreach ($valueMap as $alias => $canonical) {
+            if ($alias === mb_strtolower($canonical)) {
+              $rawValues[$alias] = TRUE;
+            }
+          }
+        }
+        // Alias index = aliases NOT in the raw enum values set.
+        $aliasIndex = [];
+        foreach ($fullReverse as $alias => $props) {
+          if (!isset($rawValues[$alias])) {
+            $aliasIndex[$alias] = array_values(array_unique($props));
+          }
+        }
+        return $aliasIndex;
+      });
+
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')->willReturnCallback(static function (string $key) {
+      if ($key === 'edit_verbs') {
+        return ['change', 'set', 'update', 'modify', 'make', 'turn', 'switch', 'put'];
+      }
+      return NULL;
+    });
+    $configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $configFactory->method('get')->with('canvas_ai_scoping.settings')->willReturn($config);
+
+    $this->matcher = new DirectEditMatcher($schemaLoader, $configFactory);
   }
 
   /**
@@ -426,6 +479,26 @@ class DirectEditMatcherTest extends UnitTestCase {
         'large',
       ],
 
+      // Phase 1: Bare alias inference (Tier 3 — natural aliases not in raw enum).
+      'bare alias blue resolves to text_color' => [
+        'blue',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'primary',
+      ],
+      'bare alias white resolves to text_color' => [
+        'white',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'inverted',
+      ],
+      'make it white resolves via alias' => [
+        'make it white',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'inverted',
+      ],
+
       // Phase 2: Boolean toggle matches.
       'show header on section' => [
         'show the header',
@@ -476,6 +549,54 @@ class DirectEditMatcherTest extends UnitTestCase {
         'section_footer',
         FALSE,
       ],
+
+      // Edge case: unicode in text value.
+      'unicode heading text' => [
+        'change the heading to Bienvenue chez nous',
+        'sdc.byte_theme.heading',
+        'heading_text',
+        'Bienvenue chez nous',
+      ],
+
+      // Reset/clear/remove patterns.
+      'reset color to default' => [
+        'reset the color',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'default',
+      ],
+      'clear the link on button' => [
+        'clear the link',
+        'sdc.byte_theme.button',
+        'href',
+        '',
+      ],
+      'remove the url on button' => [
+        'remove the url',
+        'sdc.byte_theme.button',
+        'href',
+        '',
+      ],
+
+      // Synonym verbs (config-driven).
+      'turn color to blue' => [
+        'turn the color to blue',
+        'sdc.byte_theme.heading',
+        'text_color',
+        'primary',
+      ],
+      'switch alignment to center' => [
+        'switch the alignment to center',
+        'sdc.byte_theme.heading',
+        'align',
+        'center',
+      ],
+      'put size to large' => [
+        'put the size to large',
+        'sdc.byte_theme.button',
+        'size',
+        'large',
+      ],
     ];
   }
 
@@ -507,6 +628,16 @@ class DirectEditMatcherTest extends UnitTestCase {
         [
           ['prop' => 'heading_text', 'value' => 'Welcome'],
           ['prop' => 'align', 'value' => 'right'],
+        ],
+      ],
+
+      // Edge case: edit verb in text value must not be split.
+      'compound with edit verb in text value' => [
+        'change the heading to Set Your Goals and set the color to blue',
+        'sdc.byte_theme.heading',
+        [
+          ['prop' => 'heading_text', 'value' => 'Set Your Goals'],
+          ['prop' => 'text_color', 'value' => 'primary'],
         ],
       ],
     ];
@@ -603,9 +734,47 @@ class DirectEditMatcherTest extends UnitTestCase {
         'stripped value has spaces, not a bare enum',
       ],
 
+      // Phase 2: Boolean toggle rejections — non-toggle boolean props.
+      'show align rejected (non-toggle boolean)' => [
+        'show the alignment',
+        'sdc.byte_theme.heading',
+        'align is not a show/hide toggle',
+      ],
+      'enable align rejected' => [
+        'enable align',
+        'sdc.byte_theme.heading',
+        'align is not a show/hide toggle',
+      ],
+
       // Empty and too-long messages.
       'empty message' => ['', 'sdc.byte_theme.heading', 'empty message'],
       'too long message' => [str_repeat('x', 501), 'sdc.byte_theme.heading', 'exceeds 500 chars'],
+
+      // Edge case: bare "default" is ambiguous (maps to text_color and align).
+      'bare default is ambiguous (multiple props have default)' => [
+        'default',
+        'sdc.byte_theme.heading',
+        'default maps to multiple props (text_color, align both have default)',
+      ],
+
+      // Edge case: empty value after extraction — regex (.+?) requires ≥1 char.
+      'empty value after extraction' => [
+        'change the heading to ',
+        'sdc.byte_theme.heading',
+        'trailing space produces empty value, (.+?) does not match',
+      ],
+
+      // Reset/clear/remove rejections.
+      'remove this section (structural, not prop reset)' => [
+        'remove this section',
+        'sdc.byte_theme.heading',
+        'structural operation, not prop reset',
+      ],
+      'clear with no prop reference' => [
+        'clear',
+        'sdc.byte_theme.heading',
+        'no prop reference after verb',
+      ],
     ];
   }
 
@@ -722,6 +891,72 @@ class DirectEditMatcherTest extends UnitTestCase {
     $this->assertContains('sdc.byte_theme.button', $components);
     $this->assertContains('sdc.byte_theme.card-icon', $components);
     $this->assertGreaterThanOrEqual(5, count($components));
+  }
+
+  /**
+   * Performance regression: individual matches must complete under 50ms each.
+   *
+   * @covers ::match
+   */
+  public function testIndividualMatchLatencyUnder50ms(): void {
+    $cases = [
+      // Tier 1: explicit pattern.
+      ['change the heading to Welcome', 'sdc.byte_theme.heading', NULL],
+      // Tier 1: colon format.
+      ['heading: New Title', 'sdc.byte_theme.heading', NULL],
+      // Tier 2: compound.
+      ['change the heading to Hi and set the color to blue', 'sdc.byte_theme.heading', NULL],
+      // Phase 1: bare value.
+      ['blue', 'sdc.byte_theme.heading', NULL],
+      // Phase 2: boolean toggle.
+      ['show the header', 'sdc.byte_theme.section', NULL],
+      // Phase 3: relative adjustment.
+      ['bigger', 'sdc.byte_theme.heading', ['text_size' => 'heading-responsive-5xl', 'text_color' => 'default']],
+    ];
+
+    foreach ($cases as [$message, $component, $currentValues]) {
+      $start = microtime(TRUE);
+      $this->matcher->match($message, $component, $currentValues);
+      $elapsed = (microtime(TRUE) - $start) * 1000;
+      $this->assertLessThan(50.0, $elapsed, "Match for \"$message\" took {$elapsed}ms (budget: 50ms)");
+    }
+  }
+
+  /**
+   * Performance regression: batch of 20 mixed matches under 1 second total.
+   *
+   * @covers ::match
+   */
+  public function testBatchOf20MatchesUnder1Second(): void {
+    $cases = [
+      ['change the heading to Welcome to FinDrop', 'sdc.byte_theme.heading', NULL],
+      ['set the title to Hello World', 'sdc.byte_theme.heading', NULL],
+      ['set the color to primary', 'sdc.byte_theme.heading', NULL],
+      ['change the color to blue', 'sdc.byte_theme.heading', NULL],
+      ['set the alignment to center', 'sdc.byte_theme.heading', NULL],
+      ['set the level to 3', 'sdc.byte_theme.heading', NULL],
+      ['change the label to Get Started', 'sdc.byte_theme.button', NULL],
+      ['set the variant to secondary', 'sdc.byte_theme.button', NULL],
+      ['heading: New Title Here', 'sdc.byte_theme.heading', NULL],
+      ['set color = primary', 'sdc.byte_theme.heading', NULL],
+      ['change the heading to Hi and set the color to blue', 'sdc.byte_theme.heading', NULL],
+      ['blue', 'sdc.byte_theme.heading', NULL],
+      ['center', 'sdc.byte_theme.heading', NULL],
+      ['make it blue', 'sdc.byte_theme.heading', NULL],
+      ['secondary', 'sdc.byte_theme.button', NULL],
+      ['show the header', 'sdc.byte_theme.section', NULL],
+      ['hide the footer', 'sdc.byte_theme.section', NULL],
+      ['enable icon first', 'sdc.byte_theme.button', NULL],
+      ['bigger', 'sdc.byte_theme.heading', ['text_size' => 'heading-responsive-5xl', 'text_color' => 'default']],
+      ['smaller', 'sdc.byte_theme.button', ['size' => 'large', 'variant' => 'primary']],
+    ];
+
+    $start = microtime(TRUE);
+    foreach ($cases as [$message, $component, $currentValues]) {
+      $this->matcher->match($message, $component, $currentValues);
+    }
+    $elapsed = (microtime(TRUE) - $start) * 1000;
+    $this->assertLessThan(1000.0, $elapsed, "Batch of 20 matches took {$elapsed}ms (budget: 1000ms)");
   }
 
 }

@@ -11,7 +11,8 @@ use Drupal\canvas_ai_scoping\Controller\DirectEditController;
 use Drupal\canvas_ai_scoping\Service\ComponentSchemaLoaderInterface;
 use Drupal\canvas_ai_scoping\Service\DirectEditMatcher;
 use Drupal\Core\Access\CsrfTokenGenerator;
-use Drupal\Core\State\StateInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,8 +40,8 @@ final class DirectEditControllerTest extends UnitTestCase {
    *   The CSRF token generator mock.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger mock.
-   * @param \Drupal\Core\State\StateInterface|null $state
-   *   The state mock, or NULL to create a default one.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface|null $configFactory
+   *   The config factory mock, or NULL to create a default one.
    *
    * @return \Drupal\canvas_ai_scoping\Controller\DirectEditController
    *   The controller instance.
@@ -52,10 +53,23 @@ final class DirectEditControllerTest extends UnitTestCase {
     CanvasAiTempStore $tempStore,
     CsrfTokenGenerator $csrfTokenGenerator,
     LoggerInterface $logger,
-    ?StateInterface $state = NULL,
+    ?ConfigFactoryInterface $configFactory = NULL,
   ): DirectEditController {
-    $matcher = new DirectEditMatcher($schemaLoader);
-    $state ??= $this->createMock(StateInterface::class);
+    if ($configFactory === NULL) {
+      $config = $this->createMock(ImmutableConfig::class);
+      $config->method('get')->willReturnCallback(static function (string $key) {
+        if ($key === 'telemetry_enabled') {
+          return FALSE;
+        }
+        if ($key === 'edit_verbs') {
+          return ['change', 'set', 'update', 'modify', 'make', 'turn', 'switch', 'put'];
+        }
+        return NULL;
+      });
+      $configFactory = $this->createMock(ConfigFactoryInterface::class);
+      $configFactory->method('get')->willReturn($config);
+    }
+    $matcher = new DirectEditMatcher($schemaLoader, $configFactory);
 
     return new DirectEditController(
       $matcher,
@@ -64,7 +78,7 @@ final class DirectEditControllerTest extends UnitTestCase {
       $tempStore,
       $csrfTokenGenerator,
       $logger,
-      $state,
+      $configFactory,
     );
   }
 
@@ -78,7 +92,8 @@ final class DirectEditControllerTest extends UnitTestCase {
     $tempStore = $this->createMock(CanvasAiTempStore::class);
     $csrfTokenGenerator = $this->createMock(CsrfTokenGenerator::class);
     $logger = $this->createMock(LoggerInterface::class);
-    $state = $this->createMock(StateInterface::class);
+    $config = $this->createMock(ImmutableConfig::class);
+    $configFactory = $this->createMock(ConfigFactoryInterface::class);
 
     $csrfTokenGenerator->expects($this->once())
       ->method('validate')
@@ -97,9 +112,16 @@ final class DirectEditControllerTest extends UnitTestCase {
       ->with('heading_text', 'sdc.byte_theme.heading')
       ->willReturn(NULL);
 
-    $state->method('get')
-      ->with('canvas_ai_scoping.telemetry_enabled', FALSE)
-      ->willReturn(FALSE);
+    $config->method('get')->willReturnCallback(static function (string $key) {
+      if ($key === 'telemetry_enabled') {
+        return FALSE;
+      }
+      if ($key === 'edit_verbs') {
+        return ['change', 'set', 'update', 'modify', 'make', 'turn', 'switch', 'put'];
+      }
+      return NULL;
+    });
+    $configFactory->method('get')->willReturn($config);
 
     $tempStore->expects($this->once())
       ->method('setData')
@@ -151,7 +173,7 @@ final class DirectEditControllerTest extends UnitTestCase {
       $tempStore,
       $csrfTokenGenerator,
       $logger,
-      $state,
+      $configFactory,
     );
 
     $request = Request::create(
@@ -191,13 +213,21 @@ final class DirectEditControllerTest extends UnitTestCase {
     $tempStore = $this->createMock(CanvasAiTempStore::class);
     $csrfTokenGenerator = $this->createMock(CsrfTokenGenerator::class);
     $logger = $this->createMock(LoggerInterface::class);
-    $state = $this->createMock(StateInterface::class);
+    $config = $this->createMock(ImmutableConfig::class);
+    $configFactory = $this->createMock(ConfigFactoryInterface::class);
 
     $csrfTokenGenerator->method('validate')->willReturn(TRUE);
     $schemaLoader->method('getPropAliases')->willReturn([]);
-    $state->method('get')
-      ->with('canvas_ai_scoping.telemetry_enabled', FALSE)
-      ->willReturn(FALSE);
+    $config->method('get')->willReturnCallback(static function (string $key) {
+      if ($key === 'telemetry_enabled') {
+        return FALSE;
+      }
+      if ($key === 'edit_verbs') {
+        return ['change', 'set', 'update', 'modify', 'make', 'turn', 'switch', 'put'];
+      }
+      return NULL;
+    });
+    $configFactory->method('get')->willReturn($config);
 
     // With telemetry disabled, info should be called exactly once for elapsed.
     $logger->expects($this->once())
@@ -216,7 +246,7 @@ final class DirectEditControllerTest extends UnitTestCase {
       $tempStore,
       $csrfTokenGenerator,
       $logger,
-      $state,
+      $configFactory,
     );
 
     $request = Request::create(
@@ -235,7 +265,7 @@ final class DirectEditControllerTest extends UnitTestCase {
   }
 
   /**
-   * Tests that detailed telemetry is logged when the State toggle is enabled.
+   * Tests that detailed telemetry is logged when the Config toggle is enabled.
    *
    * @covers ::edit
    */
@@ -246,13 +276,21 @@ final class DirectEditControllerTest extends UnitTestCase {
     $tempStore = $this->createMock(CanvasAiTempStore::class);
     $csrfTokenGenerator = $this->createMock(CsrfTokenGenerator::class);
     $logger = $this->createMock(LoggerInterface::class);
-    $state = $this->createMock(StateInterface::class);
+    $config = $this->createMock(ImmutableConfig::class);
+    $configFactory = $this->createMock(ConfigFactoryInterface::class);
 
     $csrfTokenGenerator->method('validate')->willReturn(TRUE);
     $schemaLoader->method('getPropAliases')->willReturn([]);
-    $state->method('get')
-      ->with('canvas_ai_scoping.telemetry_enabled', FALSE)
-      ->willReturn(TRUE);
+    $config->method('get')->willReturnCallback(static function (string $key) {
+      if ($key === 'telemetry_enabled') {
+        return TRUE;
+      }
+      if ($key === 'edit_verbs') {
+        return ['change', 'set', 'update', 'modify', 'make', 'turn', 'switch', 'put'];
+      }
+      return NULL;
+    });
+    $configFactory->method('get')->willReturn($config);
 
     // With telemetry enabled: 1 elapsed log + 1 detailed telemetry log.
     $infoMessages = [];
@@ -269,7 +307,7 @@ final class DirectEditControllerTest extends UnitTestCase {
       $tempStore,
       $csrfTokenGenerator,
       $logger,
-      $state,
+      $configFactory,
     );
 
     $request = Request::create(

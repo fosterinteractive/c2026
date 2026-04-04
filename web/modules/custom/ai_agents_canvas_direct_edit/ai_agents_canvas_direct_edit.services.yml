@@ -1,0 +1,71 @@
+# Service architecture rationale (7 services):
+#
+# Core matching (3, cannot be reduced):
+#   - component_schema_loader: SDC schema discovery + caching. Separate from
+#     matcher because the cache lifecycle is independent of matching logic and
+#     the interface enables test doubles without mocking YAML parsing.
+#   - direct_edit_matcher: Pure matching logic. Depends on schema loader and
+#     config only. No Drupal rendering, no HTTP, no database.
+#   - logger.channel: Standard Drupal pattern for per-module logging.
+#
+# AI availability (2, justify separation from matcher):
+#   - ai_provider_availability_checker: Wraps nullable @?ai.provider injection.
+#     Separate service because (a) it's optional — module works without drupal/ai
+#     installed, (b) the interface enables test doubles for 503 vs 422 tests.
+#   - complexity_model_router: Maps complexity signals to model IDs. @internal
+#     and experimental — will likely merge into ai_agents upstream when
+#     PreGenerateResponseEvent gains setModelId().
+#
+# Telemetry (2, opt-in subsystem):
+#   - telemetry_collector: Write path — inserts records. Never throws (resilient).
+#   - telemetry_aggregator: Read path — aggregation queries for export. Separate
+#     because write-path and read-path have different performance profiles and
+#     the aggregator is only loaded by the export controller route.
+#
+# Why not use AI Logging (drupal/ai module)?
+#   AI Logging tracks LLM API calls (tokens, latency, provider). This module's
+#   telemetry tracks deterministic edit attempts (match tier, confidence,
+#   prop name, <7ms latency). Different data model, different consumers.
+#   When the edit falls through to AI, AI Logging captures that separately.
+services:
+  logger.channel.ai_agents_canvas_direct_edit:
+    parent: logger.channel_base
+    arguments: ['ai_agents_canvas_direct_edit']
+
+  ai_agents_canvas_direct_edit.component_schema_loader:
+    class: Drupal\ai_agents_canvas_direct_edit\Service\ComponentSchemaLoader
+    arguments:
+      - '@theme_handler'
+      - '@extension.list.theme'
+      - '@cache.default'
+      - '@logger.channel.ai_agents_canvas_direct_edit'
+      - '@config.factory'
+
+  ai_agents_canvas_direct_edit.direct_edit_matcher:
+    class: Drupal\ai_agents_canvas_direct_edit\Service\DirectEditMatcher
+    arguments:
+      - '@ai_agents_canvas_direct_edit.component_schema_loader'
+      - '@config.factory'
+
+  ai_agents_canvas_direct_edit.ai_provider_availability_checker:
+    class: Drupal\ai_agents_canvas_direct_edit\Service\AiProviderAvailabilityChecker
+    arguments:
+      - '@?ai.provider'
+
+  ai_agents_canvas_direct_edit.complexity_model_router:
+    class: Drupal\ai_agents_canvas_direct_edit\Service\ComplexityModelRouter
+    arguments:
+      - '@config.factory'
+      - '@?ai.provider'
+
+  ai_agents_canvas_direct_edit.telemetry_collector:
+    class: Drupal\ai_agents_canvas_direct_edit\Telemetry\TelemetryCollector
+    arguments:
+      - '@database'
+      - '@config.factory'
+      - '@logger.channel.ai_agents_canvas_direct_edit'
+
+  ai_agents_canvas_direct_edit.telemetry_aggregator:
+    class: Drupal\ai_agents_canvas_direct_edit\Telemetry\TelemetryAggregator
+    arguments:
+      - '@database'

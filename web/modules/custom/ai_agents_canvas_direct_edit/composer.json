@@ -1,0 +1,27 @@
+{
+  "name": "drupal/ai_agents_canvas_direct_edit",
+  "description": "Deterministic Canvas component property editing without LLM. Resolves simple prop edits from SDC schemas in <7ms at 0 tokens.",
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "homepage": "https://www.drupal.org/project/ai_agents_canvas_direct_edit",
+  "support": {
+    "issues": "https://drupal.org/project/issues/ai_agents_canvas_direct_edit",
+    "source": "https://drupal.org/project/ai_agents_canvas_direct_edit"
+  },
+  "require": {
+    "php": ">=8.2",
+    "drupal/core": "^10.3 || ^11",
+    "drupal/ai_agents": "^1.2",
+    "drupal/tool": "^1.0@beta",
+    "drupal/canvas": "^1.0@dev"
+  },
+  "suggest": {
+    "drupal/ai": "Required for AI fallback when deterministic matching fails. Without it, unmatched edits return 503 instead of routing to LLM."
+  },
+  "extra": {
+    "drupal": {
+      "version": "1.0.x-dev",
+      "datestamp": ""
+    }
+  }
+}

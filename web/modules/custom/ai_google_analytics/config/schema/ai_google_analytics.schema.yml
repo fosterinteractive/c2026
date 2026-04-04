@@ -1,0 +1,28 @@
+ai_google_analytics.settings:
+  type: config_object
+  label: 'AI Google Analytics settings'
+  mapping:
+    property_id:
+      type: string
+      label: 'GA4 property ID'
+    credentials_fid:
+      type: integer
+      label: 'Credentials file entity ID'
+      nullable: true
+    credentials_uri:
+      type: string
+      label: 'Credentials file URI'
+      nullable: true
+    benchmarks:
+      type: mapping
+      label: 'Global benchmark thresholds'
+      mapping:
+        engaged_sessions_min:
+          type: float
+          label: 'Minimum engaged sessions'
+        bounce_rate_max:
+          type: float
+          label: 'Maximum bounce rate (%)'
+        key_event_rate_min:
+          type: float
+          label: 'Minimum key event rate (%)'

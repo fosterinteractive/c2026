@@ -1,0 +1,310 @@
+{
+  "benchmark": "direct-edit-latency-and-hit-rate",
+  "date": "2026-03-30T01:38:53.302Z",
+  "environment": {
+    "baseURL": "https://c2026.ddev.site",
+    "editorPath": "/canvas/editor/canvas_page/13",
+    "phpVersion": "8.3.25",
+    "nodeVersion": "v24.13.0",
+    "component": "sdc.byte_theme.heading"
+  },
+  "latency": {
+    "protocol": {
+      "totalRuns": 12,
+      "warmUpRuns": 2,
+      "measuredRuns": 10,
+      "method": "Direct API POST via Playwright request context (shared session)",
+      "note": "First 2 runs discarded as warm-up (JIT, cache, connection pool)"
+    },
+    "allRuns": [
+      {
+        "run": 1,
+        "warmUp": true,
+        "roundTripMs": 142.30408299999544,
+        "status": 200,
+        "message": "Change the heading to Bench 1 t1774834732191"
+      },
+      {
+        "run": 2,
+        "warmUp": true,
+        "roundTripMs": 32.50004099999933,
+        "status": 200,
+        "message": "Change the heading to Bench 2 t1774834732334"
+      },
+      {
+        "run": 3,
+        "warmUp": false,
+        "roundTripMs": 24.121458999994502,
+        "status": 200,
+        "message": "Change the heading to Bench 3 t1774834732366"
+      },
+      {
+        "run": 4,
+        "warmUp": false,
+        "roundTripMs": 27.35395900000003,
+        "status": 200,
+        "message": "Change the heading to Bench 4 t1774834732390"
+      },
+      {
+        "run": 5,
+        "warmUp": false,
+        "roundTripMs": 24.61162499999773,
+        "status": 200,
+        "message": "Change the heading to Bench 5 t1774834732418"
+      },
+      {
+        "run": 6,
+        "warmUp": false,
+        "roundTripMs": 27.092334000000847,
+        "status": 200,
+        "message": "Change the heading to Bench 6 t1774834732442"
+      },
+      {
+        "run": 7,
+        "warmUp": false,
+        "roundTripMs": 31.059625000001688,
+        "status": 200,
+        "message": "Change the heading to Bench 7 t1774834732470"
+      },
+      {
+        "run": 8,
+        "warmUp": false,
+        "roundTripMs": 29.098791000003985,
+        "status": 200,
+        "message": "Change the heading to Bench 8 t1774834732501"
+      },
+      {
+        "run": 9,
+        "warmUp": false,
+        "roundTripMs": 44.52375000000029,
+        "status": 200,
+        "message": "Change the heading to Bench 9 t1774834732530"
+      },
+      {
+        "run": 10,
+        "warmUp": false,
+        "roundTripMs": 97.32062500000029,
+        "status": 200,
+        "message": "Change the heading to Bench 10 t1774834732574"
+      },
+      {
+        "run": 11,
+        "warmUp": false,
+        "roundTripMs": 36.89445899999555,
+        "status": 200,
+        "message": "Change the heading to Bench 11 t1774834732672"
+      },
+      {
+        "run": 12,
+        "warmUp": false,
+        "roundTripMs": 41.73283300000185,
+        "status": 200,
+        "message": "Change the heading to Bench 12 t1774834732709"
+      }
+    ],
+    "stats": {
+      "n": 10,
+      "mean": 38.4,
+      "sd": 21.9,
+      "ci95Lower": 22.7,
+      "ci95Upper": 54,
+      "median": 30.1,
+      "min": 24.1,
+      "max": 97.3
+    }
+  },
+  "hitRate": {
+    "total": 20,
+    "hits": 12,
+    "misses": 8,
+    "hitRatePercent": 60,
+    "allPredictionsCorrect": true,
+    "hitLatencyStats": {
+      "n": 12,
+      "mean": 29.2,
+      "sd": 4.1,
+      "ci95Lower": 26.5,
+      "ci95Upper": 31.9,
+      "median": 27.6,
+      "min": 23.2,
+      "max": 35.9
+    },
+    "missLatencyStats": {
+      "n": 8,
+      "mean": 25.1,
+      "sd": 8.2,
+      "ci95Lower": 18.5,
+      "ci95Upper": 31.7,
+      "median": 21.7,
+      "min": 19.3,
+      "max": 43.3
+    },
+    "runs": [
+      {
+        "message": "Change the heading to Welcome to FinDrop",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 26.44483300000138
+      },
+      {
+        "message": "Set the color to blue",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 23.195458000001963
+      },
+      {
+        "message": "Set the alignment to center",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 26.231665999999677
+      },
+      {
+        "message": "Set the level to 3",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 30.95974999999453
+      },
+      {
+        "message": "heading: Performance Test",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 32.24312500000087
+      },
+      {
+        "message": "set color = primary",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 27.28004100000544
+      },
+      {
+        "message": "primary",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 34.75983399999677
+      },
+      {
+        "message": "center",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 26.10370800000237
+      },
+      {
+        "message": "make it primary",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 33.61104200000409
+      },
+      {
+        "message": "Set the color to white",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 27.837416999995185
+      },
+      {
+        "message": "Set the level to 1",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 25.64641699999629
+      },
+      {
+        "message": "Change the heading to Hello and set the color to blue",
+        "expectedHit": true,
+        "status": 200,
+        "actualHit": true,
+        "correct": true,
+        "roundTripMs": 35.91437500000029
+      },
+      {
+        "message": "make this heading more engaging",
+        "expectedHit": false,
+        "status": 422,
+        "actualHit": false,
+        "correct": true,
+        "roundTripMs": 19.30616700000246
+      },
+      {
+        "message": "add a subtitle below this",
+        "expectedHit": false,
+        "status": 422,
+        "actualHit": false,
+        "correct": true,
+        "roundTripMs": 21.858125000006112
+      },
+      {
+        "message": "generate a catchy alternative title",
+        "expectedHit": false,
+        "status": 422,
+        "actualHit": false,
+        "correct": true,
+        "roundTripMs": 20.60583300000144
+      },
+      {
+        "message": "fix this",
+        "expectedHit": false,
+        "status": 422,
+        "actualHit": false,
+        "correct": true,
+        "roundTripMs": 19.281875000000582
+      },
+      {
+        "message": "rainbow",
+        "expectedHit": false,
+        "status": 422,
+        "actualHit": false,
+        "correct": true,
+        "roundTripMs": 21.609541999998328
+      },
+      {
+        "message": "make it look more professional",
+        "expectedHit": false,
+        "status": 422,
+        "actualHit": false,
+        "correct": true,
+        "roundTripMs": 30.24212499999703
+      },
+      {
+        "message": "create another heading",
+        "expectedHit": false,
+        "status": 422,
+        "actualHit": false,
+        "correct": true,
+        "roundTripMs": 43.34845800000039
+      },
+      {
+        "message": "can you suggest a better title?",
+        "expectedHit": false,
+        "status": 422,
+        "actualHit": false,
+        "correct": true,
+        "roundTripMs": 24.563207999999577
+      }
+    ]
+  },
+  "uiProof": {
+    "status": 200,
+    "heading": "Proof 1774834730975",
+    "note": "Single UI round-trip proving end-to-end Canvas integration"
+  }
+}

@@ -1,0 +1,31 @@
+telemetry_enabled: false
+edit_verbs:
+  - change
+  - set
+  - update
+  - modify
+  - make
+  - turn
+  - switch
+  - put
+enum_value_aliases:
+  inverted: ['white', 'light']
+  primary: ['blue', 'brand']
+  secondary: ['grey', 'gray']
+  accent: ['highlight']
+  muted: ['subtle']
+  center: ['centered', 'middle']
+  left: ['start']
+  right: ['end']
+  large: ['big']
+  small: ['tiny']
+  medium: ['mid']
+  extra-large: ['xl', 'extra large']
+  extra-small: ['xs', 'extra small']
+  framed: ['bordered']
+  full: ['full width']
+  vertical: ['portrait']
+  horizontal: ['landscape', 'side by side']
+  ribbon: ['thin', 'narrow']
+  before: ['prefix']
+  after: ['suffix']

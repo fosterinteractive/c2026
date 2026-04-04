@@ -1,0 +1,71 @@
+{
+  "benchmark": "ai-path-latency",
+  "date": "2026-03-30T02:16:02.628Z",
+  "environment": {
+    "baseURL": "https://c2026.ddev.site",
+    "editorPath": "/canvas/editor/canvas_page/13",
+    "phpVersion": "8.3.25",
+    "nodeVersion": "v24.13.0"
+  },
+  "protocol": {
+    "totalRuns": 7,
+    "warmUpRuns": 2,
+    "measuredRuns": 5,
+    "method": "UI submission at page level (no component selected, bypasses direct-edit)",
+    "note": "Same edit type as direct-edit benchmark for apples-to-apples comparison"
+  },
+  "allRuns": [
+    {
+      "run": 1,
+      "warmUp": true,
+      "wallClockMs": 22038.375459,
+      "message": "Change the heading to AI Benchmark Run 1"
+    },
+    {
+      "run": 2,
+      "warmUp": true,
+      "wallClockMs": 15744.359041999996,
+      "message": "Change the heading to AI Benchmark Run 2"
+    },
+    {
+      "run": 3,
+      "warmUp": false,
+      "wallClockMs": 15924.299375000002,
+      "message": "Change the heading to AI Benchmark Run 3"
+    },
+    {
+      "run": 4,
+      "warmUp": false,
+      "wallClockMs": 17827.718458000003,
+      "message": "Change the heading to AI Benchmark Run 4"
+    },
+    {
+      "run": 5,
+      "warmUp": false,
+      "wallClockMs": 16074.106707999992,
+      "message": "Change the heading to AI Benchmark Run 5"
+    },
+    {
+      "run": 6,
+      "warmUp": false,
+      "wallClockMs": 16203.301749999984,
+      "message": "Change the heading to AI Benchmark Run 6"
+    },
+    {
+      "run": 7,
+      "warmUp": false,
+      "wallClockMs": 15761.725375000009,
+      "message": "Change the heading to AI Benchmark Run 7"
+    }
+  ],
+  "stats": {
+    "n": 5,
+    "mean": 16358,
+    "sd": 838,
+    "ci95Lower": 15318,
+    "ci95Upper": 17398,
+    "median": 16074,
+    "min": 15762,
+    "max": 17828
+  }
+}

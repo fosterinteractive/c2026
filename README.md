@@ -2,20 +2,43 @@
 
 FinDrop is a Drupal CMS 2.0 (Drupal 11.3) demo site showcasing AI-powered content creation with the Canvas page builder.
 
-## Setup
+This repository is a demo/reference implementation for exploring Drupal CMS 2.0, Canvas AI workflows, and deterministic page editing tools.
 
-1. Install DDEV following the [documentation](https://ddev.com/get-started/)
-2. Open the command line and `cd` to the root directory of this project
-3. Set up your environment:
+## What You Get
+
+- Drupal CMS 2.0 (Drupal 11.3) with the Canvas page builder
+- AI-powered page creation with Claude and GPT agents
+- SEO metadata generation with Schema.org JSON-LD
+- Vector search backed by Milvus
+- Deterministic component editing tools exposed for MCP, CLI, and AI agent discovery
+
+## Prerequisites
+
+- Docker Desktop or OrbStack
+- [DDEV](https://ddev.com/get-started/) (latest)
+- Node.js 20.19 or newer on the host machine for building Canvas UI assets
+- Composer, managed through DDEV inside the project environment
+- At least one AI API key: `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY`
+
+## Quickstart
+
 ```shell
+git clone https://github.com/fosterinteractive/c2026.git
+cd c2026
 cp .env.template .ddev/.env
-```
-Then open `.ddev/.env` and set your OpenAI and/or Anthropic keys.
-
-4. From the root of the project, run:
-```shell
+# Edit .ddev/.env -- set OPENAI_API_KEY and/or ANTHROPIC_API_KEY
 ddev demo-setup
+ddev drush uli  # login URL
 ```
+
+`ddev demo-setup` starts DDEV, installs dependencies, provisions Drupal from the recipe, builds Canvas UI assets, and indexes searchable content.
+
+## Troubleshooting
+
+- Port 5173 conflict: Kill any Vite dev servers before running `demo-setup`: `lsof -ti:5173 | xargs kill`
+- `npm` `ENOTEMPTY` error: Delete `node_modules` before `npm install`: `rm -rf web/modules/contrib/canvas/node_modules`
+- Missing API keys: Search indexing may fail without `OPENAI_API_KEY` — this is expected and handled gracefully. AI features require at least one key.
+- Canvas UI not building: Ensure Node.js 20.19 or newer is installed on your host, not just in DDEV. Run `node --version` to check.
 
 ## Exporting Content
 

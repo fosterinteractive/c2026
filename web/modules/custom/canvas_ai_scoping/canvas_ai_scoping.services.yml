@@ -48,11 +48,14 @@ services:
   canvas_ai_scoping.component_schema_loader:
     class: Drupal\canvas_ai_scoping\Service\ComponentSchemaLoader
     arguments:
+      - '@theme_handler'
       - '@extension.list.theme'
       - '@cache.default'
       - '@logger.channel.canvas_ai_scoping'
+      - '@config.factory'
 
   canvas_ai_scoping.direct_edit_matcher:
     class: Drupal\canvas_ai_scoping\Service\DirectEditMatcher
     arguments:
       - '@canvas_ai_scoping.component_schema_loader'
+      - '@config.factory'

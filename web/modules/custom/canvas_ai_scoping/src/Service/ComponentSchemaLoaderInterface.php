@@ -90,6 +90,37 @@ interface ComponentSchemaLoaderInterface {
   public function getEnumOrdinals(string $componentName): array;
 
   /**
+   * Returns valid integer enum values for a prop on a specific component.
+   *
+   * Integer-typed enums (e.g., heading level [1,2,3,4,5,6]) are stored
+   * separately from string enum maps and resolved via this method.
+   *
+   * @param string $propName
+   *   The canonical prop name (e.g., 'level').
+   * @param string $componentName
+   *   The SDC component name (e.g., 'sdc.byte_theme.heading').
+   *
+   * @return list<int>|null
+   *   List of valid integer values, or NULL if the prop has no integer enum.
+   */
+  public function getIntegerEnumValues(string $propName, string $componentName): ?array;
+
+  /**
+   * Returns a reverse index mapping enum aliases to prop names.
+   *
+   * Similar to getReverseEnumIndex() but includes natural language aliases
+   * from buildEnumAliases() and getNaturalAliasesForEnumValue(). Only
+   * aliases that map to exactly one prop are included (unambiguous).
+   *
+   * @param string $componentName
+   *   The SDC component name.
+   *
+   * @return array<string, list<string>>
+   *   Map of alias => [prop_name, ...].
+   */
+  public function getReverseAliasIndex(string $componentName): array;
+
+  /**
    * Returns per-component enum value collision data.
    *
    * Derived from the reverse enum index — any value mapping to 2+ props is

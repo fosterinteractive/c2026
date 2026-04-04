@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\canvas_ai_seo\Plugin\AiFunctionCall;
 
 use Drupal\Core\Plugin\Context\ContextDefinition;
@@ -37,16 +39,14 @@ final class AddSchemaOrgJson extends FunctionCallBase implements ExecutableFunct
   public function execute(): void {
     try {
       $schema_org_data = $this->getContextValue('schema_org_data');
-      $decoded = json_decode($schema_org_data, TRUE);
-      if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new \Exception(\sprintf('Invalid JSON: %s', json_last_error_msg()));
-      }
+      $decoded = json_decode($schema_org_data, TRUE, 512, JSON_THROW_ON_ERROR);
+      $canonical = json_encode($decoded, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
       $this->setStructuredOutput([
-        'schema_org_data' => $schema_org_data,
+        'schema_org_data' => $canonical,
       ]);
       $this->setOutput('Schema.org JSON-LD data added successfully.');
     }
-    catch (\Exception $e) {
+    catch (\JsonException $e) {
       $this->setOutput(\sprintf('Failed to process Schema.org JSON-LD data: %s', $e->getMessage()));
     }
   }

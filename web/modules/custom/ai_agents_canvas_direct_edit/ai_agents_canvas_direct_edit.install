@@ -1,0 +1,133 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the ai_agents_canvas_direct_edit module.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_schema().
+ */
+function ai_agents_canvas_direct_edit_schema(): array {
+  $schema['canvas_direct_edit_telemetry'] = [
+    'description' => 'Telemetry records for every Canvas direct-edit attempt.',
+    'fields' => [
+      'id' => [
+        'description' => 'Primary key.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'timestamp' => [
+        'description' => 'Unix timestamp of the edit attempt.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'component_name' => [
+        'description' => 'SDC component name (e.g. sdc.mytheme.heading).',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'tier' => [
+        'description' => 'Match tier: exact, alias, enum, relative, boolean, reset, compound, or reject.',
+        'type' => 'varchar',
+        'length' => 16,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'matched' => [
+        'description' => 'Whether the attempt produced a deterministic match (boolean, 0 or 1).',
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'prop_name' => [
+        'description' => 'The matched prop name, if any.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+      ],
+      'confidence' => [
+        'description' => 'Confidence score (0.0–1.0), populated by later initiatives.',
+        'type' => 'float',
+        'not null' => FALSE,
+      ],
+      'complexity_signal' => [
+        'description' => 'Complexity signal label (e.g. low, medium, high), populated by later initiatives.',
+        'type' => 'varchar',
+        'length' => 16,
+        'not null' => FALSE,
+      ],
+      'model_used' => [
+        'description' => 'AI model identifier used for fallback, populated by later initiatives.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+      ],
+      'latency_us' => [
+        'description' => 'Deterministic-path latency in microseconds.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'message_length' => [
+        'description' => 'Character length of the original user message.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'message_hash' => [
+        'description' => 'SHA-256 hash of the raw user message for dedup analysis without storing PII.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'redacted_message' => [
+        'description' => 'Redacted or raw message text; only populated when store_messages is enabled in config.',
+        'type' => 'text',
+        'not null' => FALSE,
+      ],
+      'ai_fallback' => [
+        'description' => 'Whether the attempt was escalated to an AI fallback (boolean, 0 or 1).',
+        'type' => 'int',
+        'size' => 'tiny',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+      'ai_latency_ms' => [
+        'description' => 'AI fallback round-trip latency in milliseconds, populated by later initiatives.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+      ],
+    ],
+    'primary key' => ['id'],
+    'indexes' => [
+      'timestamp' => ['timestamp'],
+      'matched_tier' => ['matched', 'tier'],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function ai_agents_canvas_direct_edit_uninstall(): void {
+  \Drupal::configFactory()
+    ->getEditable('ai_agents_canvas_direct_edit.settings')
+    ->delete();
+}

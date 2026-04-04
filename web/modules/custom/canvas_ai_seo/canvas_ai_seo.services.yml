@@ -1,5 +1,11 @@
 services:
+  canvas_ai_seo.hooks:
+    class: Drupal\canvas_ai_seo\Hook\CanvasAiSeoHooks
+    arguments: ['@current_route_match']
+    tags:
+      - { name: drupal_hook }
+
   canvas_ai_seo.layout_response_subscriber:
     class: Drupal\canvas_ai_seo\EventSubscriber\LayoutResponseSubscriber
     tags:
-      - { name: event_subscriber }
+      - { name: event_subscriber, priority: -100 }

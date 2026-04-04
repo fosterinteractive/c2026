@@ -1,0 +1,9 @@
+name: 'Canvas Direct Edit MCP Server'
+type: module
+description: 'Exposes Canvas direct edit Tool API plugins as an MCP (Model Context Protocol) server over Streamable HTTP transport.'
+package: 'AI Tools'
+core_version_requirement: ^10.3 || ^11
+experimental: true
+dependencies:
+  - ai_agents_canvas_direct_edit:ai_agents_canvas_direct_edit
+  - tool:tool

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Drupal\canvas_ai_scoping\Service;
 
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ThemeExtensionList;
+use Drupal\Core\Extension\ThemeHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Yaml\Yaml;
 
@@ -50,14 +52,19 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   private const CACHE_CID_ENUM_ORDINALS = 'canvas_ai_scoping:enum_ordinals';
 
   /**
+   * Cache ID for the integer enum values map.
+   */
+  private const CACHE_CID_INTEGER_ENUMS = 'canvas_ai_scoping:integer_enums';
+
+  /**
+   * Cache ID for the reverse alias index.
+   */
+  private const CACHE_CID_REVERSE_ALIAS = 'canvas_ai_scoping:reverse_alias_index';
+
+  /**
    * Cache tag used to invalidate all maps together.
    */
   private const CACHE_TAG = 'canvas_ai_scoping';
-
-  /**
-   * The Byte theme machine name.
-   */
-  private const THEME_NAME = 'byte_theme';
 
   /**
    * Props where "enable" means FALSE (inverted boolean semantics).
@@ -65,6 +72,18 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   private const INVERTED_BOOLEAN_PROPS = [
     'disabled' => TRUE,
     'overlap_navbar' => TRUE,
+  ];
+
+  /**
+   * Boolean props that are NOT show/hide toggles.
+   *
+   * These control semantics other than visibility (e.g., alignment direction,
+   * layout reversal) and should not be exposed to the BooleanToggleResolver.
+   */
+  private const NON_TOGGLE_BOOLEAN_PROPS = [
+    'align' => TRUE,
+    'reverse' => TRUE,
+    'flip' => TRUE,
   ];
 
   /**
@@ -114,19 +133,37 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   private ?array $enumOrdinals = NULL;
 
   /**
+   * Cached integer enum values: {sdc_name => {prop_name => [int, ...]}}.
+   *
+   * @var array<string, array<string, list<int>>>|null
+   */
+  private ?array $integerEnums = NULL;
+
+  /**
+   * Cached reverse alias index: {sdc_name => {alias => [prop_name, ...]}}.
+   *
+   * @var array<string, array<string, list<string>>>|null
+   */
+  private ?array $reverseAliasIndex = NULL;
+
+  /**
    * Constructs a ComponentSchemaLoader.
    *
+   * @param \Drupal\Core\Extension\ThemeHandlerInterface $themeHandler
+   *   The theme handler, used to discover the active default theme.
    * @param \Drupal\Core\Extension\ThemeExtensionList $themeList
-   *   The theme extension list, used to resolve the byte_theme path.
+   *   The theme extension list, used to resolve the theme path.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache
    *   The default cache backend.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger channel.
    */
   public function __construct(
+    private readonly ThemeHandlerInterface $themeHandler,
     private readonly ThemeExtensionList $themeList,
     private readonly CacheBackendInterface $cache,
     private readonly LoggerInterface $logger,
+    private readonly ConfigFactoryInterface $configFactory,
   ) {}
 
   /**
@@ -181,6 +218,14 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   /**
    * {@inheritdoc}
    */
+  public function getReverseAliasIndex(string $componentName): array {
+    $this->ensureLoaded();
+    return $this->reverseAliasIndex[$componentName] ?? [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getBooleanProps(string $componentName): array {
     $this->ensureLoaded();
     return $this->booleanProps[$componentName] ?? [];
@@ -192,6 +237,14 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   public function getEnumOrdinals(string $componentName): array {
     $this->ensureLoaded();
     return $this->enumOrdinals[$componentName] ?? [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getIntegerEnumValues(string $propName, string $componentName): ?array {
+    $this->ensureLoaded();
+    return $this->integerEnums[$componentName][$propName] ?? NULL;
   }
 
   /**
@@ -230,15 +283,20 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     $cachedReverseEnum = $this->cache->get(self::CACHE_CID_REVERSE_ENUM);
     $cachedBooleanProps = $this->cache->get(self::CACHE_CID_BOOLEAN_PROPS);
     $cachedEnumOrdinals = $this->cache->get(self::CACHE_CID_ENUM_ORDINALS);
+    $cachedIntegerEnums = $this->cache->get(self::CACHE_CID_INTEGER_ENUMS);
+    $cachedReverseAlias = $this->cache->get(self::CACHE_CID_REVERSE_ALIAS);
 
     if ($cachedAliases !== FALSE && $cachedEnums !== FALSE
       && $cachedReverseEnum !== FALSE && $cachedBooleanProps !== FALSE
-      && $cachedEnumOrdinals !== FALSE) {
+      && $cachedEnumOrdinals !== FALSE && $cachedIntegerEnums !== FALSE
+      && $cachedReverseAlias !== FALSE) {
       $this->propAliases = $cachedAliases->data;
       $this->enumValues = $cachedEnums->data;
       $this->reverseEnumIndex = $cachedReverseEnum->data;
       $this->booleanProps = $cachedBooleanProps->data;
       $this->enumOrdinals = $cachedEnumOrdinals->data;
+      $this->integerEnums = $cachedIntegerEnums->data;
+      $this->reverseAliasIndex = $cachedReverseAlias->data;
       return;
     }
 
@@ -250,13 +308,15 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
       self::CACHE_CID_REVERSE_ENUM => $this->reverseEnumIndex,
       self::CACHE_CID_BOOLEAN_PROPS => $this->booleanProps,
       self::CACHE_CID_ENUM_ORDINALS => $this->enumOrdinals,
+      self::CACHE_CID_INTEGER_ENUMS => $this->integerEnums,
+      self::CACHE_CID_REVERSE_ALIAS => $this->reverseAliasIndex,
     ];
     foreach ($cacheSets as $cid => $data) {
       $this->cache->set(
         $cid,
         $data,
         CacheBackendInterface::CACHE_PERMANENT,
-        [self::CACHE_TAG],
+        [self::CACHE_TAG, 'config:system.theme'],
       );
     }
   }
@@ -270,10 +330,12 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     $this->reverseEnumIndex = [];
     $this->booleanProps = [];
     $this->enumOrdinals = [];
+    $this->integerEnums = [];
+    $this->reverseAliasIndex = [];
 
     $themePath = $this->resolveThemePath();
     if ($themePath === NULL) {
-      $this->logger->warning('ComponentSchemaLoader: byte_theme not found; alias map will be empty.');
+      $this->logger->warning('ComponentSchemaLoader: default theme not found; alias map will be empty.');
       return;
     }
 
@@ -299,13 +361,14 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
    */
   private function resolveThemePath(): ?string {
     try {
-      $theme = $this->themeList->get(self::THEME_NAME);
+      $themeName = $this->themeHandler->getDefault();
+      $theme = $this->themeList->get($themeName);
       $relativePath = $theme->getPath();
       // getPath() returns a path relative to the Drupal root (DRUPAL_ROOT).
       return DRUPAL_ROOT . '/' . $relativePath;
     }
     catch (\Exception $e) {
-      $this->logger->warning('ComponentSchemaLoader: could not resolve byte_theme path: @msg', [
+      $this->logger->warning('ComponentSchemaLoader: could not resolve default theme path: @msg', [
         '@msg' => $e->getMessage(),
       ]);
       return NULL;
@@ -335,9 +398,9 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     }
 
     // Derive the SDC name from the directory name.
-    // File: .../components/heading/heading.component.yml → sdc.byte_theme.heading
+    // File: .../components/heading/heading.component.yml → sdc.<theme>.heading
     $componentDir = basename(dirname($file));
-    $sdcName = 'sdc.' . self::THEME_NAME . '.' . $componentDir;
+    $sdcName = 'sdc.' . $this->themeHandler->getDefault() . '.' . $componentDir;
 
     $properties = $schema['props']['properties'] ?? [];
     if (empty($properties) || !is_array($properties)) {
@@ -349,6 +412,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
     $reverseEnum = [];
     $boolProps = [];
     $ordinals = [];
+    $intEnums = [];
 
     foreach ($properties as $propName => $propDef) {
       if (!is_array($propDef)) {
@@ -364,9 +428,9 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
         }
       }
 
-      // Detect boolean props.
+      // Detect boolean props (skip non-toggle booleans like align/reverse).
       $propType = $propDef['type'] ?? NULL;
-      if ($propType === 'boolean') {
+      if ($propType === 'boolean' && !isset(self::NON_TOGGLE_BOOLEAN_PROPS[$propName])) {
         $boolProps[$propName] = [
           'aliases' => $generatedAliases,
           'inverted' => isset(self::INVERTED_BOOLEAN_PROPS[$propName]),
@@ -378,12 +442,18 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
         continue;
       }
 
-      // Skip numeric-only enums (e.g., heading level — handled specially).
       $enumValues = $propDef['enum'];
-      $allNumeric = array_reduce($enumValues, static function (bool $carry, mixed $v): bool {
-        return $carry && is_numeric($v);
-      }, TRUE);
-      if ($allNumeric) {
+
+      // Integer/number-typed enums (e.g., heading level [1,2,3,4,5,6]) are
+      // stored separately for numeric resolution via getIntegerEnumValues().
+      // String-typed enums with numeric-looking values (e.g., columns
+      // ["1","2","3","4"] or spacing ["0","8","16","32"]) are kept in the
+      // string enum map — they were previously excluded by is_numeric().
+      if ($propType === 'integer' || $propType === 'number') {
+        $intValues = array_values(array_filter($enumValues, 'is_int'));
+        if (!empty($intValues)) {
+          $intEnums[$propName] = $intValues;
+        }
         continue;
       }
 
@@ -429,11 +499,35 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
       }
       $this->reverseEnumIndex[$sdcName] = $reverseEnum;
     }
+
+    // Build reverse alias index: alias => [prop_name, ...].
+    // Includes natural aliases (e.g. blue→primary) not just raw enum values.
+    // Skips aliases already in the raw reverse enum index.
+    $reverseAlias = [];
+    foreach ($enumMap as $propName => $aliasMap) {
+      foreach (array_keys($aliasMap) as $alias) {
+        // Skip aliases already covered by the raw reverse enum index.
+        if (isset($reverseEnum[$alias])) {
+          continue;
+        }
+        $reverseAlias[$alias][] = $propName;
+      }
+    }
+    if (!empty($reverseAlias)) {
+      foreach ($reverseAlias as $alias => $props) {
+        $reverseAlias[$alias] = array_values(array_unique($props));
+      }
+      $this->reverseAliasIndex[$sdcName] = $reverseAlias;
+    }
+
     if (!empty($boolProps)) {
       $this->booleanProps[$sdcName] = $boolProps;
     }
     if (!empty($ordinals)) {
       $this->enumOrdinals[$sdcName] = $ordinals;
+    }
+    if (!empty($intEnums)) {
+      $this->integerEnums[$sdcName] = $intEnums;
     }
   }
 
@@ -517,7 +611,7 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
       'cite_name' => ['citation name', 'author'],
       'cite_text' => ['citation text'],
       'cite_url' => ['citation link'],
-      'text_align' => ['text align', 'align', 'alignment'],
+      'is_text_centered' => ['text centered', 'centered text'],
       'overlap_navbar' => ['overlap header'],
       'mobile_width' => ['mobile width'],
       'menu_align' => ['menu alignment', 'menu align'],
@@ -602,9 +696,9 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
   /**
    * Returns natural language aliases for a known enum value.
    *
-   * Covers color aliases (white → inverted, blue → primary), size aliases
-   * (big/large → large, small/tiny → small), alignment aliases
-   * (middle/centered → center), and style aliases.
+   * Reads aliases from canvas_ai_scoping.settings config (enum_value_aliases).
+   * Falls back to algorithmic derivation for values not in config: splits
+   * hyphenated values into words and generates size abbreviations.
    *
    * @param string $value
    *   The canonical enum value.
@@ -613,58 +707,28 @@ final class ComponentSchemaLoader implements ComponentSchemaLoaderInterface {
    *   Additional aliases that map to this value.
    */
   private function getNaturalAliasesForEnumValue(string $value): array {
-    $naturalAliasMap = [
-      // Color aliases.
-      'inverted' => ['white', 'light', 'inverted text'],
-      'primary' => ['blue', 'brand'],
-      'secondary' => ['grey', 'gray'],
-      'accent' => ['highlight accent'],
-      'muted' => ['subtle', 'muted background'],
-      // Alignment aliases.
-      'center' => ['centered', 'middle'],
-      'left' => ['start'],
-      'right' => ['end'],
-      // Size aliases.
-      'large' => ['big'],
-      'small' => ['tiny'],
-      'medium' => ['mid', 'normal size'],
-      'extra-large' => ['xl', 'extra large'],
-      'extra-small' => ['xs', 'extra small'],
-      // Text size aliases (heading).
-      'heading-responsive-8xl' => ['8xl', 'extra extra extra large'],
-      'heading-responsive-7xl' => ['7xl'],
-      'heading-responsive-6xl' => ['6xl'],
-      'heading-responsive-5xl' => ['5xl'],
-      'heading-responsive-4xl' => ['4xl'],
-      'heading-responsive-3xl' => ['3xl'],
-      'heading-responsive-2xl' => ['2xl'],
-      'heading-responsive-xl' => ['xl heading'],
-      // Text size aliases (text component).
-      'text-xs' => ['xs', 'smallest', 'tiny text'],
-      'text-sm' => ['sm', 'small text'],
-      'normal' => ['default size', 'regular'],
-      'text-lg' => ['lg'],
-      'text-xl' => ['xl text'],
-      'text-2xl' => ['2xl text'],
-      'text-3xl' => ['3xl text'],
-      // Button variant aliases.
-      'primary-inverted' => ['primary inverted', 'inverted primary'],
-      'secondary-inverted' => ['secondary inverted', 'inverted secondary'],
-      // Button/badge style aliases.
-      'framed' => ['bordered', 'with border'],
-      'full' => ['full width'],
-      // Orientation / direction aliases.
-      'vertical' => ['portrait', 'top to bottom'],
-      'horizontal' => ['landscape', 'side by side'],
-      // Hero billboard height aliases.
-      'full' => ['fullscreen', 'full screen'],
-      'ribbon' => ['thin', 'narrow'],
-      // Symbol position aliases.
-      'before' => ['prefix', 'in front'],
-      'after' => ['suffix', 'behind'],
-    ];
+    $config = $this->configFactory->get('canvas_ai_scoping.settings');
+    $configAliases = $config->get('enum_value_aliases') ?? [];
 
-    return $naturalAliasMap[$value] ?? [];
+    if (isset($configAliases[$value])) {
+      return $configAliases[$value];
+    }
+
+    // Algorithmic fallback: derive aliases from the value string itself.
+    $aliases = [];
+
+    // Hyphenated values get their parts as aliases (e.g., "extra-large" → "extra large").
+    if (str_contains($value, '-')) {
+      $aliases[] = str_replace('-', ' ', $value);
+      $parts = explode('-', $value);
+      // Last segment as standalone (e.g., "heading-responsive-4xl" → "4xl").
+      $lastPart = end($parts);
+      if (strlen($lastPart) <= 4) {
+        $aliases[] = $lastPart;
+      }
+    }
+
+    return $aliases;
   }
 
 }

@@ -82,13 +82,11 @@ Tracks A and B are fully independent. Track C feeds from A's measurement results
 
 ## Critical Context
 
-### catch-bot analysis (Drupal core committer prediction)
-A high-fidelity content profile of Nathaniel Catchpole (catch) was consulted. Key findings:
+### Maintainer positioning (based on drupal.org issue queue research)
 - **P4 is catch's sweet spot** — he advocates deterministic tooling over LLM approaches
 - **P1 will get "makes sense"** if benchmarks are solid and there's an escape hatch
 - **P2 needs reframing** — filtering belongs in subscriber, but must acknowledge existing agent-aware selection in `AiContextSelector::select()`
 - **Never frame as "AI optimization"** — lead with architecture, use tokens as concrete evidence
-- Full analysis available via catch-bot at `~/claude/catch-bot/`
 
 ### Critic findings (all addressed)
 The proposal-critic found 2 critical + 5 major issues, all fixed in the current revision:
