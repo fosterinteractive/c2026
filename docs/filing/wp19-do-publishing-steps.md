@@ -187,7 +187,6 @@ pre-stable. Happy to discuss integration patterns or architectural feedback.
 - Mention REVIEWER_HANDOFF.md — signals we thought about their review burden
 - Do NOT mention token savings or speed numbers — the original comment
   already covered that, let them reference it
-- Do NOT mention catch-bot or simulated review — that's our internal tooling
 - If asked about the MCP server: "It's an optional submodule. The base module
   works without it. We included it because Tool API plugins are a natural fit
   for MCP exposure."

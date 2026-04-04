@@ -2,7 +2,7 @@
 
 **Purpose:** Verify every maintainer quote cited in the upstream filing plan (`docs/plans/2026-03-30-upstream-filing-plan.md`) against the actual drupal.org issue queue record.
 
-**Discovery methodology:** Quotes sourced from catch-bot Canvas corpus (2,964 issues, 40,780 comments, 457 unique authors) searched 2026-03-30 during upstream filing plan preparation. The corpus was scraped from drupal.org REST API; each comment has a verified CID (comment ID) traceable to a specific drupal.org URL.
+**Discovery methodology:** Quotes sourced from the drupal.org issue queue (Canvas project, 2,964 issues, 40,780 comments, 457 unique authors) searched 2026-03-30 during upstream filing plan preparation. Each comment has a verified CID (comment ID) traceable to a specific drupal.org URL.
 
 **Note on project names:** Issues < ~3530000 were filed under `experience_builder` (the original project name). Later issues are under `canvas`. Some issues (e.g., #3522013) may be under `experience_builder`. The drupal.org URLs below use the project name at time of filing.
 

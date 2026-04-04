@@ -47,7 +47,7 @@
 | perf-bench-critic (opus) | Benchmark methodology | REVISE | N=1 insufficient; AI latency unmeasured; unfair 3-in-1 comparison; cherry-picked scenario |
 | test-strategy (opus) | E2E test design | — | 16 scenarios mapped; Page Object Model extraction; 5 flakiness fixes; two-tier CI |
 | patch-architect (opus) | Contribution patches | — | 3 patches designed; inject-then-strip eliminated; token-based layout API; dynamic theme |
-| Dries/catch-bot | Contributor profiles | — | 10 profiles available; no Canvas maintainer profiles; Dries frames Canvas as "step one" |
+| Maintainer research | Contributor positioning | — | 10 profiles available; no Canvas maintainer profiles; Dries frames Canvas as "step one" |
 
 ---
 
@@ -159,14 +159,12 @@ Filing order when ready: **P2 (ai_context) → P1 (canvas #3545816) → P4 (canv
 
 ---
 
-## catch-bot Resources
+## Maintainer Research
 
-10 Drupal core contributor profiles available at `~/claude/catch-bot/profiles/`:
+10 Drupal core contributor profiles documented:
 - **catch** (most complete) — architectural hygiene, performance focus
 - **Dries** — UX, ecosystem fit, frames Canvas as "step one"
 - 8 others: alexpott, berdir, dawehner, effulgentsia, larowlan, nod_, Wim Leers, xjm
 
 7 Canvas-specific skills available via drupal-critic routing (`drupal-canvas/skills/canvas-*`):
 - component-definition, component-metadata, component-utils, data-fetching, styling-conventions, component-composability, component-upload
-
-No Canvas maintainer profiles in catch-bot — Canvas is Dries/Acquia-led.

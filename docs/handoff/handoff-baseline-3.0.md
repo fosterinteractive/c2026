@@ -28,7 +28,7 @@
 
 - `docs/research/drupal-org-ready-comments.md` — P4, P1, P2 ready to post on drupal.org
 - Framed for Dries (UX + affordability) and catch (architectural hygiene + benchmarks)
-- catch profile analysis done via catch-bot at `~/claude/catch-bot`
+- catch profile analysis based on drupal.org issue queue research
 
 ### Strategic Docs
 

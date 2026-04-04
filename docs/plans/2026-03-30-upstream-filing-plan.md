@@ -497,4 +497,4 @@ These are not filed immediately. They're the "where this goes" story that emerge
 - Drupal Critic: ACCEPT-WITH-RESERVATIONS (4 MAJOR, 6 MINOR)
 - All findings addressed in this revision. Key additions: conditional P1 filing, `#3556141`/`#3553458` in risk register, operationalized AI-code review process, tightened Canvas Lite framing, verified frontend endpoint exists (`AiWizard.tsx:751`).
 
-**Corpus research:** Maintainer intelligence sourced from catch-bot Canvas corpus (2,964 issues, 40,780 comments) searched 2026-03-30. Quote provenance documented in `docs/research/maintainer-quotes-with-sources.md`.
+**Corpus research:** Maintainer intelligence sourced from drupal.org issue queue research (Canvas project, 2,964 issues, 40,780 comments) searched 2026-03-30. Quote provenance documented in `docs/research/maintainer-quotes-with-sources.md`.
