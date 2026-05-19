@@ -21,8 +21,8 @@ backend_config:
     dimensions: 1536
   embedding_strategy: contextual_chunks
   embedding_strategy_configuration:
-    chunk_size: '500'
-    chunk_min_overlap: '100'
+    chunk_size: '1500'
+    chunk_min_overlap: '300'
     contextual_content_max_percentage: '30'
     skip_moderation: false
   embedding_strategy_details: ''

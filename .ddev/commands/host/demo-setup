@@ -41,7 +41,16 @@ fi
 echo "Preparing to index content..."
 sleep 3
 echo "Indexing all content in the vector database..."
-ddev drush sapi-i
+for attempt in 1 2 3 4 5; do
+  ddev drush sapi-i || true
+  remaining=$(ddev drush sapi-s 2>/dev/null | awk '$(NF) ~ /^[0-9]+$/ {sum += $(NF) - $(NF-1)} END {print sum+0}')
+  if [ "${remaining:-0}" -eq 0 ]; then
+    break
+  fi
+  sleep_for=$((attempt * 15))
+  echo "Retrying ($attempt) — ${remaining} item(s) remaining. Sleeping ${sleep_for}s..."
+  sleep $sleep_for
+done
 
 echo "Demo setup complete. You can log in to the Drupal site using the following URL:"
 ddev drush uli
