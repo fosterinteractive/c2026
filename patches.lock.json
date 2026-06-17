@@ -1,5 +1,5 @@
 {
-    "_hash": "3349c9326387a63a8c43cc3f930f34004ae112b035e617f501892f6247cc55c6",
+    "_hash": "828251360c8bec14b9ec41a3d2b66a15329aabeb3c4df00d5f693d37d2d22f18",
     "patches": {
         "drupal/core": [
             {
@@ -18,7 +18,7 @@
                 "package": "drupal/canvas",
                 "description": "POC",
                 "url": "https://git.drupalcode.org/project/canvas/-/merge_requests/1214/diffs.patch",
-                "sha256": "1c7dba0ce21c06abe6a2ba3178d6d0f5db162307efb997656506749d4650448d",
+                "sha256": "ca8bd416dbf2363e7e8f17e7799bc118415634b8640eb8432439bcce8afd73e2",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
