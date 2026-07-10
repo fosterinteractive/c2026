@@ -12,17 +12,18 @@ config:
       aiContextAgentsUpdate:
         agents:
           -
-            id: canvas_template_builder_agent
+            id: canvas_ai_orchestrator
             context_items: {  }
             always_include:
+              - 'Agent interaction guidelines'
               - 'FinDrop Brand Guidelines'
               - 'Writing Tone & Voice'
+              - 'FinDrop Key Facts & Value Propositions'
               - 'Visuals & Imagery'
               - 'Abbreviations, Spelling, Dates & Formatting'
-              - 'FinDrop Key Facts & Value Propositions'
               - 'FinDrop Travel — Sales Training Deck'
-              - 'General Page Building Guidelines'
               - 'Content Structure: Product Pages'
+              - 'General Page Building Guidelines'
             excluded_subcontext:
               - 'Content Structure: PPC Landing Page'
               - 'Content Structure: Articles & Blogs'
@@ -32,31 +33,16 @@ config:
             id: canvas_page_builder_agent
             context_items: {  }
             always_include:
-              - 'FinDrop Brand Guidelines'
-              - 'Writing Tone & Voice'
-              - 'Visuals & Imagery'
-              - 'Abbreviations, Spelling, Dates & Formatting'
-              - 'FinDrop Key Facts & Value Propositions'
-              - 'FinDrop Travel — Sales Training Deck'
-              - 'General Page Building Guidelines'
-              - 'Content Structure: Product Pages'
-            excluded_subcontext:
-              - 'Content Structure: PPC Landing Page'
-              - 'Content Structure: Articles & Blogs'
-              - 'Content Structure: Press Releases'
-            scope_subscriptions: {  }
-          -
-            id: canvas_ai_orchestrator
-            context_items: {  }
-            always_include:
               - 'Agent interaction guidelines'
               - 'FinDrop Brand Guidelines'
-            excluded_subcontext:
               - 'Writing Tone & Voice'
+              - 'FinDrop Key Facts & Value Propositions'
               - 'Visuals & Imagery'
               - 'Abbreviations, Spelling, Dates & Formatting'
               - 'FinDrop Travel — Sales Training Deck'
               - 'Content Structure: Product Pages'
+              - 'General Page Building Guidelines'
+            excluded_subcontext:
               - 'Content Structure: PPC Landing Page'
               - 'Content Structure: Articles & Blogs'
               - 'Content Structure: Press Releases'
@@ -88,7 +74,7 @@ config:
     ai_context.settings:
       simpleConfigUpdate:
         strategy: keyword
-        max_context_items: 10
+        max_items: 10
         max_global_items: 3
         max_tokens: 200000
         show_overview_page: true

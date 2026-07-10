@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "02c696a74ab92c32b17eb306495368c5",
+    "content-hash": "40d81e0e7d7d0a712a0b940337819a90",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -1817,17 +1817,17 @@
         },
         {
             "name": "drupal/ai",
-            "version": "1.3.0-rc2",
+            "version": "1.4.1",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/ai.git",
-                "reference": "1.3.0-rc2"
+                "reference": "1.4.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/ai-1.3.0-rc2.zip",
-                "reference": "1.3.0-rc2",
-                "shasum": "cb0efcd34cedecb4a48d901a78bb06aa7eb7ab7c"
+                "url": "https://ftp.drupal.org/files/projects/ai-1.4.1.zip",
+                "reference": "1.4.1",
+                "shasum": "8f7ecf9b75194d306443c72ca686707a55334d46"
             },
             "require": {
                 "drupal/core": "^10.5 || ^11.2",
@@ -1857,11 +1857,11 @@
             "type": "drupal-module",
             "extra": {
                 "drupal": {
-                    "version": "1.3.0-rc2",
-                    "datestamp": "1772193193",
+                    "version": "1.4.1",
+                    "datestamp": "1780493201",
                     "security-coverage": {
-                        "status": "not-covered",
-                        "message": "RC releases are not covered by Drupal security advisories."
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
                     }
                 }
             },
@@ -1919,6 +1919,10 @@
                     "homepage": "https://www.drupal.org/user/157092"
                 },
                 {
+                    "name": "mxr576",
+                    "homepage": "https://www.drupal.org/user/315522"
+                },
+                {
                     "name": "robloach",
                     "homepage": "https://www.drupal.org/user/61114"
                 },
@@ -1941,6 +1945,10 @@
                 {
                     "name": "yautja_cetanu",
                     "homepage": "https://www.drupal.org/user/626050"
+                },
+                {
+                    "name": "ahmad khader",
+                    "homepage": "https://www.drupal.org/user/3727855"
                 }
             ],
             "description": "AI module for Drupal",
@@ -2056,20 +2064,20 @@
         },
         {
             "name": "drupal/ai_agents",
-            "version": "1.2.3",
+            "version": "1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/ai_agents.git",
-                "reference": "1.2.3"
+                "reference": "1.3.0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://ftp.drupal.org/files/projects/ai_agents-1.2.3.zip",
-                "reference": "1.2.3",
-                "shasum": "a31a58f3a37048e2706c5bd9bed251d670755989"
+                "url": "https://ftp.drupal.org/files/projects/ai_agents-1.3.0.zip",
+                "reference": "1.3.0",
+                "shasum": "676787dc830587fde80bde4658d1428ed5616333"
             },
             "require": {
-                "drupal/ai": "^1.2.0",
+                "drupal/ai": "^1.4.0",
                 "drupal/core": "^10.2 || ^11",
                 "drupal/modeler_api": "^1.0.3"
             },
@@ -2084,8 +2092,8 @@
             "type": "drupal-module",
             "extra": {
                 "drupal": {
-                    "version": "1.2.3",
-                    "datestamp": "1772092822",
+                    "version": "1.3.0",
+                    "datestamp": "1779962575",
                     "security-coverage": {
                         "status": "covered",
                         "message": "Covered by Drupal's security advisory policy"
@@ -2098,12 +2106,20 @@
             ],
             "authors": [
                 {
+                    "name": "a.dmitriiev",
+                    "homepage": "https://www.drupal.org/user/3235287"
+                },
+                {
                     "name": "akhil babu",
                     "homepage": "https://www.drupal.org/user/3632866"
                 },
                 {
                     "name": "andrewbelcher",
                     "homepage": "https://www.drupal.org/user/655282"
+                },
+                {
+                    "name": "harivansh",
+                    "homepage": "https://www.drupal.org/user/3678656"
                 },
                 {
                     "name": "jurgenhaas",
@@ -2133,41 +2149,44 @@
         },
         {
             "name": "drupal/ai_context",
-            "version": "dev-1.0.x",
+            "version": "1.0.0-beta2",
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/ai_context.git",
-                "reference": "cee7d3d3c2abddaf09ca270701881517915d2413"
+                "reference": "1.0.0-beta2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/ai_context-1.0.0-beta2.zip",
+                "reference": "1.0.0-beta2",
+                "shasum": "e3927e8cb4388ec49be5d1d5e404e009e85b0537"
             },
             "require": {
                 "drupal/ai": ">=1.3.0-rc2@RC || ^2",
                 "drupal/ai_agents": "^1.2",
                 "drupal/core": "^10.5 || ^11.2",
-                "drupal/diff": "^1.0",
-                "drupal/dynamic_entity_reference": "^3.2",
                 "drupal/scheduler": "^2.2",
                 "drupal/scheduler_content_moderation_integration": "^3.0",
                 "league/commonmark": "^2.4"
             },
             "require-dev": {
+                "drupal/ai_agents_debugger": "^1.0@beta",
+                "drupal/diff": "^1.0",
+                "drupal/dynamic_entity_reference": "^3.2",
                 "drush/drush": "^12|^13"
+            },
+            "suggest": {
+                "drupal/diff": "Allows to compare revisions of context items",
+                "drupal/dynamic_entity_reference": "Enable target entity scope and per-item target entity restrictions."
             },
             "type": "drupal-module",
             "extra": {
-                "branch-alias": {
-                    "dev-1.0.x": "1.0.x-dev"
-                },
                 "drupal": {
-                    "version": "1.0.x-dev",
-                    "datestamp": "1773167607",
+                    "version": "1.0.0-beta2",
+                    "datestamp": "1778471733",
                     "security-coverage": {
                         "status": "not-covered",
-                        "message": "Dev releases are not covered by Drupal security advisories."
-                    }
-                },
-                "patches": {
-                    "drupal/scheduler_content_moderation_integration": {
-                        "Fix undefined array key publish_state in Drupal 10": "patches/scheduler_content_moderation_integration-undefined-publish-state-3568673.patch"
+                        "message": "Beta releases are not covered by Drupal security advisories."
                     }
                 }
             },
@@ -2177,6 +2196,7 @@
                     "@lint:cspell",
                     "@lint:phpcs",
                     "@lint:phpstan",
+                    "@lint:eslint",
                     "@lint:stylelint"
                 ],
                 "lint:cspell": [
@@ -2187,6 +2207,9 @@
                 ],
                 "lint:phpstan": [
                     "cd ../../../.. && php -d memory_limit=512M vendor/bin/phpstan analyze web/modules/contrib/ai_context --configuration=web/modules/contrib/ai_context/phpstan.neon.dist"
+                ],
+                "lint:eslint": [
+                    "npx --yes eslint js/**/*.js"
                 ],
                 "lint:stylelint": [
                     "npx --yes stylelint \"css/**/*.css\""
@@ -2478,6 +2501,84 @@
             "homepage": "https://www.drupal.org/project/ai_provider_anthropic",
             "support": {
                 "source": "https://git.drupalcode.org/project/ai_provider_anthropic"
+            }
+        },
+        {
+            "name": "drupal/ai_provider_litellm",
+            "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/ai_provider_litellm.git",
+                "reference": "1.2.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/ai_provider_litellm-1.2.0.zip",
+                "reference": "1.2.0",
+                "shasum": "23c72f691ecc8d550b0ff1512947a06599ffa0a7"
+            },
+            "require": {
+                "drupal/ai": "^1.2.0",
+                "drupal/ai_provider_openai": "^1.2",
+                "drupal/core": "^10.2 | ^11"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "1.2.0",
+                    "datestamp": "1760354305",
+                    "security-coverage": {
+                        "status": "not-covered",
+                        "message": "Project has not opted into security advisory coverage!"
+                    }
+                }
+            },
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "abhisekmazumdar",
+                    "homepage": "https://www.drupal.org/user/3557964"
+                },
+                {
+                    "name": "andrewbelcher",
+                    "homepage": "https://www.drupal.org/user/655282"
+                },
+                {
+                    "name": "dan2k3k4",
+                    "homepage": "https://www.drupal.org/user/2437398"
+                },
+                {
+                    "name": "justanothermark",
+                    "homepage": "https://www.drupal.org/user/1369624"
+                },
+                {
+                    "name": "l_vandamme",
+                    "homepage": "https://www.drupal.org/user/3162503"
+                },
+                {
+                    "name": "marcus_johansson",
+                    "homepage": "https://www.drupal.org/user/385947"
+                },
+                {
+                    "name": "matthews",
+                    "homepage": "https://www.drupal.org/user/114486"
+                },
+                {
+                    "name": "nikro",
+                    "homepage": "https://www.drupal.org/user/576416"
+                },
+                {
+                    "name": "schnitzel",
+                    "homepage": "https://www.drupal.org/user/643820"
+                }
+            ],
+            "description": "LiteLLM AI provider integration.",
+            "homepage": "https://www.drupal.org/project/ai_provider_litellm",
+            "support": {
+                "source": "https://git.drupalcode.org/project/ai_provider_litellm"
             }
         },
         {
@@ -3033,27 +3134,32 @@
             "source": {
                 "type": "git",
                 "url": "https://git.drupalcode.org/project/canvas.git",
-                "reference": "0bff26f"
+                "reference": "18524dec01fdb49206565ec7b71f66f41132c1f2"
             },
             "require": {
-                "drupal/core": "^11.2",
-                "justinrainbow/json-schema": "^6.6.2"
+                "drupal/core": "^11.3",
+                "justinrainbow/json-schema": "^6.8.0"
             },
             "require-dev": {
                 "devizzent/cebe-php-openapi": "^1.1.4",
                 "drupal/ai": "^1.2.1",
                 "drupal/ai_agents": "^1.2",
+                "drupal/ai_agents_test": "^1.0@alpha",
+                "drupal/coder": "^8",
                 "drupal/jsonapi_menu_items": "^1.2.8",
                 "drupal/metatag": "^2.1",
                 "drupal/pathauto": "^1.13",
                 "drupal/search_api": "^1",
                 "drupal/simple_oauth": "^6",
+                "drupal/tmgmt": "^1.18",
                 "drush/drush": "^13",
-                "jangregor/phpstan-prophecy": "~1|~2",
+                "jangregor/phpstan-prophecy": "2.3.0",
                 "league/openapi-psr7-validator": "^0.22.0",
-                "mglaman/phpstan-drupal": "^2.0.9",
-                "phpat/phpat": "^0.12",
-                "phpstan/phpstan-strict-rules": "^2"
+                "mglaman/phpstan-drupal": "2.0.15",
+                "phpat/phpat": "0.12.4",
+                "phpstan/phpstan": "2.2.3",
+                "phpstan/phpstan-strict-rules": "2.0.11",
+                "shipmonk/dead-code-detector": "1.2.0"
             },
             "type": "drupal-module",
             "extra": {
@@ -3062,7 +3168,7 @@
                 },
                 "drupal": {
                     "version": "1.x-dev",
-                    "datestamp": "1774002248",
+                    "datestamp": "1783594594",
                     "security-coverage": {
                         "status": "not-covered",
                         "message": "Dev releases are not covered by Drupal security advisories."
@@ -3075,25 +3181,48 @@
                     "d=.; i=0; while [ $i -lt 10 ]; do if [ -f \"$d/composer.json\" ] && cat \"$d/composer.json\" | grep -q '\"type\"' && cat \"$d/composer.json\" | grep -q '\"project\"'; then readlink -f \"$d\"; break; fi; d=\"../$d\"; i=$((i+1)); done"
                 ],
                 "install-dev-deps": [
-                    "PACKAGES=$(cat composer.json | jq -r '.[\"require-dev\"] // {} | to_entries[] | \"\\(.key):\\(.value)\"' | tr '\\n' ' ') && composer --working-dir=$(composer run composer-root) require ${PACKAGES} --dev -W"
+                    "PACKAGES=$(cat composer.json | jq -r '.[\"require-dev\"] // {} | to_entries[] | \"\\(.key):\\(.value)\"' | tr '\\n' ' ') && ROOT=$(composer run composer-root) && CORE_VERSION=$(grep \"const VERSION\" \"${ROOT}/core/lib/Drupal.php\" 2>/dev/null | sed \"s/.*'\\(.*\\)'.*/\\1/\" || echo \"0.0.0\") && COMPOSER_ROOT_VERSION=${CORE_VERSION:-0.0.0} composer --working-dir=${ROOT} require ${PACKAGES} --dev -W"
                 ],
                 "phpcs": [
-                    "mkdir -p test-results && composer --working-dir=$(composer run composer-root) exec phpcs -- --standard=$(pwd)/phpcs.xml --report-width=auto --colors -s --report-junit=$(pwd)/test-results/phpcs.xml --report-full --report-summary $(pwd)"
+                    "mkdir -p test-results && mkdir -p .cache/phpcs && composer --working-dir=$(composer run composer-root) exec phpcs -- --standard=$(pwd)/phpcs.xml --report-width=auto --colors -s --report-junit=$(pwd)/test-results/phpcs.xml --report-full --report-summary $(pwd)"
                 ],
                 "phpcbf": [
-                    "composer --working-dir=$(composer run composer-root) exec phpcbf -- --standard=$(pwd)/phpcs.xml --colors $(pwd)"
+                    " mkdir -p .cache/phpc && composer --working-dir=$(composer run composer-root) exec phpcbf -- --standard=$(pwd)/phpcs.xml --colors $(pwd)"
                 ],
                 "phpstan": [
-                    "mkdir -p test-results && composer --working-dir=$(composer run composer-root) exec phpstan -- --configuration=$(pwd)/phpstan.neon --autoload-file=$(pwd)/phpstan_rules/autoload.php --error-format=junit analyze $(pwd) > test-results/phpstan.xml || true && composer --working-dir=$(composer run composer-root) exec phpstan -- --configuration=$(pwd)/phpstan.neon --autoload-file=$(pwd)/phpstan_rules/autoload.php analyze $(pwd)"
+                    "composer --working-dir=$(composer run composer-root) exec phpstan -- --configuration=$(pwd)/phpstan.neon --autoload-file=$(pwd)/phpstan_rules/autoload.php analyze $(pwd)"
                 ],
-                "phpstan-regenerate-ignores-for-11.3-and-higher": [
-                    "rm $(pwd)/phpstan-11.3-and-higher-ignores.neon && touch $(pwd)/phpstan-11.3-and-higher-ignores.neon && composer --working-dir=$(composer run composer-root) exec phpstan -- --configuration=$(pwd)/phpstan.neon --autoload-file=$(pwd)/phpstan_rules/autoload.php --generate-baseline=$(pwd)/phpstan-11.3-and-higher-ignores.neon analyze $(pwd)"
+                "phpstan-regenerate-ignores-for-non-min-core-version-features": [
+                    "rm $(pwd)/phpstan-ignores-non-min-core-version.neon && touch $(pwd)/phpstan-ignores-non-min-core-version.neon && composer --working-dir=$(composer run composer-root) exec phpstan -- --configuration=$(pwd)/phpstan.neon --autoload-file=$(pwd)/phpstan_rules/autoload.php --generate-baseline=$(pwd)/phpstan-ignores-non-min-core-version.neon --allow-empty-baseline analyze $(pwd)"
+                ],
+                "phpunit": [
+                    "./tests/scripts/phpunit.sh"
+                ],
+                "lint:phpcs": [
+                    "@phpcs"
+                ],
+                "lint:phpstan": [
+                    "@phpstan"
+                ],
+                "lint": [
+                    "@lint:phpstan",
+                    "@lint:phpcs"
+                ],
+                "fix:phpcbf": [
+                    "@phpcbf"
+                ],
+                "fix": [
+                    "@fix:phpcbf"
                 ]
             },
             "license": [
                 "GPL-2.0-or-later"
             ],
             "authors": [
+                {
+                    "name": "akhil babu",
+                    "homepage": "https://www.drupal.org/user/3632866"
+                },
                 {
                     "name": "amangrover90",
                     "homepage": "https://www.drupal.org/user/3602433"
@@ -3109,6 +3238,10 @@
                 {
                     "name": "bnjmnm",
                     "homepage": "https://www.drupal.org/user/2369194"
+                },
+                {
+                    "name": "chandu7929",
+                    "homepage": "https://www.drupal.org/user/2907229"
                 },
                 {
                     "name": "effulgentsia",
@@ -3139,6 +3272,10 @@
                     "homepage": "https://www.drupal.org/user/161058"
                 },
                 {
+                    "name": "kunal.sachdev",
+                    "homepage": "https://www.drupal.org/user/3685163"
+                },
+                {
                     "name": "larowlan",
                     "homepage": "https://www.drupal.org/user/395439"
                 },
@@ -3149,6 +3286,10 @@
                 {
                     "name": "longwave",
                     "homepage": "https://www.drupal.org/user/246492"
+                },
+                {
+                    "name": "marcus_johansson",
+                    "homepage": "https://www.drupal.org/user/385947"
                 },
                 {
                     "name": "mglaman",
@@ -3167,6 +3308,10 @@
                     "homepage": "https://www.drupal.org/user/205645"
                 },
                 {
+                    "name": "ravi.maniyar.123",
+                    "homepage": "https://www.drupal.org/user/3867193"
+                },
+                {
                     "name": "tedbow",
                     "homepage": "https://www.drupal.org/user/240860"
                 },
@@ -3177,6 +3322,10 @@
                 {
                     "name": "tim.plunkett",
                     "homepage": "https://www.drupal.org/user/241634"
+                },
+                {
+                    "name": "utkarsh_33",
+                    "homepage": "https://www.drupal.org/user/3727088"
                 },
                 {
                     "name": "wim leers",
@@ -9741,16 +9890,16 @@
         },
         {
             "name": "justinrainbow/json-schema",
-            "version": "v6.7.2",
+            "version": "6.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jsonrainbow/json-schema.git",
-                "reference": "6fea66c7204683af437864e7c4e7abf383d14bc0"
+                "reference": "bd1bda2ebfc8bff418565941771ea8f03c557886"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/6fea66c7204683af437864e7c4e7abf383d14bc0",
-                "reference": "6fea66c7204683af437864e7c4e7abf383d14bc0",
+                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/bd1bda2ebfc8bff418565941771ea8f03c557886",
+                "reference": "bd1bda2ebfc8bff418565941771ea8f03c557886",
                 "shasum": ""
             },
             "require": {
@@ -9810,9 +9959,9 @@
             ],
             "support": {
                 "issues": "https://github.com/jsonrainbow/json-schema/issues",
-                "source": "https://github.com/jsonrainbow/json-schema/tree/v6.7.2"
+                "source": "https://github.com/jsonrainbow/json-schema/tree/6.9.0"
             },
-            "time": "2026-02-15T15:06:22+00:00"
+            "time": "2026-06-05T14:05:24+00:00"
         },
         {
             "name": "laravel/prompts",
@@ -15712,7 +15861,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "drupal/ai_context": 20,
+        "drupal/ai_context": 10,
         "drupal/ai_vdb_provider_milvus": 10,
         "drupal/canvas": 20,
         "drupal/webform": 10
