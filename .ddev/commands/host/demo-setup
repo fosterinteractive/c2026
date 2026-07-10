@@ -8,6 +8,12 @@ ddev delete -O -y
 ddev start
 ddev composer install
 
+# Canvas is required as the 1.x branch tip, and the POC patch is a merge request diff that
+# GitLab generates against that branch's current tip. Update to the latest commit and refresh
+# the patch lock so the patch keeps applying as both move forward.
+ddev composer patches-relock
+ddev composer update drupal/canvas
+
 # Canvas is currently required as a dev release. Composer installs dev modules from
 # their Git repository, and we also apply a patch to Canvas. That makes Git think
 # many files in web/modules/contrib/canvas are changed, which clutters IDE sidebars.

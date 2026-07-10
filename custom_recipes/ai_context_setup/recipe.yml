@@ -30,6 +30,24 @@ config:
               - 'Content Structure: Press Releases'
             scope_subscriptions: {  }
           -
+            id: canvas_page_builder_agent
+            context_items: {  }
+            always_include:
+              - 'Agent interaction guidelines'
+              - 'FinDrop Brand Guidelines'
+              - 'Writing Tone & Voice'
+              - 'FinDrop Key Facts & Value Propositions'
+              - 'Visuals & Imagery'
+              - 'Abbreviations, Spelling, Dates & Formatting'
+              - 'FinDrop Travel — Sales Training Deck'
+              - 'Content Structure: Product Pages'
+              - 'General Page Building Guidelines'
+            excluded_subcontext:
+              - 'Content Structure: PPC Landing Page'
+              - 'Content Structure: Articles & Blogs'
+              - 'Content Structure: Press Releases'
+            scope_subscriptions: {  }
+          -
             id: drupal_canvas_seo_agent
             context_items: {  }
             always_include: {  }

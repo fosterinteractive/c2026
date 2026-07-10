@@ -1,4 +1,4 @@
-name: c2026
+name: c2026-new
 type: drupal11
 docroot: web
 php_version: "8.3"
