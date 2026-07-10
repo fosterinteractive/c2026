@@ -1,18 +1,34 @@
 #!/usr/bin/env bash
-## Description: Recreate the DDEV project, install dependencies, remove canvas module, and print a login URL.
+## Description: Recreate the DDEV project, install dependencies, check out the Canvas POC branch, and print a login URL.
 ## Usage: demo-setup
 
 set -euo pipefail
 
-ddev delete -O -y
+ddev delete -O -y || true   # tolerate first run (project not yet registered)
 ddev start
 ddev composer install
 
-# Canvas is currently required as a dev release. Composer installs dev modules from
-# their Git repository, and we also apply a patch to Canvas. That makes Git think
-# many files in web/modules/contrib/canvas are changed, which clutters IDE sidebars.
-# Remove the module's .git directory as a workaround.
-rm -rf web/modules/contrib/canvas/.git
+# Canvas's POC code (client-side AI orchestration — MR !1214 / d.o issue 3591615) is
+# supplied by checking out its issue-fork branch as a real git branch, NOT by a composer
+# URL patch. The MR is open and actively updated, so a hash-pinned patch (the old
+# patches.lock.json approach) breaks on every MR change. `composer install` above brings
+# in base Canvas (pinned dev commit); the checkout below overlays the POC branch on top
+# and gives us an editable, committable branch for Canvas development.
+CANVAS_DIR="web/modules/contrib/canvas"
+CANVAS_FORK_URL="https://git.drupalcode.org/issue/canvas-3591615.git"
+CANVAS_POC_BRANCH="3591615-canvas-ai-client-side-orchestration-loop-for-canvas-aipoc"
+CANVAS_LOCAL_BRANCH="canvas-ai-work"
+echo "Checking out Canvas POC branch (${CANVAS_POC_BRANCH})..."
+git -C "$CANVAS_DIR" remote get-url poc >/dev/null 2>&1 || git -C "$CANVAS_DIR" remote add poc "$CANVAS_FORK_URL"
+git -C "$CANVAS_DIR" fetch poc "$CANVAS_POC_BRANCH"
+if git -C "$CANVAS_DIR" show-ref --verify --quiet "refs/heads/${CANVAS_LOCAL_BRANCH}" \
+   && [ "$(git -C "$CANVAS_DIR" rev-list --count "poc/${CANVAS_POC_BRANCH}..${CANVAS_LOCAL_BRANCH}")" -gt 0 ]; then
+  # Local dev commits exist ahead of the POC branch — keep them, don't reset.
+  echo "  '${CANVAS_LOCAL_BRANCH}' has local commits ahead of the POC branch; leaving it intact."
+  git -C "$CANVAS_DIR" checkout "$CANVAS_LOCAL_BRANCH"
+else
+  git -C "$CANVAS_DIR" checkout -B "$CANVAS_LOCAL_BRANCH" "poc/${CANVAS_POC_BRANCH}"
+fi
 
 ## This recipe was generated with the command  ddev drush site:export --destination=../custom_recipes/findrop
 ddev drush si ../custom_recipes/findrop -y
