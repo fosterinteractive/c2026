@@ -115,7 +115,8 @@
                 "Navigation fatal error on 404 pages (3565886)": "patches/drupal/navigation.patch"
             },
             "drupal/canvas": {
-                "POC": "https://git.drupalcode.org/project/canvas/-/merge_requests/1214/diffs.patch"
+                "POC": "https://git.drupalcode.org/project/canvas/-/merge_requests/1214/diffs.patch",
+                "Build-state UI: lock/glow/pause/revert/plan/spotlight/follow (3591724)": "patches/canvas/build-state-ui-3591724.patch"
             },
             "drupal/byte_theme": {
                 "Remove default aspect ratio from icon card": "patches/byte_theme/remove-default-aspect-ration-from-icon-card-component.patch"

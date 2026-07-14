@@ -1,5 +1,5 @@
 {
-    "_hash": "638b0134f0ac7497f57e1359a20c99aacff3f1e080abd7383d7bd3c92a4a8ab8",
+    "_hash": "d620216d984448ba1080714186eaa1b08ff45462e25ee13a242ad3309b7a0349",
     "patches": {
         "drupal/core": [
             {
@@ -19,6 +19,16 @@
                 "description": "POC",
                 "url": "https://git.drupalcode.org/project/canvas/-/merge_requests/1214/diffs.patch",
                 "sha256": "452d9bf73a084bb0ad377aa311fa01f34afbe364c2658f3694de28012b1fcfeb",
+                "depth": 1,
+                "extra": {
+                    "provenance": "root"
+                }
+            },
+            {
+                "package": "drupal/canvas",
+                "description": "Build-state UI: lock/glow/pause/revert/plan/spotlight/follow (3591724)",
+                "url": "patches/canvas/build-state-ui-3591724.patch",
+                "sha256": "83ea4402ef9e63a58163454a6bc8a56058c17285a464902c83bae54ca4f2a433",
                 "depth": 1,
                 "extra": {
                     "provenance": "root"
